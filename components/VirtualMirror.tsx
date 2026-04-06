@@ -417,12 +417,13 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
                 key={style.id}
                 onClick={() => onSelectStyle(style)}
                 disabled={isLoading}
-                  className={`group relative aspect-square bg-white hover:bg-gray-50 rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all duration-300 transform sm:hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-white focus:ring-[#E1262D] shadow-md sm:shadow-lg hover:shadow-xl animate-slide-in-up
+                  className={`group bg-white hover:bg-gray-50 rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all duration-300 transform sm:hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-white focus:ring-[#E1262D] shadow-md sm:shadow-lg hover:shadow-xl animate-slide-in-up
                     ${selectedStyleForHighlight?.id === style.id ? 'border-[#E1262D] shadow-[#E1262D]/15' : 'border-gray-200 hover:border-gray-300'}
                   ${isLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 aria-label={`Select style: ${style.name}`}
               >
+                <div className="relative w-full pb-[100%]">
                   {/* Hairstyle Preview Image */}
                   <div className="absolute inset-0 flex items-center justify-center p-2 overflow-hidden">
                     <img
@@ -430,7 +431,6 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
                       alt={`${style.name} style preview`}
                       className="w-full h-full object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
-                        // Fallback to a default image if the specific one fails to load
                         const target = e.target as HTMLImageElement;
                         target.src = '/hairstyles/classic-side-part.png';
                       }}
@@ -465,6 +465,7 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
 
                   {/* Hover Glow Effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-[#E1262D]/0 via-[#E1262D]/0 to-[#E1262D]/0 group-hover:from-[#E1262D]/5 group-hover:via-[#E1262D]/10 group-hover:to-[#E1262D]/5 transition-all duration-300 rounded-xl"></div>
+                </div>
               </button>
               );
             })}
