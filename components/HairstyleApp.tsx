@@ -26,6 +26,7 @@ const HairstyleApp: React.FC = () => {
   } = useAuth();
   const [userImageFile, setUserImageFile] = useState<File | null>(null);
   const [currentStyledImage, setCurrentStyledImage] = useState<string | null>(null);
+  const [isViewAngleImage, setIsViewAngleImage] = useState(false);
   const [cleanStyledImage, setCleanStyledImage] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<Hairstyle | null>(null);
@@ -308,6 +309,7 @@ ${sqlToCreateTable}`
   const handleStyleSelect = useCallback(async (style: Hairstyle) => {
     if (isLoading) return;
     setSelectedStyle(style);
+    setIsViewAngleImage(false);
 
     // Use the thumbnail image as reference for exact style matching
     await applyStyleAndSave(style.prompt, style.name, style.id, style.thumbnailUrl);
@@ -316,6 +318,7 @@ ${sqlToCreateTable}`
   const handleCustomPromptSubmit = useCallback(async (prompt: string) => {
     if (isLoading) return;
     setSelectedStyle(null);
+    setIsViewAngleImage(false);
     const styleName = `Custom Style`;
     await applyStyleAndSave(prompt, styleName, 'custom');
   }, [applyStyleAndSave, isLoading]);
@@ -323,6 +326,7 @@ ${sqlToCreateTable}`
   const handleAIStyleGeneration = useCallback(async (prompt: string) => {
     if (isLoading) return;
     setSelectedStyle(null);
+    setIsViewAngleImage(false);
     const styleName = `AI Generated Style`;
 
     await applyStyleAndSave(prompt, styleName, 'ai-generated');
@@ -330,6 +334,7 @@ ${sqlToCreateTable}`
 
   const handleRequestFrontView = useCallback(async () => {
     if (!baseStylePrompt || !lastUsedStyleName || isLoading) return;
+    setIsViewAngleImage(true);
     const prompt = `Using the person in this photo as reference for skin tone, hair color, and general appearance, generate a FRONT VIEW of them with a ${lastUsedStyleName} hairstyle.
 
 STYLE DETAILS: ${baseStylePrompt}
@@ -347,6 +352,7 @@ REQUIREMENTS:
 
   const handleRequestSideView = useCallback(async () => {
     if (!baseStylePrompt || !lastUsedStyleName || isLoading) return;
+    setIsViewAngleImage(true);
     const prompt = `Using the person in this photo as reference for skin tone, hair color, and general appearance, generate a SIDE PROFILE VIEW of them with a ${lastUsedStyleName} hairstyle.
 
 STYLE DETAILS: ${baseStylePrompt}
@@ -364,6 +370,7 @@ REQUIREMENTS:
 
   const handleRequestBackView = useCallback(async () => {
     if (!baseStylePrompt || !lastUsedStyleName || isLoading) return;
+    setIsViewAngleImage(true);
     const prompt = `Using the person in this photo as reference for skin tone, hair color, and general appearance, generate a BACK VIEW of them with a ${lastUsedStyleName} hairstyle.
 
 STYLE DETAILS: ${baseStylePrompt}
@@ -382,6 +389,7 @@ REQUIREMENTS:
 
   const handleHistorySelect = (item: HistoryItem) => {
     setCurrentStyledImage(item.imageUrl);
+    setIsViewAngleImage(false);
   };
 
   const handleGalleryImageSelect = useCallback((imageUrl: string, styleName: string) => {
@@ -568,6 +576,7 @@ REQUIREMENTS:
             onRequestFrontView={handleRequestFrontView}
             onRequestBackView={handleRequestBackView}
             onRequestSideView={handleRequestSideView}
+            isViewAngleImage={isViewAngleImage}
             history={history}
             onHistorySelect={handleHistorySelect}
           />
