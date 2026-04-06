@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 
 const LandingPage: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, oauthAccessToken } = useAuth();
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
+
+  // Auto-open auth modal when returning from Google OAuth redirect
+  useEffect(() => {
+    if (oauthAccessToken && !user) {
+      const stored = sessionStorage.getItem('headz_oauth_redirect');
+      if (stored) {
+        const { mode } = JSON.parse(stored);
+        setAuthMode(mode || 'signup');
+      }
+      setShowAuthModal(true);
+    }
+  }, [oauthAccessToken, user]);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const handleLogout = async () => {

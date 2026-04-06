@@ -58,6 +58,9 @@ interface AuthContextType {
   // Pending action for auth flow
   pendingAction: 'download' | 'share' | null;
   setPendingAction: (action: 'download' | 'share' | null) => void;
+  // OAuth redirect callback token
+  oauthAccessToken: string | null;
+  clearOAuthToken: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -78,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [pendingAction, setPendingActionState] = useState<'download' | 'share' | null>(null);
+  const [oauthAccessToken, setOauthAccessToken] = useState<string | null>(null);
 
   // Load pending action from sessionStorage
   useEffect(() => {
@@ -95,6 +99,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       sessionStorage.removeItem('headz_pending_action');
     }
+  }, []);
+
+  // Handle OAuth redirect callback - extract access token from URL hash
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('access_token')) {
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get('access_token');
+      if (accessToken) {
+        setOauthAccessToken(accessToken);
+        // Clean up the URL hash
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    }
+  }, []);
+
+  const clearOAuthToken = useCallback(() => {
+    setOauthAccessToken(null);
+    sessionStorage.removeItem('headz_oauth_redirect');
   }, []);
 
   useEffect(() => {
@@ -450,6 +473,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Pending action
     pendingAction,
     setPendingAction,
+    // OAuth redirect
+    oauthAccessToken,
+    clearOAuthToken,
   };
 
   return (
