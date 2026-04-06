@@ -104,9 +104,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Handle OAuth redirect callback - extract access token from URL hash
   useEffect(() => {
     const hash = window.location.hash;
+    console.log('[OAuth] Checking URL hash:', hash ? 'has hash' : 'no hash');
     if (hash.includes('access_token')) {
       const params = new URLSearchParams(hash.substring(1));
       const accessToken = params.get('access_token');
+      console.log('[OAuth] Found access token:', accessToken ? 'yes' : 'no');
       if (accessToken) {
         setOauthAccessToken(accessToken);
         // Clean up the URL hash

@@ -125,7 +125,9 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
   // Auto-process OAuth redirect token when modal opens with a token available
   useEffect(() => {
+    console.log('[AuthModal] Effect check:', { isOpen, hasToken: !!oauthAccessToken, step });
     if (isOpen && oauthAccessToken && step === 'google-signin') {
+      console.log('[AuthModal] Auto-processing OAuth token');
       handleGoogleTokenSuccess(oauthAccessToken);
       clearOAuthToken();
     }

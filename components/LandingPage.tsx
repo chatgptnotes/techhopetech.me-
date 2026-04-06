@@ -17,6 +17,7 @@ const LandingPage: React.FC = () => {
         const { mode } = JSON.parse(stored);
         setAuthMode(mode || 'signup');
       }
+      console.log('[LandingPage] Opening auth modal from OAuth redirect');
       setShowAuthModal(true);
     }
   }, [oauthAccessToken, user]);
