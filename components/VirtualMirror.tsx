@@ -62,8 +62,8 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
   const selectedStyleForHighlight = selectedStyle;
   return (
     <div className="flex-grow grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-4 lg:gap-6 p-2 sm:p-4 lg:p-6 animate-fade-in">
-      {/* Left: Current Image Panel */}
-      <div className="col-span-1">
+      {/* Left: Current Image Panel - order 1 on mobile, 1 on desktop */}
+      <div className="col-span-1 order-1">
         <div className="bg-white rounded-xl sm:rounded-2xl p-2 sm:p-4 lg:p-6 h-full border border-gray-200 shadow-md">
           <h3 className="text-sm sm:text-lg lg:text-xl font-bold mb-2 sm:mb-4 lg:mb-6 text-gray-900 flex items-center animate-slide-in-left">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mr-1 sm:mr-2 lg:mr-3 text-[#E1262D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,8 +107,8 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
       </div>
       </div>
 
-      {/* Center: Styled Preview Panel */}
-      <div className="col-span-1">
+      {/* Center: Styled Preview Panel - order 3 on mobile (after styles), order 2 on desktop */}
+      <div className="col-span-1 order-3 md:order-2">
         <div className="bg-white rounded-xl sm:rounded-2xl p-2 sm:p-4 lg:p-6 h-full border border-gray-200 shadow-md">
           <h3 className="text-sm sm:text-lg lg:text-xl font-bold mb-2 sm:mb-4 lg:mb-6 text-gray-900 flex items-center animate-slide-in-up">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mr-1 sm:mr-2 lg:mr-3 text-[#E1262D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -363,14 +363,14 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
         </div>
       </div>
 
-      {/* Right: Enhanced Preset Style Selector */}
-      <div className="col-span-1 md:col-span-2 xl:col-span-1">
+      {/* Right: Style Selector - order 2 on mobile (right after photo), order 3 on desktop */}
+      <div className="col-span-1 order-2 md:order-3 md:col-span-2 xl:col-span-1">
         <div className="bg-white rounded-xl sm:rounded-2xl p-2 sm:p-4 lg:p-6 border border-gray-200 shadow-md">
           <h3 className="text-sm sm:text-lg lg:text-xl font-bold mb-2 sm:mb-4 lg:mb-6 text-gray-900 flex items-center animate-slide-in-right">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 lg:h-6 lg:w-6 mr-2 lg:mr-3 text-[#E1262D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
             </svg>
-            Preset Styles
+            Select Style
           </h3>
 
           {/* Gender Filter Toggle */}
@@ -419,27 +419,27 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
 
 
 
-          {/* Style Grid - 2x3 Layout (6 images at a time) with Scroll */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 max-h-[500px] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar animate-slide-in-right delay-300">
+          {/* Style Grid */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 max-h-[500px] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar animate-slide-in-right delay-300">
             {displayStyles.map((style, index) => {
+              const isSelected = selectedStyleForHighlight?.id === style.id;
               return (
               <button
                 key={style.id}
                 onClick={() => onSelectStyle(style)}
                 disabled={isLoading}
-                  className={`group bg-white hover:bg-gray-50 rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all duration-300 transform sm:hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-white focus:ring-[#E1262D] shadow-md sm:shadow-lg hover:shadow-xl animate-slide-in-up
-                    ${selectedStyleForHighlight?.id === style.id ? 'border-[#E1262D] shadow-[#E1262D]/15' : 'border-gray-200 hover:border-gray-300'}
+                className={`group flex flex-col bg-white rounded-xl overflow-hidden border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#E1262D] shadow-sm hover:shadow-md
+                    ${isSelected ? 'border-[#E1262D]' : 'border-gray-200 hover:border-gray-300'}
                   ${isLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 aria-label={`Select style: ${style.name}`}
               >
-                <div className="relative w-full pb-[100%]">
-                  {/* Hairstyle Preview Image */}
-                  <div className="absolute inset-0 flex items-center justify-center p-2 overflow-hidden">
+                  {/* Image container - fixed height, no absolute positioning */}
+                  <div className="w-full h-32 sm:h-36 overflow-hidden bg-gray-50">
                     <img
                       src={style.thumbnailUrl}
                       alt={`${style.name} style preview`}
-                      className="w-full h-full object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-full object-contain"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = '/hairstyles/classic-side-part.png';
@@ -447,35 +447,29 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
                     />
                   </div>
 
-                  {/* Style Name Label */}
-                  <div className="absolute bottom-2 left-2 right-2 z-20">
-                    <p className="text-xs font-semibold text-white text-center truncate bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
-                      {style.name}
-                    </p>
+                  {/* Style Name Label - in normal flow below image */}
+                  <div className="w-full px-2 py-2 bg-gray-100 border-t border-gray-200">
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="text-xs font-semibold text-gray-800 text-center truncate flex-1">
+                        {style.name}
+                      </p>
+                      {isSelected && isLoading && (
+                        <div className="w-4 h-4 flex-shrink-0 bg-[#E1262D] rounded-full flex items-center justify-center">
+                          <svg className="animate-spin h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        </div>
+                      )}
+                      {isSelected && !isLoading && (
+                        <div className="w-4 h-4 flex-shrink-0 bg-[#E1262D] rounded-full flex items-center justify-center">
+                          <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
                   </div>
-
-                  {/* Status Indicators */}
-                  <div className="absolute top-2 right-2 z-20">
-                {selectedStyleForHighlight?.id === style.id && isLoading && (
-                      <div className="w-5 h-5 bg-[#E1262D] rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                      <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                   </div>
-                )}
-                {selectedStyleForHighlight?.id === style.id && !isLoading && (
-                      <div className="w-5 h-5 bg-[#E1262D] rounded-full flex items-center justify-center shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                   </div>
-                )}
-                  </div>
-
-                  {/* Hover Glow Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#E1262D]/0 via-[#E1262D]/0 to-[#E1262D]/0 group-hover:from-[#E1262D]/5 group-hover:via-[#E1262D]/10 group-hover:to-[#E1262D]/5 transition-all duration-300 rounded-xl"></div>
-                </div>
               </button>
               );
             })}

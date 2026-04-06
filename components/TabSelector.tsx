@@ -30,7 +30,7 @@ const TabSelector: React.FC<TabSelectorProps> = ({ activeTab, onTabChange, isLog
               <div className="text-left hidden sm:block">
                 <div className="font-bold text-xs sm:text-sm">Remix My Hair</div>
                 <div className={`text-[10px] sm:text-xs ${activeTab === 'virtual-mirror' ? 'text-white/80' : 'text-gray-400'}`}>
-                  Preset Styles
+                  Select Style
                 </div>
               </div>
             </div>
