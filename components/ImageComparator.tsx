@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useCallback, MouseEvent, TouchEvent, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import Loader from './Loader';
 
 interface ImageComparatorProps {
@@ -16,62 +16,27 @@ const ImageComparator: React.FC<ImageComparatorProps> = ({ originalImage, styled
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
-  const handleMove = useCallback((clientX: number) => {
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    isDragging.current = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }, []);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging.current || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    const percent = (x / rect.width) * 100;
-    setSliderPosition(percent);
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    setSliderPosition((x / rect.width) * 100);
   }, []);
 
-  const handleMouseDown = (e: MouseEvent) => {
-    e.preventDefault();
-    isDragging.current = true;
-  };
-
-  const handleTouchStart = (e: TouchEvent) => {
-    e.preventDefault();
-    isDragging.current = true;
-  };
-
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback(() => {
     isDragging.current = false;
   }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    isDragging.current = false;
-  }, []);
-
-  const handleMouseMove = useCallback((e: globalThis.MouseEvent) => {
-    handleMove(e.clientX);
-  }, [handleMove]);
-
-  const handleTouchMove = useCallback((e: globalThis.TouchEvent) => {
-    if (isDragging.current) {
-      e.preventDefault();
-    }
-    handleMove(e.touches[0].clientX);
-  }, [handleMove]);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('touchmove', handleTouchMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-        window.removeEventListener('touchend', handleTouchEnd);
-    };
-}, [handleMouseMove, handleTouchMove, handleMouseUp, handleTouchEnd]);
-
 
   return (
     <div
         ref={containerRef}
         className="relative w-full aspect-square bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden select-none group"
+        style={{ touchAction: 'pan-y' }}
     >
       <img
         src={originalImage}
@@ -121,9 +86,11 @@ const ImageComparator: React.FC<ImageComparatorProps> = ({ originalImage, styled
       {/* Slider Handle and Line - wide touch target for mobile */}
       <div
         className="absolute top-0 bottom-0 w-10 cursor-ew-resize z-10"
-        style={{ left: `calc(${sliderPosition}% - 20px)` }}
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
+        style={{ left: `calc(${sliderPosition}% - 20px)`, touchAction: 'none' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
         <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-white/70 shadow-sm"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 shadow-lg backdrop-blur-sm flex items-center justify-center cursor-ew-resize transition-transform duration-200 group-hover:scale-110">

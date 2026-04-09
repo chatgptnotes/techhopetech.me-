@@ -74,9 +74,15 @@ const urlToGenerativePart = async (imageUrl: string) => {
   }
 };
 
+export const preloadImageData = async (file: File): Promise<{ data: string; mimeType: string }> => {
+  const part = await fileToGenerativePart(file);
+  return { data: part.inlineData.data, mimeType: part.inlineData.mimeType };
+};
+
 export const editImageWithGemini = async (
   imageFile: File,
-  prompt: string
+  prompt: string,
+  preloadedData?: { data: string; mimeType: string }
 ): Promise<string> => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -84,7 +90,9 @@ export const editImageWithGemini = async (
     }
     const ai = new GoogleGenAI({ apiKey });
 
-  const imagePart = await fileToGenerativePart(imageFile);
+  const imagePart = preloadedData
+    ? { inlineData: { data: preloadedData.data, mimeType: preloadedData.mimeType } }
+    : await fileToGenerativePart(imageFile);
 
   let response: GenerateContentResponse;
   let retryCount = 0;

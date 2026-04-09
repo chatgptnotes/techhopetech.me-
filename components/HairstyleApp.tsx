@@ -10,7 +10,7 @@ import AuthModal from './AuthModal';
 import ProfileForm from './ProfileForm';
 import { AVAILABLE_HAIRSTYLES } from '../constants';
 import { Hairstyle, HistoryItem } from '../types';
-import { editImageWithGemini } from '../services/geminiService';
+import { editImageWithGemini, preloadImageData } from '../services/geminiService';
 import { uploadImage, saveGeneration, dataURLtoFile, trackDownload, trackShare, trackGeneration, trackCustomPrompt } from '../services/supabaseService';
 import { useAuth } from '../contexts/AuthContext';
 import { addStylishWatermark } from '../utils/watermark';
@@ -25,6 +25,7 @@ const HairstyleApp: React.FC = () => {
     completeProfile,
   } = useAuth();
   const [userImageFile, setUserImageFile] = useState<File | null>(null);
+  const [userImageData, setUserImageData] = useState<{ data: string; mimeType: string } | null>(null);
   const [currentStyledImage, setCurrentStyledImage] = useState<string | null>(null);
   const [isViewAngleImage, setIsViewAngleImage] = useState(false);
   const [cleanStyledImage, setCleanStyledImage] = useState<string | null>(null);
@@ -194,6 +195,7 @@ const HairstyleApp: React.FC = () => {
 
   const handleImageUpload = (file: File) => {
     setUserImageFile(file);
+    setUserImageData(null);
     setCurrentStyledImage(null);
     setCleanStyledImage(null);
     setHistory([]);
@@ -204,6 +206,8 @@ const HairstyleApp: React.FC = () => {
     setBaseStylePrompt(null);
     setLastUsedStyleName(null);
     setActiveTab('virtual-mirror');
+    // Pre-load image data immediately so it stays available across all style selections
+    preloadImageData(file).then(data => setUserImageData(data)).catch(() => {/* will fall back to reading file directly */});
   };
 
   const applyStyleAndSave = useCallback(async (prompt: string, styleName: string, styleId: string, thumbnailUrl?: string) => {
@@ -225,7 +229,7 @@ const HairstyleApp: React.FC = () => {
       // Use text-only generation for better results with stylized reference images
       // The detailed prompts in constants.ts describe hairstyles well enough
       let newStyledImage: string;
-      newStyledImage = await editImageWithGemini(baseImageFile, prompt);
+      newStyledImage = await editImageWithGemini(baseImageFile, prompt, userImageData ?? undefined);
 
       // Store clean image for authenticated users to download
       const cleanImage = newStyledImage;
@@ -304,7 +308,7 @@ ${sqlToCreateTable}`
     } finally {
       setIsLoading(false);
     }
-  }, [userImageFile, isLoading, currentStyledImage, sessionId, previousStyleName, user, isFreeUser]);
+  }, [userImageFile, userImageData, isLoading, currentStyledImage, sessionId, previousStyleName, user, isFreeUser]);
 
   const handleStyleSelect = useCallback(async (style: Hairstyle) => {
     if (isLoading) return;
@@ -503,6 +507,7 @@ REQUIREMENTS:
 
   const handleStartOver = useCallback(() => {
     setUserImageFile(null);
+    setUserImageData(null);
     setCurrentStyledImage(null);
     setCleanStyledImage(null);
     setHistory([]);
