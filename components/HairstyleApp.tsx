@@ -121,8 +121,15 @@ const HairstyleApp: React.FC = () => {
     setSessionId(sid);
   }, []);
 
-  const userImageUrl = useMemo(() => {
-    return userImageFile ? URL.createObjectURL(userImageFile) : null;
+  const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!userImageFile) {
+      setUserImageUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(userImageFile);
+    setUserImageUrl(url);
+    return () => URL.revokeObjectURL(url);
   }, [userImageFile]);
 
   const filteredStyles = useMemo(() => {

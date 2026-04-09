@@ -172,7 +172,7 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
                 <button
                   onClick={onRequestFrontView}
                   disabled={isLoading}
-                  className="flex flex-col items-center justify-center py-3 px-2 bg-gray-50 hover:bg-gray-100 disabled:bg-gray-50 disabled:cursor-not-allowed border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E1262D]/50"
+                  className="flex flex-col items-center justify-center py-3 px-2 bg-gray-50 hover:bg-gray-100 active:bg-[#E1262D]/10 active:border-[#E1262D] disabled:bg-gray-50 disabled:cursor-not-allowed border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E1262D]/50"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mb-1.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -183,7 +183,7 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
                 <button
                   onClick={onRequestSideView}
                   disabled={isLoading}
-                  className="flex flex-col items-center justify-center py-3 px-2 bg-gray-50 hover:bg-gray-100 disabled:bg-gray-50 disabled:cursor-not-allowed border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E1262D]/50"
+                  className="flex flex-col items-center justify-center py-3 px-2 bg-gray-50 hover:bg-gray-100 active:bg-[#E1262D]/10 active:border-[#E1262D] disabled:bg-gray-50 disabled:cursor-not-allowed border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E1262D]/50"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mb-1.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -194,7 +194,7 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
                 <button
                   onClick={onRequestBackView}
                   disabled={isLoading}
-                  className="flex flex-col items-center justify-center py-3 px-2 bg-gray-50 hover:bg-gray-100 disabled:bg-gray-50 disabled:cursor-not-allowed border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E1262D]/50"
+                  className="flex flex-col items-center justify-center py-3 px-2 bg-gray-50 hover:bg-gray-100 active:bg-[#E1262D]/10 active:border-[#E1262D] disabled:bg-gray-50 disabled:cursor-not-allowed border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E1262D]/50"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mb-1.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -428,8 +428,8 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
                 key={style.id}
                 onClick={() => onSelectStyle(style)}
                 disabled={isLoading}
-                className={`group flex flex-col bg-white rounded-xl overflow-hidden border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#E1262D] shadow-sm hover:shadow-md
-                    ${isSelected ? 'border-[#E1262D]' : 'border-gray-200 hover:border-gray-300'}
+                className={`group flex flex-col bg-white rounded-xl overflow-hidden border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#E1262D] shadow-sm hover:shadow-md active:scale-95
+                    ${isSelected ? 'border-[#E1262D]' : 'border-gray-200 hover:border-gray-300 active:border-[#E1262D]'}
                   ${isLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 aria-label={`Select style: ${style.name}`}

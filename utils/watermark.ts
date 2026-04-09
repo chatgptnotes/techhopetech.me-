@@ -1,6 +1,7 @@
 export const addWatermarkToImage = async (imageDataUrl: string): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
+    img.onerror = () => resolve(imageDataUrl);
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -79,6 +80,7 @@ export const addWatermarkToImage = async (imageDataUrl: string): Promise<string>
 export const addStylishWatermark = async (imageDataUrl: string): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
+    img.onerror = () => resolve(imageDataUrl);
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');

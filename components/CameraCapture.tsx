@@ -75,8 +75,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose }) => 
           onCapture(file);
         } else {
           setError("Failed to capture image.");
-          setIsCapturing(false);
         }
+        setIsCapturing(false);
       }, 'image/png');
     } else {
         setError("Failed to get canvas context.");

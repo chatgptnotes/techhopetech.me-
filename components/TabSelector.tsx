@@ -18,7 +18,7 @@ const TabSelector: React.FC<TabSelectorProps> = ({ activeTab, onTabChange, isLog
             className={`relative py-2 sm:py-3 lg:py-4 px-3 sm:px-4 lg:px-6 rounded-t-xl lg:rounded-t-2xl font-semibold text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               activeTab === 'virtual-mirror'
                 ? 'bg-[#E1262D] text-white shadow-lg shadow-[#E1262D]/25'
-                : 'bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                : 'bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200 active:bg-gray-300 active:text-gray-900'
             }`}
           >
             <div className="flex items-center space-x-2 lg:space-x-3">
@@ -44,7 +44,7 @@ const TabSelector: React.FC<TabSelectorProps> = ({ activeTab, onTabChange, isLog
             className={`relative py-2 sm:py-3 lg:py-4 px-3 sm:px-4 lg:px-6 rounded-t-xl lg:rounded-t-2xl font-semibold text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               activeTab === 'ai-generator'
                 ? 'bg-[#E1262D] text-white shadow-lg shadow-[#E1262D]/25'
-                : 'bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                : 'bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200 active:bg-gray-300 active:text-gray-900'
             }`}
           >
             <div className="flex items-center space-x-2 lg:space-x-3">
@@ -77,7 +77,7 @@ const TabSelector: React.FC<TabSelectorProps> = ({ activeTab, onTabChange, isLog
             className={`relative py-2 sm:py-3 lg:py-4 px-3 sm:px-4 lg:px-6 rounded-t-xl lg:rounded-t-2xl font-semibold text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               activeTab === 'gallery'
                 ? 'bg-[#E1262D] text-white shadow-lg shadow-[#E1262D]/25'
-                : 'bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                : 'bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200 active:bg-gray-300 active:text-gray-900'
             }`}
           >
             <div className="flex items-center space-x-2 lg:space-x-3">

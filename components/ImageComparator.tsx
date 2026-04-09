@@ -23,6 +23,7 @@ const ImageComparator: React.FC<ImageComparatorProps> = ({ originalImage, styled
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging.current || !containerRef.current) return;
+    e.preventDefault();
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
     setSliderPosition((x / rect.width) * 100);

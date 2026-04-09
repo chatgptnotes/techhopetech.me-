@@ -131,7 +131,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
       handleGoogleTokenSuccess(oauthAccessToken);
       clearOAuthToken();
     }
-  }, [isOpen, oauthAccessToken]);
+  }, [isOpen, oauthAccessToken, step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Google OAuth - Redirect to Google for authentication (no popup needed)
   const handleGoogleRedirect = () => {
