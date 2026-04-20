@@ -121,21 +121,13 @@ const VirtualMirror: React.FC<VirtualMirrorProps> = ({
           <div className="relative aspect-square bg-gray-50 rounded-lg sm:rounded-xl overflow-hidden border border-gray-200 shadow-lg transform transition-all duration-300 hover:shadow-xl hover:border-gray-300">
             {isLoading && <Loader />}
             {styledImage ? (
-              isViewAngleImage ? (
-                <img
-                  src={styledImage}
-                  alt="Styled view"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <ImageComparator
-                  originalImage={originalImage!}
-                  styledImage={styledImage}
-                  isLoading={isLoading}
-                  onDownload={onDownload}
-                  onShare={onShare}
-                />
-              )
+              <ImageComparator
+                originalImage={originalImage!}
+                styledImage={styledImage}
+                isLoading={isLoading}
+                onDownload={onDownload}
+                onShare={onShare}
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-500">
                 <div className="text-center animate-pulse">
