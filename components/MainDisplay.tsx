@@ -69,7 +69,7 @@ const MainDisplay: React.FC<MainDisplayProps> = ({
                  <div className="w-full aspect-square bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
                      <h3 className="text-center py-2 text-sm font-semibold bg-gray-50 text-gray-600">Current Image</h3>
                      <div className="relative flex-grow flex items-center justify-center">
-                         <img src={originalImage} alt="Current" className="w-full h-full object-cover" />
+                         <img src={originalImage} alt="Current" className="w-full h-full object-contain" />
                      </div>
                  </div>
                  <div className="w-full aspect-square bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col">

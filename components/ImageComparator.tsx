@@ -42,7 +42,7 @@ const ImageComparator: React.FC<ImageComparatorProps> = ({ originalImage, styled
       <img
         src={originalImage}
         alt="Original"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-contain"
         draggable="false"
       />
       <div
@@ -52,7 +52,7 @@ const ImageComparator: React.FC<ImageComparatorProps> = ({ originalImage, styled
         <img
           src={styledImage}
           alt="Styled"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain"
           draggable="false"
         />
       </div>
