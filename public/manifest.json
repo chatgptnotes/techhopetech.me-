@@ -1,0 +1,25 @@
+{
+  "name": "HEADZ Hair Fixing App",
+  "short_name": "HEADZ",
+  "description": "AI-powered virtual hairstyle try-on. Upload your photo and see yourself with hundreds of hairstyles instantly.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#E1262D",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

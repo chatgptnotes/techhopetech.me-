@@ -1,0 +1,9 @@
+# HEADZ Hair Fixing App - Crawler directives
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /super-admin
+Disallow: /super-admin/
+
+Sitemap: https://headz.international/sitemap.xml

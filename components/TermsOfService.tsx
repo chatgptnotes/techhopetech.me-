@@ -1,29 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useDocumentMeta } from '../utils/useDocumentMeta';
+import LegalNav from './LegalNav';
 
 const TermsOfService: React.FC = () => {
+  useDocumentMeta({
+    title: 'Terms of Service - HEADZ Hair Fixing App',
+    description:
+      'The terms that govern your use of HEADZ Hair Fixing App, including acceptable use, account responsibilities, and limitations of liability.',
+    path: '/terms',
+  });
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 p-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link
-            to="/"
-            className="text-2xl font-bold text-[#E1262D]"
-          >
-            HEADZ HAIR FIXING APP
-          </Link>
-          <Link
-            to="/"
-            className="px-4 py-2 text-gray-700 hover:text-[#E1262D] transition-colors"
-          >
-            ← Back to Home
-          </Link>
-        </div>
-      </nav>
+      <LegalNav />
 
       {/* Main Content */}
-      <div className="pt-24 pb-12 px-6">
+      <main id="main-content" tabIndex={-1} className="pt-28 pb-12 px-6">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold mb-8 text-[#E1262D]">
             Terms of Service
@@ -41,13 +34,12 @@ const TermsOfService: React.FC = () => {
 
             <section>
               <h2 className="text-2xl font-bold text-[#E1262D] mb-4">2. Description of Service</h2>
-              <p>HEADZ HAIR FIXING APP is an AI-powered virtual hairstyling platform that allows users to try on different hairstyles, colors, and looks using artificial intelligence technology. Our service includes:</p>
+              <p>HEADZ HAIR FIXING APP is an AI-powered virtual hairstyling platform that allows users to try on different hairstyles and looks using artificial intelligence technology. Our service includes:</p>
               <ul className="list-disc list-inside mt-4 space-y-2">
                 <li>Virtual hairstyle try-on using uploaded photos</li>
-                <li>AI-powered hair color simulation</li>
-                <li>Hairstyle recommendations based on face shape analysis</li>
-                <li>Gallery of hairstyle transformations</li>
-                <li>Social sharing capabilities</li>
+                <li>A library of preset hairstyles and AI-generated custom styles from text prompts</li>
+                <li>Personal gallery of your generated transformations</li>
+                <li>Downloadable images of your generated results after sign-in</li>
               </ul>
             </section>
 
@@ -56,7 +48,7 @@ const TermsOfService: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-xl font-semibold text-[#E1262D] mb-2">Account Security</h3>
-                  <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.</p>
+                  <p>You are responsible for keeping your linked Google account secure and for all activities that occur under your HEADZ account. We do not collect or store passwords; sign-in is handled by Google.</p>
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-[#E1262D] mb-2">Content Guidelines</h3>
@@ -130,21 +122,8 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-[#E1262D] mb-4">9. Subscription and Billing</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-semibold text-[#E1262D] mb-2">Free Tier</h3>
-                  <p>Our basic service includes limited transformations per month at no cost.</p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-[#E1262D] mb-2">Premium Features</h3>
-                  <p>Premium subscriptions provide unlimited transformations, advanced features, and priority processing. Billing is handled securely through trusted payment processors.</p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-[#E1262D] mb-2">Cancellation</h3>
-                  <p>You may cancel your subscription at any time. Premium features remain active until the end of your billing period.</p>
-                </div>
-              </div>
+              <h2 className="text-2xl font-bold text-[#E1262D] mb-4">9. Account and Sign-In</h2>
+              <p>HEADZ HAIR FIXING APP is currently free to use. Authentication is handled exclusively through Google Sign-In; you do not create or manage a password with us. Some features (such as downloading your generated image without a watermark) require sign-in.</p>
             </section>
 
             <section>
@@ -173,7 +152,7 @@ const TermsOfService: React.FC = () => {
             </section>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Footer */}
       <footer className="py-12 px-6 bg-white border-t border-gray-200">
@@ -183,9 +162,10 @@ const TermsOfService: React.FC = () => {
               HEADZ HAIR FIXING APP
             </div>
             <div className="flex gap-6 text-gray-500">
+              <Link to="/" className="hover:text-[#E1262D] transition-colors">Home</Link>
+              <Link to="/app" className="hover:text-[#E1262D] transition-colors">App</Link>
               <Link to="/privacy" className="hover:text-[#E1262D] transition-colors">Privacy</Link>
               <Link to="/terms" className="hover:text-[#E1262D] transition-colors">Terms</Link>
-              <a href="#" className="hover:text-[#E1262D] transition-colors">Contact</a>
             </div>
           </div>
           <div className="text-center text-gray-400 mt-8">

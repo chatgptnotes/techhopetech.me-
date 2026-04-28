@@ -60,11 +60,12 @@ const Uploader: React.FC<UploaderProps> = ({ onImageUpload }) => {
         {/* Upload Area */}
         <div className="bg-white border border-gray-200 shadow-lg rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
           <label
+            htmlFor="dropzone-file"
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            className={`relative flex flex-col items-center justify-center w-full h-64 sm:h-80 lg:h-96 border-2 border-dashed rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-500 transform hover:scale-105 ${
+            className={`relative flex flex-col items-center justify-center w-full h-64 sm:h-80 lg:h-96 border-2 border-dashed rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-500 transform hover:scale-105 focus-within:outline-none focus-within:ring-4 focus-within:ring-[#E1262D]/30 focus-within:border-[#E1262D] ${
               isDragging
                 ? 'border-[#E1262D] bg-[#E1262D]/5 scale-105 shadow-2xl shadow-[#E1262D]/25'
                 : 'border-gray-300 bg-gray-50 hover:border-[#E1262D] hover:bg-[#E1262D]/5'
@@ -95,7 +96,15 @@ const Uploader: React.FC<UploaderProps> = ({ onImageUpload }) => {
                 </div>
               </div>
             </div>
-            <input id="dropzone-file" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleFileChange} />
+            <input
+              id="dropzone-file"
+              name="dropzone-file"
+              type="file"
+              accept="image/png, image/jpeg, image/webp"
+              onChange={handleFileChange}
+              className="sr-only"
+              aria-label="Upload your photo (PNG, JPG, or WEBP, max 10MB)"
+            />
           </label>
         </div>
 

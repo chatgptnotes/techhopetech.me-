@@ -6,6 +6,8 @@ import LandingPage from './components/LandingPage';
 import HairstyleApp from './components/HairstyleApp';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
+import NotFound from './components/NotFound';
+import SkipToContent from './components/SkipToContent';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import AdminRoute from './components/AdminRoute';
@@ -18,6 +20,7 @@ const App: React.FC = () => {
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
       <AuthProvider>
         <Router>
+        <SkipToContent />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/app" element={<HairstyleApp />} />
@@ -45,6 +48,9 @@ const App: React.FC = () => {
               </SuperAdminRoute>
             }
           />
+
+          {/* Catch-all 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
         </Router>
       </AuthProvider>

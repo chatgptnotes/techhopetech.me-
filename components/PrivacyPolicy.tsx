@@ -1,29 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useDocumentMeta } from '../utils/useDocumentMeta';
+import LegalNav from './LegalNav';
 
 const PrivacyPolicy: React.FC = () => {
+  useDocumentMeta({
+    title: 'Privacy Policy - HEADZ Hair Fixing App',
+    description:
+      'How HEADZ collects, uses, and protects your personal data, including details about Google Sign-In and how we handle uploaded photos.',
+    path: '/privacy',
+  });
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 p-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link
-            to="/"
-            className="text-2xl font-bold text-[#E1262D]"
-          >
-            HEADZ HAIR FIXING APP
-          </Link>
-          <Link
-            to="/"
-            className="px-4 py-2 text-gray-700 hover:text-[#E1262D] transition-colors"
-          >
-            ← Back to Home
-          </Link>
-        </div>
-      </nav>
+      <LegalNav />
 
       {/* Main Content */}
-      <div className="pt-24 pb-12 px-6">
+      <main id="main-content" tabIndex={-1} className="pt-28 pb-12 px-6">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold mb-8 text-[#E1262D]">
             Privacy Policy
@@ -43,7 +36,7 @@ const PrivacyPolicy: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-[#E1262D] mb-2">Account Information</h3>
-                  <p>When you create an account, we collect your email address, username, and encrypted password. This information is used for account management and authentication purposes.</p>
+                  <p>We use Google Sign-In as our only authentication method. When you sign in, we receive your name, email address, and Google account profile picture from Google. We do not collect or store passwords. You may also voluntarily provide your phone number and location during sign-up to help us improve your experience.</p>
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-[#E1262D] mb-2">Usage Data</h3>
@@ -121,7 +114,7 @@ const PrivacyPolicy: React.FC = () => {
             </section>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Footer */}
       <footer className="py-12 px-6 bg-white border-t border-gray-200">
@@ -131,9 +124,10 @@ const PrivacyPolicy: React.FC = () => {
               HEADZ HAIR FIXING APP
             </div>
             <div className="flex gap-6 text-gray-500">
+              <Link to="/" className="hover:text-[#E1262D] transition-colors">Home</Link>
+              <Link to="/app" className="hover:text-[#E1262D] transition-colors">App</Link>
               <Link to="/privacy" className="hover:text-[#E1262D] transition-colors">Privacy</Link>
               <Link to="/terms" className="hover:text-[#E1262D] transition-colors">Terms</Link>
-              <a href="#" className="hover:text-[#E1262D] transition-colors">Contact</a>
             </div>
           </div>
           <div className="text-center text-gray-400 mt-8">

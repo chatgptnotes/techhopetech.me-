@@ -14,8 +14,29 @@ import { editImageWithGemini, preloadImageData } from '../services/geminiService
 import { uploadImage, saveGeneration, dataURLtoFile, trackDownload, trackShare, trackGeneration, trackCustomPrompt } from '../services/supabaseService';
 import { useAuth } from '../contexts/AuthContext';
 import { addStylishWatermark } from '../utils/watermark';
+import { useDocumentMeta } from '../utils/useDocumentMeta';
 
 const HairstyleApp: React.FC = () => {
+  useDocumentMeta({
+    title: 'Try On Hairstyles with AI - HEADZ Hair Fixing App',
+    description:
+      'Upload a photo, pick a hairstyle, and instantly preview your new look with AI. Generate, compare, and download virtual hairstyles in seconds.',
+    path: '/app',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'HEADZ Hair Fixing App',
+      url: 'https://headz.international/app',
+      applicationCategory: 'LifestyleApplication',
+      operatingSystem: 'Any',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+    },
+  });
+
   const {
     user,
     isFreeUser,
@@ -543,7 +564,7 @@ REQUIREMENTS:
       <AuthWrapper>
         <div className="min-h-screen flex flex-col">
             <Header />
-            <main className="flex-grow">
+            <main id="main-content" tabIndex={-1} className="flex-grow">
                 <Uploader onImageUpload={handleImageUpload} />
             </main>
         </div>
@@ -569,7 +590,7 @@ REQUIREMENTS:
       <div className="min-h-screen flex flex-col bg-white text-gray-900">
         <Header />
         <TabSelector activeTab={activeTab} onTabChange={handleTabChange} isLoggedIn={!!user} />
-      <div className="flex-grow flex flex-col overflow-y-auto">
+      <div id="main-content" tabIndex={-1} className="flex-grow flex flex-col overflow-y-auto">
         {activeTab === 'virtual-mirror' ? (
           <VirtualMirror
             originalImage={userImageUrl}

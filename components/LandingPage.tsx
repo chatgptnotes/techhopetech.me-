@@ -2,10 +2,62 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
+import { useDocumentMeta } from '../utils/useDocumentMeta';
+
+const FAQ_ITEMS: ReadonlyArray<{ q: string; a: string }> = [
+  {
+    q: 'Is HEADZ Hair Fixing App free to use?',
+    a: 'Yes. You can upload a photo and try on hundreds of hairstyles for free. A Google sign-in is only required if you want to download your generated image without a watermark.',
+  },
+  {
+    q: 'Do I need to create an account or password?',
+    a: 'No password is needed. We use Google Sign-In for authentication, so you log in with your existing Google account.',
+  },
+  {
+    q: 'What happens to the photos I upload?',
+    a: 'Photos are processed to generate your virtual hairstyle and are deleted automatically within 24 hours. We do not sell or share your photos with third parties.',
+  },
+  {
+    q: 'How accurate are the AI hairstyle previews?',
+    a: 'Results are designed to be realistic previews, but actual styling will depend on your hair type, length, and texture. We recommend speaking with a professional stylist before any major change.',
+  },
+  {
+    q: 'What kind of photo should I upload?',
+    a: 'A clear, front-facing photo with good lighting works best. PNG, JPG, or WEBP files up to 10MB are supported.',
+  },
+];
 
 const LandingPage: React.FC = () => {
+  useDocumentMeta({
+    title: 'HEADZ Hair Fixing App - Try Any Hairstyle Before You Cut',
+    description:
+      'Upload your photo and see yourself with hundreds of AI-generated hairstyles instantly. Try free; sign in with Google to download your final look.',
+    path: '/',
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: 'HEADZ Hair Fixing App',
+        url: 'https://headz.international/',
+        description:
+          'AI-powered virtual hairstyle try-on. Upload your photo and instantly see yourself with new hairstyles.',
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: FAQ_ITEMS.map(({ q, a }) => ({
+          '@type': 'Question',
+          name: q,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: a,
+          },
+        })),
+      },
+    ],
+  });
+
   const { user, signOut, oauthAccessToken } = useAuth();
-  const [videoPlaying, setVideoPlaying] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
 
@@ -28,10 +80,30 @@ const LandingPage: React.FC = () => {
   };
 
   // Before/After image pairs - user will add their images to /public/landing/
-  const transformations = [
-    { before: '/landing/Before1.JPG', after: '/landing/After1.JPG' },
-    { before: '/landing/Before2.jpg', after: '/landing/After2.JPG' },
-    { before: '/landing/Before3.JPG', after: '/landing/After3.JPG' },
+  const transformations: Array<{
+    before: string;
+    after: string;
+    beforeAlt: string;
+    afterAlt: string;
+  }> = [
+    {
+      before: '/landing/Before1.JPG',
+      after: '/landing/After1.JPG',
+      beforeAlt: 'Customer photo before HEADZ hair fixing — thinning hair on the crown',
+      afterAlt: 'Same customer after HEADZ hair fixing — full natural-looking hairline',
+    },
+    {
+      before: '/landing/Before2.jpg',
+      after: '/landing/After2.JPG',
+      beforeAlt: 'Customer photo before HEADZ hair fixing — receding front hairline',
+      afterAlt: 'Same customer after HEADZ hair fixing — restored front hairline with dense styled hair',
+    },
+    {
+      before: '/landing/Before3.JPG',
+      after: '/landing/After3.JPG',
+      beforeAlt: 'Customer photo before HEADZ hair fixing — bald top with patchy sides',
+      afterAlt: 'Same customer after HEADZ hair fixing — full styled hairstyle covering the crown',
+    },
   ];
 
   return (
@@ -40,7 +112,7 @@ const LandingPage: React.FC = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2 sm:py-4 flex justify-between items-center">
           <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-            <img src="/logo.png" alt="HEADZ" className="h-10 sm:h-14 object-contain flex-shrink-0" />
+            <img src="/logo.png" alt="" aria-hidden="true" decoding="async" className="h-10 sm:h-14 object-contain flex-shrink-0" />
             <span className="hidden sm:inline text-xl font-bold text-[#E1262D]">
               HEADZ HAIR FIXING APP
             </span>
@@ -86,6 +158,7 @@ const LandingPage: React.FC = () => {
         </div>
       </nav>
 
+      <main id="main-content" tabIndex={-1}>
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
@@ -97,7 +170,7 @@ const LandingPage: React.FC = () => {
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
             Upload your photo and see yourself with hundreds of hairstyles instantly.
-            AI-powered. Free to try.
+            AI-powered. Free to try — sign in with Google to download your result.
           </p>
           <Link
             to="/app"
@@ -105,6 +178,26 @@ const LandingPage: React.FC = () => {
           >
             Try It Free
           </Link>
+
+          {/* Social proof / trust signals */}
+          <ul className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm text-gray-500">
+            <li className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#E1262D]" aria-hidden="true" />
+              Free to try, no credit card
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#E1262D]" aria-hidden="true" />
+              Secure Google Sign-In
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#E1262D]" aria-hidden="true" />
+              Photos auto-deleted within 24 hours
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#E1262D]" aria-hidden="true" />
+              Hundreds of preset hairstyles
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -125,7 +218,7 @@ const LandingPage: React.FC = () => {
                   {/* Before Image */}
                   <img
                     src={item.before}
-                    alt={`Before transformation ${index + 1}`}
+                    alt={item.beforeAlt}
                     loading="lazy"
                     className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0 ${activeIndex === index ? 'opacity-0' : ''}`}
                     onError={(e) => {
@@ -141,7 +234,7 @@ const LandingPage: React.FC = () => {
                   {/* After Image */}
                   <img
                     src={item.after}
-                    alt={`After transformation ${index + 1}`}
+                    alt={item.afterAlt}
                     loading="lazy"
                     className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-100 ${activeIndex === index ? 'opacity-100' : 'opacity-0'}`}
                     onError={(e) => {
@@ -166,54 +259,93 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Video Section */}
-      <section className="py-20 px-4 sm:px-6 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12 text-gray-900">
+      {/* How It Works - 3-step explainer */}
+      <section className="py-20 px-4 sm:px-6 bg-white" aria-labelledby="how-it-works-heading">
+        <div className="max-w-5xl mx-auto">
+          <h2 id="how-it-works-heading" className="text-2xl sm:text-3xl font-bold text-center mb-3 text-gray-900">
             See How It Works
           </h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            From photo to a new look in under a minute. No app to install.
+          </p>
 
-          <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100 border border-gray-200">
-            {!videoPlaying ? (
-              <>
-                {/* Video Thumbnail / Placeholder */}
-                <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-                  <video
-                    src="/landing/demo.mp4"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    muted
-                    playsInline
-                    onError={(e) => {
-                      const target = e.target as HTMLVideoElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                  <button
-                    onClick={() => setVideoPlaying(true)}
-                    className="relative z-10 w-20 h-20 bg-[#E1262D] rounded-full flex items-center justify-center hover:scale-110 transition-transform"
-                  >
-                    <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </button>
+          <ol className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 list-none">
+            {[
+              {
+                step: '1',
+                title: 'Upload your photo',
+                desc: 'Drop in a clear front-facing photo, or take one with your camera.',
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0L8 8m4-4l4 4" />
+                ),
+              },
+              {
+                step: '2',
+                title: 'Choose a hairstyle',
+                desc: 'Pick from hundreds of styles, or describe your own with AI prompts.',
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                ),
+              },
+              {
+                step: '3',
+                title: 'Download your look',
+                desc: 'Preview instantly, then sign in with Google to download a clean copy.',
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+                ),
+              },
+            ].map((item) => (
+              <li
+                key={item.step}
+                className="relative bg-gray-50 border border-gray-200 rounded-2xl p-6 sm:p-8 text-center"
+              >
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#E1262D] text-white text-lg font-bold flex items-center justify-center shadow-md">
+                  {item.step}
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-gray-400 text-center">
-                    <div className="text-sm">Add demo.mp4 to /public/landing/</div>
-                  </div>
+                <div className="mx-auto mt-4 mb-4 w-14 h-14 rounded-2xl bg-white border border-gray-200 flex items-center justify-center text-[#E1262D]">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    {item.icon}
+                  </svg>
                 </div>
-              </>
-            ) : (
-              <video
-                src="/landing/demo.mp4"
-                className="w-full h-full object-cover"
-                controls
-                autoPlay
-                onError={() => {
-                  setVideoPlaying(false);
-                }}
-              />
-            )}
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{item.desc}</p>
+              </li>
+            ))}
+          </ol>
+
+          <div className="text-center mt-12">
+            <Link
+              to="/app"
+              className="inline-block px-8 py-3 bg-[#E1262D] hover:bg-[#B91C1C] rounded-full text-base font-semibold text-white transition-all duration-300 transform hover:scale-105"
+            >
+              Try It Free
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20 px-4 sm:px-6 bg-white" aria-labelledby="faq-heading">
+        <div className="max-w-3xl mx-auto">
+          <h2 id="faq-heading" className="text-2xl sm:text-3xl font-bold text-center mb-3 text-gray-900">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-center text-gray-600 mb-10">
+            Quick answers about how HEADZ works, sign-in, and your photos.
+          </p>
+          <div className="divide-y divide-gray-200 border border-gray-200 rounded-2xl bg-white">
+            {FAQ_ITEMS.map(({ q, a }) => (
+              <details key={q} className="group p-5 sm:p-6">
+                <summary className="flex justify-between items-center cursor-pointer list-none gap-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">{q}</h3>
+                  <span className="text-[#E1262D] text-2xl leading-none transition-transform group-open:rotate-45" aria-hidden="true">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm sm:text-base text-gray-600 leading-relaxed">{a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
@@ -225,7 +357,7 @@ const LandingPage: React.FC = () => {
             Ready to Find Your Perfect Look?
           </h2>
           <p className="text-gray-600 mb-8">
-            No signup required. Just upload a photo and start exploring.
+            Try it free. A quick Google sign-in is only needed to download your final result.
           </p>
           <Link
             to="/app"
@@ -236,11 +368,13 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      </main>
+
       {/* Footer */}
       <footer className="py-8 px-4 sm:px-6 border-t border-gray-200 bg-white">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="HEADZ" className="h-10 sm:h-14 object-contain" />
+            <img src="/logo.png" alt="" aria-hidden="true" loading="lazy" decoding="async" className="h-10 sm:h-14 object-contain" />
             <span className="text-sm sm:text-lg font-bold text-[#E1262D]">
               HEADZ HAIR FIXING APP
             </span>
@@ -248,9 +382,6 @@ const LandingPage: React.FC = () => {
           <div className="flex gap-6 text-sm text-gray-500">
             <Link to="/privacy" className="hover:text-gray-900 transition-colors">Privacy</Link>
             <Link to="/terms" className="hover:text-gray-900 transition-colors">Terms</Link>
-          </div>
-          <div className="text-sm text-gray-400">
-            v1.3 - Dec 2025
           </div>
         </div>
       </footer>
