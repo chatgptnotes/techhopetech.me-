@@ -238,5 +238,12 @@ create policy "dev-attachments anon read"   on storage.objects for select to ano
 create policy "dev-attachments anon insert" on storage.objects for insert to anon with check (bucket_id = 'dev-attachments');
 create policy "dev-attachments anon delete" on storage.objects for delete to anon using (bucket_id = 'dev-attachments');
 
+-- ── Stage 5: per-project PRT (Project Requirements Tracker) PDF ───────────
+alter table dev_projects add column if not exists prt_url          text;
+alter table dev_projects add column if not exists prt_name         text;
+alter table dev_projects add column if not exists prt_size         bigint;
+alter table dev_projects add column if not exists prt_storage_path text;
+alter table dev_projects add column if not exists prt_uploaded_at  timestamptz;
+
 -- Tell PostgREST to reload its schema cache so the new columns are visible immediately.
 notify pgrst, 'reload schema';

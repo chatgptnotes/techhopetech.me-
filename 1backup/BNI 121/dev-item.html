@@ -277,6 +277,7 @@
     renderGitRefs();
     renderDependencies();
     renderAttachments();
+    document.getElementById('fileInput').accept = _item.type === 'Epic' ? 'application/pdf,.pdf' : '';
     renderWorklog();
 
     document.getElementById('loading').classList.add('hidden');
@@ -429,7 +430,12 @@
 
   async function uploadFiles(files) {
     const status = document.getElementById('upStatus');
+    const epicOnlyPdf = _item?.type === 'Epic';
     for (const f of files) {
+      if (epicOnlyPdf && f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) {
+        status.textContent = `${f.name} skipped — Epic attachments must be PDF.`;
+        continue;
+      }
       if (f.size > 25 * 1024 * 1024) { status.textContent = `${f.name} too large (>25 MB), skipped.`; continue; }
       const safe = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const path = `${_id}/${Date.now()}-${safe}`;

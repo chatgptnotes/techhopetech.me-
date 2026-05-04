@@ -60,6 +60,18 @@
       </div>
     </header>
 
+    <!-- Per-project PRT (Project Requirements Tracker) PDF -->
+    <div id="prtBar" class="hidden mb-4 flex items-center gap-3 flex-wrap bg-white border border-slate-200 rounded-lg px-4 py-2.5">
+      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">PRT</span>
+      <div id="prtStatus" class="text-sm text-slate-600 flex-1 min-w-[120px]">No PRT uploaded</div>
+      <a id="prtViewLink" href="#" target="_blank" class="hidden text-sm font-semibold text-blue-700 hover:underline">View</a>
+      <label id="prtUploadBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer">
+        <span id="prtUploadLabel">Upload PRT</span>
+        <input type="file" id="prtFileInput" accept="application/pdf,.pdf" class="hidden" onchange="onPrtPick(event)" />
+      </label>
+      <button id="prtDeleteBtn" onclick="deletePrt()" class="hidden text-slate-400 hover:text-red-600 text-sm" title="Remove PRT">×</button>
+    </div>
+
     <div id="loadingState" class="text-center py-12 text-slate-400">Loading board…</div>
     <div id="board" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 hidden"></div>
   </main>
@@ -156,13 +168,100 @@
 
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('board').classList.remove('hidden');
+    renderPrt();
     render();
   }
 
   function onProjectChange() {
     _projectId = document.getElementById('projectSel').value;
     localStorage.setItem('dev_project', _projectId);
+    renderPrt();
     render();
+  }
+
+  // ── PRT (per-project Project Requirements Tracker PDF) ───────────────────
+  function fmtBytes(n) {
+    if (n == null) return '';
+    if (n < 1024) return n + ' B';
+    if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+    return (n/1024/1024).toFixed(1) + ' MB';
+  }
+  function currentProject() { return _projects.find(p => p.id === _projectId); }
+  function renderPrt() {
+    const p = currentProject();
+    const bar = document.getElementById('prtBar');
+    if (!p) { bar.classList.add('hidden'); return; }
+    bar.classList.remove('hidden');
+    const status = document.getElementById('prtStatus');
+    const view   = document.getElementById('prtViewLink');
+    const del    = document.getElementById('prtDeleteBtn');
+    const label  = document.getElementById('prtUploadLabel');
+    if (p.prt_url) {
+      status.innerHTML = `<span class="font-semibold text-slate-800">${escapeHtml(p.prt_name || 'PRT.pdf')}</span> <span class="text-xs text-slate-400">${fmtBytes(p.prt_size)}${p.prt_uploaded_at ? ' · ' + new Date(p.prt_uploaded_at).toLocaleDateString() : ''}</span>`;
+      view.href = p.prt_url;
+      view.classList.remove('hidden');
+      del.classList.remove('hidden');
+      label.textContent = 'Replace';
+    } else {
+      status.textContent = 'No PRT uploaded';
+      view.classList.add('hidden');
+      del.classList.add('hidden');
+      label.textContent = 'Upload PRT';
+    }
+  }
+  async function onPrtPick(e) {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) {
+      window.bniToast?.('PRT must be a PDF file.', 'error');
+      return;
+    }
+    if (f.size > 25 * 1024 * 1024) {
+      window.bniToast?.('PRT too large (max 25 MB).', 'error');
+      return;
+    }
+    const p = currentProject();
+    if (!p) return;
+    const status = document.getElementById('prtStatus');
+    status.textContent = `Uploading ${f.name}…`;
+
+    if (p.prt_storage_path) {
+      await window.sb.storage.from('dev-attachments').remove([p.prt_storage_path]);
+    }
+    const safe = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `projects/${p.id}/prt-${Date.now()}-${safe}`;
+    const { error } = await window.sb.storage.from('dev-attachments').upload(path, f, { upsert: false, cacheControl: '31536000', contentType: 'application/pdf' });
+    if (error) { window.bniToast?.('Upload failed: ' + error.message, 'error'); renderPrt(); return; }
+    const { data: pub } = window.sb.storage.from('dev-attachments').getPublicUrl(path);
+
+    const update = {
+      prt_url: pub.publicUrl, prt_name: f.name, prt_size: f.size,
+      prt_storage_path: path, prt_uploaded_at: new Date().toISOString(),
+    };
+    const { error: dbErr } = await window.sb.from('dev_projects').update(update).eq('id', p.id);
+    if (dbErr) {
+      await window.sb.storage.from('dev-attachments').remove([path]);
+      window.bniToast?.('Save failed: ' + dbErr.message, 'error');
+      renderPrt(); return;
+    }
+    Object.assign(p, update);
+    window.bniToast?.('PRT uploaded.', 'success');
+    renderPrt();
+  }
+  async function deletePrt() {
+    const p = currentProject();
+    if (!p?.prt_url) return;
+    if (!confirm('Remove the PRT for this project?')) return;
+    if (p.prt_storage_path) {
+      await window.sb.storage.from('dev-attachments').remove([p.prt_storage_path]);
+    }
+    const { error } = await window.sb.from('dev_projects').update({
+      prt_url: null, prt_name: null, prt_size: null, prt_storage_path: null, prt_uploaded_at: null,
+    }).eq('id', p.id);
+    if (error) { window.bniToast?.('Delete failed: ' + error.message, 'error'); return; }
+    p.prt_url = p.prt_name = p.prt_size = p.prt_storage_path = p.prt_uploaded_at = null;
+    renderPrt();
   }
 
   function devName(id) {
