@@ -252,6 +252,22 @@ let selectedTime = null;
 let bookingData  = {};
 let _bookings = {};
 
+// Host whose calendar receives this 121. Looked up at page load from bni_members.
+const HOST_EMAIL = 'cmd@hopehospital.com';
+let _hostMemberId = null;
+
+async function loadHostMemberId() {
+  try {
+    const { data } = await window.sb
+      .from('bni_members')
+      .select('id')
+      .eq('email', HOST_EMAIL)
+      .eq('active', true)
+      .limit(1);
+    if (data && data[0]) _hostMemberId = data[0].id;
+  } catch (_) { /* sync is best-effort; INSERT still proceeds */ }
+}
+
 const urlP = new URLSearchParams(location.search);
 if (urlP.get('name')) setTimeout(()=>{ const el=document.getElementById('b_name'); if(el) el.value=urlP.get('name'); },100);
 if (urlP.get('phone')) setTimeout(()=>{ const el=document.getElementById('b_phone'); if(el) el.value=urlP.get('phone'); },100);
@@ -448,12 +464,12 @@ async function submitBooking(e) {
       .eq('id', contactId);
     if (upErr) console.error('Contact update failed:', upErr);
   } else if (bookingData.name) {
-    contactId = 'c' + Date.now();
+    const generatedId = 'c' + Date.now();
     const { first, last } = window.splitName(bookingData.name);
     const { error: insErr } = await window.sb
       .from('bni_contacts')
       .insert({
-        id: contactId,
+        id: generatedId,
         first: first || null,
         last:  last || null,
         company: bookingData.company || null,
@@ -463,30 +479,47 @@ async function submitBooking(e) {
         status: 'Meeting Scheduled',
         notes: `Booked via public scheduler. Goal: ${bookingData.goal}. BNI: ${bookingData.bni}`,
       });
+    // Only attach the contact_id if the insert actually succeeded. Otherwise the
+    // appointment's FK to bni_contacts would reference a non-existent row.
     if (insErr) console.error('Contact insert failed:', insErr);
+    else        contactId = generatedId;
   }
+
+  const apptPayload = {
+    id: apptId,
+    contact_id: contactId || null,
+    contact_name: bookingData.name,
+    company: bookingData.company || null,
+    date: selectedDate,
+    time: selectedTime,
+    medium: 'Zoom',
+    phone: bookingData.phone || null,
+    email: bookingData.email || null,
+    industry: bookingData.industry || null,
+    bni_status: bookingData.bni || null,
+    goal: bookingData.goal || null,
+  };
+  // host_member_id column only exists after the 20260511000000_gcal_sync migration.
+  // Include it only if we successfully resolved a host (otherwise Supabase would 400
+  // with "column does not exist" on databases where the migration hasn't run yet).
+  if (_hostMemberId) apptPayload.host_member_id = _hostMemberId;
 
   const { error: apptErr } = await window.sb
     .from('bni_appointments')
-    .insert({
-      id: apptId,
-      contact_id: contactId || null,
-      contact_name: bookingData.name,
-      company: bookingData.company || null,
-      date: selectedDate,
-      time: selectedTime,
-      medium: 'Zoom',
-      phone: bookingData.phone || null,
-      email: bookingData.email || null,
-      industry: bookingData.industry || null,
-      bni_status: bookingData.bni || null,
-      goal: bookingData.goal || null,
-    });
+    .insert(apptPayload);
 
   if (apptErr) {
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = ' Confirm Booking'; }
     window.bniToast('Booking failed: ' + apptErr.message, 'error');
     return;
+  }
+
+  // Instant Google Calendar sync — fire-and-forget. If this fails for any reason
+  // (function down, transient error), the cron worker will catch the row within 5 min.
+  if (_hostMemberId) {
+    window.sb.functions
+      .invoke('sync-gcal-event', { body: { appointment_id: apptId } })
+      .catch(() => { /* silent — cron is the safety net */ });
   }
 
   // Audit trail — writes a row Dr. Murali can see at a glance in Supabase
@@ -545,6 +578,7 @@ loadBookings().then(b => {
   _bookings = b;
   if (selectedDate) renderSlots();
 });
+loadHostMemberId();
 
 // Populate Dr. Murali's real contact on the confirmation card from bni_settings
 (async function populateMuraliContact() {
