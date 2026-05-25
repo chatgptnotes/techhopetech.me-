@@ -14,6 +14,11 @@
     .stack-cell { display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:white; }
     .meter { background:#f1f5f9; border-radius:999px; height:8px; overflow:hidden; }
     .meter > div { height:100%; transition:width 0.3s; }
+    .drag-handle { cursor:grab; user-select:none; color:#cbd5e1; font-size:16px; line-height:1; padding:0 2px; }
+    .drag-handle:hover { color:#94a3b8; }
+    .drag-member { transition:background 0.1s; border-radius:6px; }
+    .drag-over { background:rgba(99,102,241,0.08) !important; outline:2px dashed #818cf8; outline-offset:-2px; }
+    .drag-member.dragging { opacity:0.4; }
   </style>
 </head>
 <body>
@@ -259,20 +264,80 @@
     window.open('https://wa.me/' + num, '_blank');
   }
 
+  let _dragDevId = null, _dragTeam = null;
+
+  function getOrderData() { try { return JSON.parse(localStorage.getItem('bni_order_v1')||'{}'); } catch { return {}; } }
+
+  function dragStart(e, devId, team) {
+    _dragDevId = devId; _dragTeam = team;
+    e.dataTransfer.effectAllowed = 'move';
+    e.currentTarget.classList.add('dragging');
+  }
+
+  function dragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+  }
+
+  function dragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    e.currentTarget.classList.add('drag-over');
+  }
+
+  function dragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+
+  function dragDrop(e, targetDevId, team) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    if (!_dragDevId || _dragDevId === targetDevId || _dragTeam !== team) { _dragDevId = null; return; }
+    const assignments = getTeamData();
+    const members = _devs.filter(d => assignments[d.id] === team);
+    const orders = getOrderData();
+    const cur = orders[team] || members.map(d => d.id);
+    const from = cur.indexOf(_dragDevId);
+    const to = cur.indexOf(targetDevId);
+    if (from === -1 || to === -1) { _dragDevId = null; return; }
+    cur.splice(from, 1);
+    cur.splice(to, 0, _dragDevId);
+    orders[team] = cur;
+    localStorage.setItem('bni_order_v1', JSON.stringify(orders));
+    _dragDevId = null; _dragTeam = null;
+    renderTeams();
+  }
+
   function renderTeams() {
     const assignments = getTeamData();
     const contacts    = getContactData();
     const tasks       = getTaskData();
 
+    const orders = getOrderData();
     const html = TEAMS.map(team => {
-      const members = _devs.filter(d => assignments[d.id] === team);
-      const tData   = tasks[team] || {};
+      const teamOrder = orders[team] || [];
+      const members = _devs
+        .filter(d => assignments[d.id] === team)
+        .sort((a, b) => {
+          const ai = teamOrder.indexOf(a.id), bi = teamOrder.indexOf(b.id);
+          if (ai === -1 && bi === -1) return 0;
+          if (ai === -1) return 1; if (bi === -1) return -1;
+          return ai - bi;
+        });
+      const tData = tasks[team] || {};
 
-      const memberRows = members.length ? members.map(d => {
+      const memberRows = members.length ? members.map((d, idx) => {
         const c = contacts[d.id] || {};
         return `
-          <div class="flex flex-wrap items-center gap-2 py-2 border-b border-slate-100 last:border-0">
-            <span class="font-semibold text-sm text-slate-800 w-32 shrink-0">${escapeHtml(d.name)}</span>
+          <div class="drag-member flex flex-wrap items-center gap-2 py-2 border-b border-slate-100 last:border-0"
+            draggable="true"
+            ondragstart="dragStart(event,'${d.id}','${team}')"
+            ondragend="dragEnd(event)"
+            ondragover="dragOver(event)"
+            ondragleave="dragLeave(event)"
+            ondrop="dragDrop(event,'${d.id}','${team}')">
+            <span class="drag-handle shrink-0" title="Drag to reorder seniority">&#8942;&#8942;</span>
+            <span class="text-[10px] font-bold text-slate-400 w-4 shrink-0">${idx + 1}</span>
+            <span class="font-semibold text-sm text-slate-800 w-28 shrink-0">${escapeHtml(d.name)}</span>
             <input type="tel" placeholder="Mobile / WhatsApp no."
               value="${escapeHtml(c.mobile||'')}"
               onchange="saveContact('${d.id}','mobile',this.value)"
