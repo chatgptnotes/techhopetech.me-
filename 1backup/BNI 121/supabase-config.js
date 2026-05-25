@@ -1,5 +1,5 @@
-const SUPABASE_URL = 'https://bvaefzcsgtgqwftczixb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2YWVmemNzZ3RncXdmdGN6aXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2ODU0ODIsImV4cCI6MjA4NzI2MTQ4Mn0.Q-AxSMpO6lKogtR_m0j2CvpzdRiDpZiKebR8XCPq1Nc';
+const SUPABASE_URL = 'https://hopetech.me';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoid2ViX2Fub24iLCJpc3MiOiJob3BldGVjaC12cHMifQ.QpnafqwaBL6CZpKkBacpCz8A3nxTk_EORJvE2XI54Yw';
 
 window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
