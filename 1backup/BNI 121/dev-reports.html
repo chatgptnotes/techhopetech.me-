@@ -101,6 +101,7 @@
       window.sb.from('dev_work_items').select('*'),
     ]);
     _projects = ps || []; _items = items || []; _devs = window.BNI_DEVS || [];
+    await loadTeamConfig();
     _projectId = localStorage.getItem('dev_project') || (_projects[0] && _projects[0].id) || null;
     document.getElementById('projectSel').innerHTML = _projects.map(p => `<option value="${p.id}"${p.id===_projectId?' selected':''}>${escapeHtml(p.name)}</option>`).join('');
     render();
@@ -231,15 +232,24 @@
   const TEAM_BG     = { A:'#eff6ff', B:'#f0fdf4', C:'#fffbeb', D:'#f5f3ff' };
   const TEAM_BORDER = { A:'#bfdbfe', B:'#bbf7d0', C:'#fde68a', D:'#ddd6fe' };
 
-  function getTeamData()    { try { return JSON.parse(localStorage.getItem('bni_teams_v1')   ||'{}'); } catch { return {}; } }
-  function getContactData() { try { return JSON.parse(localStorage.getItem('bni_contacts_v1')||'{}'); } catch { return {}; } }
-  function getTaskData()    { try { return JSON.parse(localStorage.getItem('bni_teamtasks_v1')||'{}'); } catch { return {}; } }
+  let _teamConfig = {};  // loaded from dev_team_config table
 
-  function assignTeam(devId, team) {
-    const d = getTeamData();
-    if (team) d[devId] = team; else delete d[devId];
-    localStorage.setItem('bni_teams_v1', JSON.stringify(d));
-    render(); // re-render table dropdowns + team cards
+  async function loadTeamConfig() {
+    const { data } = await window.sb.from('dev_team_config').select('*');
+    if (data) data.forEach(r => { _teamConfig[r.team] = r; });
+  }
+
+  function getTeamData() {
+    return _devs.reduce((acc, d) => { if (d.team) acc[d.id] = d.team; return acc; }, {});
+  }
+  function getContactData() { try { return JSON.parse(localStorage.getItem('bni_contacts_v1')||'{}'); } catch { return {}; } }
+  function getTaskData()    { return _teamConfig; }
+
+  async function assignTeam(devId, team) {
+    await window.sb.from('developers').update({ team: team || null }).eq('id', devId);
+    const dev = _devs.find(d => d.id === devId);
+    if (dev) dev.team = team || null;
+    render();
   }
 
   function saveContact(devId, field, value) {
@@ -249,11 +259,10 @@
     localStorage.setItem('bni_contacts_v1', JSON.stringify(d));
   }
 
-  function saveTask(team, field, value) {
-    const d = getTaskData();
-    if (!d[team]) d[team] = {};
-    d[team][field] = value;
-    localStorage.setItem('bni_teamtasks_v1', JSON.stringify(d));
+  async function saveTask(team, field, value) {
+    if (!_teamConfig[team]) _teamConfig[team] = { team };
+    _teamConfig[team][field] = value;
+    await window.sb.from('dev_team_config').update({ [field]: value }).eq('team', team);
   }
 
   function openWhatsApp(devId) {
@@ -310,7 +319,7 @@
   function renderTeams() {
     const assignments = getTeamData();
     const contacts    = getContactData();
-    const tasks       = getTaskData();
+    const tasks       = _teamConfig;
 
     const orders = getOrderData();
     const html = TEAMS.map(team => {
