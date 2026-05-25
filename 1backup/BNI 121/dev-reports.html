@@ -44,11 +44,20 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-xs uppercase tracking-wider font-bold text-slate-500 border-b">
-            <th class="pb-2">Developer</th><th class="pb-2">Open</th><th class="pb-2">In Progress</th><th class="pb-2">Done (window)</th><th class="pb-2">Points (open)</th><th class="pb-2">Distribution</th>
+            <th class="pb-2">Developer</th><th class="pb-2">Open</th><th class="pb-2">In Progress</th><th class="pb-2">Done (window)</th><th class="pb-2">Points (open)</th><th class="pb-2">Distribution</th><th class="pb-2">Team</th>
           </tr>
         </thead>
         <tbody id="devTable"></tbody>
       </table>
+    </div>
+
+    <!-- Team Sections -->
+    <div class="glass rounded-2xl p-5 mb-5">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h2 class="text-lg font-bold text-slate-900">Team Sections</h2>
+        <span class="text-xs text-slate-400">Assign developers using the Team column above, then fill in contact details below.</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4" id="teamGrid"></div>
     </div>
 
     <!-- Type & priority breakdown -->
@@ -138,16 +147,28 @@
     }).filter(r => r.total > 0)
       .sort((a,b) => b.myOpen.length - a.myOpen.length);
 
+    const _assignments = getTeamData();
     document.getElementById('devTable').innerHTML = devRows.length
-      ? devRows.map(r => `<tr class="border-b border-slate-100">
-          <td class="py-2 pr-3 font-semibold text-slate-800">${escapeHtml(r.d.name)}</td>
-          <td class="py-2 pr-3">${r.myOpen.length}</td>
-          <td class="py-2 pr-3"><span class="font-bold text-blue-700">${r.myWIP.length}</span></td>
-          <td class="py-2 pr-3"><span class="font-bold text-emerald-700">${r.myDone.length}</span></td>
-          <td class="py-2 pr-3">${r.myPts}</td>
-          <td class="py-2 pr-3" style="min-width:200px"><div class="stack-row">${r.stack}</div></td>
-        </tr>`).join('')
-      : '<tr><td colspan="6" class="py-8 text-center text-slate-400">No work items assigned to anyone yet.</td></tr>';
+      ? devRows.map(r => {
+          const cur = _assignments[r.d.id] || '';
+          const teamOpts = ['','A','B','C','D'].map(t =>
+            `<option value="${t}"${cur===t?' selected':''}>${t ? 'Team '+t : '— Team'}</option>`).join('');
+          const badgeColor = cur ? TEAM_COLORS[cur] : '#94a3b8';
+          return `<tr class="border-b border-slate-100">
+            <td class="py-2 pr-3 font-semibold text-slate-800">${escapeHtml(r.d.name)}</td>
+            <td class="py-2 pr-3">${r.myOpen.length}</td>
+            <td class="py-2 pr-3"><span class="font-bold text-blue-700">${r.myWIP.length}</span></td>
+            <td class="py-2 pr-3"><span class="font-bold text-emerald-700">${r.myDone.length}</span></td>
+            <td class="py-2 pr-3">${r.myPts}</td>
+            <td class="py-2 pr-3" style="min-width:200px"><div class="stack-row">${r.stack}</div></td>
+            <td class="py-2">
+              <select onchange="assignTeam('${r.d.id}',this.value)"
+                class="border rounded-lg px-2 py-1 text-xs font-bold bg-white"
+                style="border-color:${badgeColor};color:${badgeColor}">${teamOpts}</select>
+            </td>
+          </tr>`;}).join('')
+      : '<tr><td colspan="7" class="py-8 text-center text-slate-400">No work items assigned to anyone yet.</td></tr>';
+    renderTeams();
 
     // By type
     const types = ['Story','Task','Bug','Epic'];
@@ -197,6 +218,111 @@
           </tr>`).join('')}</tbody>
         </table>`
       : '<p class="text-slate-400 text-sm py-4 text-center">Nothing closed in the selected window.</p>';
+  }
+
+  // ── Team management ─────────────────────────────────────────────────────────
+  const TEAMS = ['A','B','C','D'];
+  const TEAM_COLORS = { A:'#3b82f6', B:'#10b981', C:'#f59e0b', D:'#8b5cf6' };
+  const TEAM_BG     = { A:'#eff6ff', B:'#f0fdf4', C:'#fffbeb', D:'#f5f3ff' };
+  const TEAM_BORDER = { A:'#bfdbfe', B:'#bbf7d0', C:'#fde68a', D:'#ddd6fe' };
+
+  function getTeamData()    { try { return JSON.parse(localStorage.getItem('bni_teams_v1')   ||'{}'); } catch { return {}; } }
+  function getContactData() { try { return JSON.parse(localStorage.getItem('bni_contacts_v1')||'{}'); } catch { return {}; } }
+  function getTaskData()    { try { return JSON.parse(localStorage.getItem('bni_teamtasks_v1')||'{}'); } catch { return {}; } }
+
+  function assignTeam(devId, team) {
+    const d = getTeamData();
+    if (team) d[devId] = team; else delete d[devId];
+    localStorage.setItem('bni_teams_v1', JSON.stringify(d));
+    render(); // re-render table dropdowns + team cards
+  }
+
+  function saveContact(devId, field, value) {
+    const d = getContactData();
+    if (!d[devId]) d[devId] = {};
+    d[devId][field] = value;
+    localStorage.setItem('bni_contacts_v1', JSON.stringify(d));
+  }
+
+  function saveTask(team, field, value) {
+    const d = getTaskData();
+    if (!d[team]) d[team] = {};
+    d[team][field] = value;
+    localStorage.setItem('bni_teamtasks_v1', JSON.stringify(d));
+  }
+
+  function openWhatsApp(devId) {
+    const contacts = getContactData();
+    const mobile = (contacts[devId] && contacts[devId].mobile) || '';
+    if (!mobile.trim()) { alert('Enter a mobile number for this developer first.'); return; }
+    const num = mobile.replace(/\D/g,'');
+    window.open('https://wa.me/' + num, '_blank');
+  }
+
+  function renderTeams() {
+    const assignments = getTeamData();
+    const contacts    = getContactData();
+    const tasks       = getTaskData();
+
+    const html = TEAMS.map(team => {
+      const members = _devs.filter(d => assignments[d.id] === team);
+      const tData   = tasks[team] || {};
+
+      const memberRows = members.length ? members.map(d => {
+        const c = contacts[d.id] || {};
+        return `
+          <div class="flex flex-wrap items-center gap-2 py-2 border-b border-slate-100 last:border-0">
+            <span class="font-semibold text-sm text-slate-800 w-32 shrink-0">${escapeHtml(d.name)}</span>
+            <input type="tel" placeholder="Mobile / WhatsApp no."
+              value="${escapeHtml(c.mobile||'')}"
+              onchange="saveContact('${d.id}','mobile',this.value)"
+              class="border border-slate-200 rounded-lg px-2 py-1 text-xs flex-1 min-w-[130px]">
+            <input type="text" placeholder="Notes (email, role…)"
+              value="${escapeHtml(c.notes||'')}"
+              onchange="saveContact('${d.id}','notes',this.value)"
+              class="border border-slate-200 rounded-lg px-2 py-1 text-xs flex-1 min-w-[130px]">
+            <button onclick="openWhatsApp('${d.id}')"
+              title="Open WhatsApp"
+              class="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2 py-1 text-xs font-bold shrink-0">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.523 5.847L0 24l6.335-1.508A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.655-.497-5.187-1.367l-.372-.22-3.759.895.923-3.653-.242-.384A9.955 9.955 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+              WA
+            </button>
+          </div>`;
+      }).join('') : `<p class="text-slate-400 text-xs py-3 text-center">No members yet — assign from the table above.</p>`;
+
+      return `
+        <div class="rounded-xl border-2 p-4" style="border-color:${TEAM_BORDER[team]};background:${TEAM_BG[team]}">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xl font-extrabold" style="color:${TEAM_COLORS[team]}">Team ${team}</span>
+            <span class="text-xs rounded-full px-2 py-0.5 font-bold text-white" style="background:${TEAM_COLORS[team]}">${members.length} member${members.length!==1?'s':''}</span>
+          </div>
+          <div class="mb-4">${memberRows}</div>
+          <div class="space-y-2">
+            <div>
+              <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tasks / Assignments</label>
+              <textarea rows="3" placeholder="List tasks assigned to this team…"
+                class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 bg-white resize-y"
+                onchange="saveTask('${team}','tasks',this.value)">${escapeHtml(tData.tasks||'')}</textarea>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Meeting / Schedule</label>
+              <input type="text" placeholder="e.g. Mon & Thu 9 AM, Google Meet"
+                value="${escapeHtml(tData.schedule||'')}"
+                onchange="saveTask('${team}','schedule',this.value)"
+                class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 bg-white">
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Team Lead</label>
+              <input type="text" placeholder="Team lead name"
+                value="${escapeHtml(tData.lead||'')}"
+                onchange="saveTask('${team}','lead',this.value)"
+                class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 bg-white">
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('teamGrid').innerHTML = html;
   }
 
   async function init() {
