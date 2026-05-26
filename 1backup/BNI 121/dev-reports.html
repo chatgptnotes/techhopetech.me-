@@ -257,7 +257,9 @@
   function getTeamData() {
     return _devs.reduce((acc, d) => { if (d.team) acc[d.id] = d.team; return acc; }, {});
   }
-  function getContactData() { try { return JSON.parse(localStorage.getItem('bni_contacts_v1')||'{}'); } catch { return {}; } }
+  function getContactData() {
+    return _devs.reduce((acc, d) => { acc[d.id] = { mobile: d.mobile || '', notes: d.notes || '' }; return acc; }, {});
+  }
   function getTaskData()    { return _teamConfig; }
 
   async function assignTeam(devId, team) {
@@ -267,11 +269,10 @@
     render();
   }
 
-  function saveContact(devId, field, value) {
-    const d = getContactData();
-    if (!d[devId]) d[devId] = {};
-    d[devId][field] = value;
-    localStorage.setItem('bni_contacts_v1', JSON.stringify(d));
+  async function saveContact(devId, field, value) {
+    await window.sb.from('developers').update({ [field]: value }).eq('id', devId);
+    const dev = _devs.find(d => d.id === devId);
+    if (dev) dev[field] = value;
   }
 
   async function saveTask(team, field, value) {
@@ -290,7 +291,19 @@
 
   let _dragDevId = null, _dragTeam = null;
 
-  function getOrderData() { try { return JSON.parse(localStorage.getItem('bni_order_v1')||'{}'); } catch { return {}; } }
+  function getOrderData() {
+    return TEAMS.reduce((acc, t) => {
+      const mo = _teamConfig[t] && _teamConfig[t].member_order;
+      acc[t] = Array.isArray(mo) ? mo : [];
+      return acc;
+    }, {});
+  }
+
+  async function saveOrder(team, order) {
+    if (!_teamConfig[team]) _teamConfig[team] = { team };
+    _teamConfig[team].member_order = order;
+    await window.sb.from('dev_team_config').update({ member_order: order }).eq('team', team);
+  }
 
   function dragStart(e, devId, team) {
     _dragDevId = devId; _dragTeam = team;
@@ -326,7 +339,7 @@
     cur.splice(from, 1);
     cur.splice(to, 0, _dragDevId);
     orders[team] = cur;
-    localStorage.setItem('bni_order_v1', JSON.stringify(orders));
+    saveOrder(team, cur);
     _dragDevId = null; _dragTeam = null;
     renderTeams();
   }

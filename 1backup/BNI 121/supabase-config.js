@@ -78,7 +78,7 @@ const BNI_DEV_HIDDEN = new Set(['Poonam', 'Priyanka', 'Aman']);
 window.loadDevelopers = async () => {
   const { data, error } = await window.sb
     .from('developers')
-    .select('id,name,role,team')
+    .select('*')
     .order('name');
   if (!error && data) {
     window.BNI_DEVS = data.filter(d => !BNI_DEV_HIDDEN.has(d.name));

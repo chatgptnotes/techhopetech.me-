@@ -1,5 +1,5 @@
 // BNI 121 — service worker. Network-first for HTML & API; cache-first for assets.
-const VERSION = 'bni-v1';
+const VERSION = 'bni-v2';
 const CORE = [
   '/bni/dashboard.html',
   '/bni/tracker.html',
