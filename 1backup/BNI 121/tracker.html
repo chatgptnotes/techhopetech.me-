@@ -316,8 +316,8 @@ function renderTable() {
     return matchSearch && matchStatus && matchCity && matchSegment && matchAssignee;
   });
 
-  document.getElementById('resultCount').textContent =
-    `${filtered.length} of ${contacts.length} contacts`;
+  const resultCountEl = document.getElementById('resultCount');
+  if (resultCountEl) resultCountEl.textContent = `${filtered.length} of ${contacts.length} contacts`;
 
   const tbody = document.getElementById('contactTableBody');
   const empty = document.getElementById('emptyState');
