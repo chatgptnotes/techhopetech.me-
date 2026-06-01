@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/jpeg" href="/bni/bni-logo.jpg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BNI Dance Card — Dr. BK Murali | The Surgeon Who Codes</title>
+  <meta name="description" content="BNI 1-2-1 Dance Card for Dr. BK Murali, Orthopaedic Surgeon and AI Consultant, BNI Diorite Nagpur. GAINS Exchange, Contact Sphere, Referral Notes." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; overflow-x: hidden; }
+    .font-display { font-family: 'Playfair Display', serif; }
+
+    /* Noise texture overlay */
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* Grid lines */
+    .grid-lines {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+
+    /* Floating orbs */
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; animation: orb-float 10s ease-in-out infinite; }
+    @keyframes orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.06); } }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 100ms; }
+    .reveal-delay-2 { transition-delay: 200ms; }
+    .reveal-delay-3 { transition-delay: 300ms; }
+    .reveal-delay-4 { transition-delay: 400ms; }
+    .reveal-delay-5 { transition-delay: 500ms; }
+
+    /* Glass cards */
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
+    .glass-hover { transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    .glass-hover:hover { background: rgba(255,255,255,0.07); border-color: rgba(16,185,129,0.25); transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+
+    /* Navbar */
+    .navbar { transition: background 0.3s ease, border-color 0.3s ease; }
+    .navbar.scrolled { background: rgba(2,8,23,0.92); border-color: rgba(255,255,255,0.08) !important; backdrop-filter: blur(20px); }
+
+    /* Buttons */
+    .cta-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(59,130,246,0.3); }
+    .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.45); }
+    .wa-btn { background: linear-gradient(135deg, #25d366, #128c7e); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(37,211,102,0.3); }
+    .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(37,211,102,0.45); }
+    .emerald-btn { background: linear-gradient(135deg, #10b981, #059669); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(16,185,129,0.3); }
+    .emerald-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(16,185,129,0.5); }
+
+    /* Section divider */
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+
+    /* THE SURGEON WHO CODES badge — star of the show */
+    .surgeon-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 20px; border-radius: 999px;
+      background: linear-gradient(135deg, rgba(16,185,129,0.18), rgba(5,150,105,0.12));
+      border: 1px solid rgba(16,185,129,0.5);
+      color: #34d399;
+      font-size: 1.05rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+      box-shadow: 0 0 32px rgba(16,185,129,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+      animation: badge-pulse 3s ease-in-out infinite;
+    }
+    @keyframes badge-pulse {
+      0%, 100% { box-shadow: 0 0 32px rgba(16,185,129,0.25), inset 0 1px 0 rgba(255,255,255,0.1); }
+      50% { box-shadow: 0 0 48px rgba(16,185,129,0.45), 0 0 80px rgba(16,185,129,0.15), inset 0 1px 0 rgba(255,255,255,0.1); }
+    }
+    .surgeon-badge-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #10b981;
+      box-shadow: 0 0 8px #10b981; animation: dot-blink 2s ease-in-out infinite;
+    }
+    @keyframes dot-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* BNI badge */
+    .bni-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 999px;
+      background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(220,38,38,0.12));
+      border: 1px solid rgba(239,68,68,0.4); color: #f87171;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+
+    /* Photo ring */
+    .photo-ring {
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.4), 0 0 0 6px rgba(16,185,129,0.12), 0 24px 64px rgba(0,0,0,0.6);
+    }
+
+    /* GAINS letter badges */
+    .gains-letter {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 1.2rem; letter-spacing: 0;
+    }
+
+    /* Star rating */
+    .star-fill { color: #10b981; }
+    .star-empty { color: rgba(255,255,255,0.15); }
+
+    /* Skill pill */
+    .skill-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 500;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.2s ease;
+    }
+    .skill-pill:hover { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3); color: #6ee7b7; }
+
+    /* Contact sphere pills */
+    .sphere-pill-health {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 500;
+      background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7;
+      transition: all 0.2s ease;
+    }
+    .sphere-pill-health:hover { background: rgba(16,185,129,0.18); border-color: rgba(16,185,129,0.5); }
+    .sphere-pill-tech {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 500;
+      background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); color: #a5b4fc;
+      transition: all 0.2s ease;
+    }
+    .sphere-pill-tech:hover { background: rgba(99,102,241,0.18); border-color: rgba(99,102,241,0.5); }
+
+    /* Language bar */
+    .lang-bar-fill { border-radius: 999px; height: 8px; transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+
+    /* Section heading accent */
+    .section-heading { position: relative; display: inline-block; }
+    .section-heading::after {
+      content: ''; position: absolute; bottom: -6px; left: 0;
+      width: 40px; height: 3px; border-radius: 999px;
+      background: #ef4444;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #020817; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+    /* Customer item number */
+    .cust-num {
+      width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; color: #6ee7b7;
+    }
+
+    /* Gradient text utilities */
+    .text-gradient-emerald { background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .text-gradient-blue { background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* Print hint */
+    @media print {
+      .navbar { display: none; }
+      body::before { display: none; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body class="relative">
+
+<!-- ═══════════════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════════════════ -->
+<nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 border-b border-transparent">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/bni/index.html" class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <span class="font-bold text-white text-lg tracking-tight">HopeTech</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6 text-sm text-slate-400 font-medium">
+      <a href="/bni/index.html#founders" class="hover:text-white transition-colors">Founders</a>
+      <a href="/bni/dance-card-murali.html" class="text-white font-semibold" aria-current="page">Dr. Murali</a>
+      <a href="/bni/dance-card-biji.html" class="hover:text-white transition-colors">Biji Thomas</a>
+      <a href="/bni/hopephoenix.html" class="hover:text-white transition-colors">HopePhoenix</a>
+      <a href="/bni/bettroi.html" class="hover:text-white transition-colors">Bettroi</a>
+    </div>
+    <a href="https://wa.me/919373111709" target="_blank" rel="noopener" class="cta-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Book 121</a>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 1 — HERO
+════════════════════════════════════════════════════ -->
+<section class="relative min-h-screen flex items-center grid-lines pt-20 overflow-hidden">
+  <!-- Orbs -->
+  <div class="orb" style="width:520px;height:520px;background:rgba(16,185,129,0.10);top:-120px;right:-100px;animation-delay:0s;"></div>
+  <div class="orb" style="width:360px;height:360px;background:rgba(59,130,246,0.10);bottom:-80px;left:-60px;animation-delay:-4s;"></div>
+  <div class="orb" style="width:240px;height:240px;background:rgba(99,102,241,0.09);top:50%;left:45%;animation-delay:-7s;"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 py-16 w-full">
+    <!-- BNI label at top -->
+    <div class="flex items-center gap-3 mb-10 reveal">
+      <span class="bni-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+        BNI Dance Card
+      </span>
+      <span class="text-slate-500 text-xs font-medium tracking-widest uppercase">1-2-1 Networking Worksheet</span>
+    </div>
+
+    <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+
+      <!-- LEFT — Photo -->
+      <div class="flex-shrink-0 reveal">
+        <div class="relative">
+          <!-- Glow ring -->
+          <div class="absolute inset-0 rounded-3xl" style="background: radial-gradient(ellipse at center, rgba(16,185,129,0.25) 0%, transparent 70%); transform: scale(1.15); filter: blur(20px);"></div>
+          <!-- Photo -->
+          <img
+            src="/bni/dr-murali.jpg"
+            alt="Dr. BK Murali — Orthopaedic Surgeon and AI Consultant"
+            class="relative photo-ring rounded-3xl object-cover"
+            style="width: 300px; height: 360px; object-position: center top;"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <!-- Fallback avatar -->
+          <div class="relative photo-ring rounded-3xl items-center justify-center text-white font-black text-6xl font-display" style="width:300px;height:360px;background:linear-gradient(135deg,#064e3b,#065f46,#047857);display:none;">
+            M
+          </div>
+          <!-- Floating tag on photo -->
+          <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap">
+            <span class="bni-badge shadow-xl">BNI Diorite, Nagpur</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT — Identity -->
+      <div class="flex-1 space-y-5 text-center lg:text-left">
+
+        <!-- Name -->
+        <div class="reveal reveal-delay-1">
+          <p class="text-slate-500 text-sm font-semibold tracking-[0.18em] uppercase mb-2">Orthopaedic Surgeon</p>
+          <h1 class="font-display font-bold leading-none" style="font-size: clamp(3.2rem, 7vw, 5.5rem); letter-spacing: -0.02em;">
+            <span class="text-white">MURALI</span>
+            <span class="text-gradient-emerald"> BK</span>
+          </h1>
+        </div>
+
+        <!-- THE SURGEON WHO CODES badge — hero emphasis -->
+        <div class="reveal reveal-delay-2">
+          <span class="surgeon-badge">
+            <div class="surgeon-badge-dot"></div>
+            The Surgeon Who Codes
+          </span>
+        </div>
+
+        <!-- Sub-roles -->
+        <div class="reveal reveal-delay-3 flex flex-wrap gap-2 justify-center lg:justify-start">
+          <span class="skill-pill" style="background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:#6ee7b7;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Orthopaedic Surgeon
+          </span>
+          <span class="skill-pill" style="background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.3);color:#a5b4fc;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            AI Consultant
+          </span>
+          <span class="skill-pill" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);color:#fcd34d;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            100+ Products Built
+          </span>
+        </div>
+
+        <!-- Tagline -->
+        <p class="reveal reveal-delay-3 text-slate-400 text-lg italic font-display" style="font-style: italic;">
+          "Where the scalpel meets the algorithm"
+        </p>
+
+        <!-- 3 Quick Stats -->
+        <div class="reveal reveal-delay-4 grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0">
+          <div class="glass rounded-2xl p-4 text-center">
+            <div class="text-2xl font-black text-gradient-emerald leading-none">17</div>
+            <div class="text-slate-400 text-xs mt-1 font-medium">Yrs Surgery</div>
+          </div>
+          <div class="glass rounded-2xl p-4 text-center">
+            <div class="text-2xl font-black text-gradient-emerald leading-none">100+</div>
+            <div class="text-slate-400 text-xs mt-1 font-medium">Products Built</div>
+          </div>
+          <div class="glass rounded-2xl p-4 text-center">
+            <div class="text-2xl font-black text-gradient-emerald leading-none">150</div>
+            <div class="text-slate-400 text-xs mt-1 font-medium">Bed Hospital</div>
+          </div>
+        </div>
+
+        <!-- CTA row -->
+        <div class="reveal reveal-delay-5 flex flex-wrap gap-3 justify-center lg:justify-start pt-2">
+          <a href="https://wa.me/919373111709" target="_blank" rel="noopener" class="wa-btn text-white font-semibold px-6 py-3 rounded-xl text-sm flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp
+          </a>
+          <a href="tel:+919373111709" class="glass text-slate-300 font-medium px-6 py-3 rounded-xl text-sm flex items-center gap-2 hover:text-white transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.4 11.5a19.79 19.79 0 01-3.07-8.67A2 2 0 012.3 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.09a16 16 0 006 6l.66-.66a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            9373111709
+          </a>
+          <a href="mailto:cmd@hopehospital.com" class="glass text-slate-300 font-medium px-6 py-3 rounded-xl text-sm flex items-center gap-2 hover:text-white transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            cmd@hopehospital.com
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 2 — ABOUT + LOCATION
+════════════════════════════════════════════════════ -->
+<section class="relative py-20 overflow-hidden">
+  <div class="orb" style="width:300px;height:300px;background:rgba(59,130,246,0.07);top:0;right:10%;animation-delay:-2s;"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="mb-12 reveal">
+      <h2 class="section-heading font-display font-bold text-3xl text-white">About Me</h2>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6">
+
+      <!-- Bio -->
+      <div class="glass glass-hover rounded-3xl p-8 reveal reveal-delay-1">
+        <div class="flex items-start gap-4 mb-6">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(5,150,105,0.1));border:1px solid rgba(16,185,129,0.3);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <h3 class="text-white font-bold text-lg">The Dual Identity</h3>
+            <p class="text-slate-400 text-sm">Surgeon by morning. Developer by night.</p>
+          </div>
+        </div>
+        <p class="text-slate-300 leading-relaxed text-sm mb-4">
+          I am an orthopaedic surgeon and owner of an 18-year-old, 150-bed hospital group: <span class="text-emerald-400 font-semibold">Ayushman Nagpur Hospital</span> and <span class="text-emerald-400 font-semibold">Hope Hospital</span>. Both have full facilities for specialised surgeries and critical care.
+        </p>
+        <p class="text-slate-300 leading-relaxed text-sm mb-4">
+          I am also a technology entrepreneur who has developed <span class="text-white font-bold">100+ AI and software products</span>. I founded HopePhoenix (35+ AI products), DrM Hope Softwares, and serve as Director at <span class="text-indigo-400 font-semibold">Bettroi (Dubai Silicon Oasis)</span>.
+        </p>
+        <p class="text-slate-300 leading-relaxed text-sm mb-5">
+          Winner of the <span class="text-yellow-400 font-semibold">India Innovation Growth Program (IIGP)</span>, the biggest innovation award in India. Management graduate of <span class="text-white font-semibold">Stanford Business School</span>. My Fauji (Army) background shaped my discipline and leadership.
+        </p>
+        <!-- Highlight bar -->
+        <div class="rounded-2xl p-4" style="background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(5,150,105,0.04));border:1px solid rgba(16,185,129,0.2);">
+          <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">Unique in Nagpur</p>
+          <p class="text-slate-300 text-sm">Only single-doctor-owned multi-speciality hospital group in Nagpur, operating from 2 locations simultaneously.</p>
+        </div>
+      </div>
+
+      <!-- Location + Timeline -->
+      <div class="space-y-4">
+
+        <!-- Hospital 1 -->
+        <div class="glass glass-hover rounded-2xl p-5 reveal reveal-delay-2">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+            </div>
+            <div>
+              <p class="text-white font-bold text-sm">Hope Hospital</p>
+              <p class="text-slate-400 text-xs mt-1">2, Teka Naka, Kamptee Road, Nagpur</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hospital 2 -->
+        <div class="glass glass-hover rounded-2xl p-5 reveal reveal-delay-2">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+            </div>
+            <div>
+              <p class="text-white font-bold text-sm">Ayushman Nagpur Hospital</p>
+              <p class="text-slate-400 text-xs mt-1">Shrivardhan Complex, Ramdaspeth, Nagpur</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Years in business -->
+        <div class="glass glass-hover rounded-2xl p-5 reveal reveal-delay-3">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-3">Years of Experience</p>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-300 text-sm">Surgery</span>
+              <span class="text-emerald-400 font-bold text-sm">17 years</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-300 text-sm">Software Development</span>
+              <span class="text-blue-400 font-bold text-sm">10+ years</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-300 text-sm">Artificial Intelligence</span>
+              <span class="text-indigo-400 font-bold text-sm">5+ years</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Previous work highlight -->
+        <div class="glass glass-hover rounded-2xl p-5 reveal reveal-delay-3">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Notable First</p>
+          <p class="text-slate-300 text-sm leading-relaxed">Developed the <span class="text-yellow-400 font-semibold">first SaaS-based cloud hospital management application in India</span>. Also co-founded cross-region AI ventures with Dubai partner Biji Thomas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 3 — FAMILY + PERSONAL
+════════════════════════════════════════════════════ -->
+<section class="relative py-16 overflow-hidden">
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="mb-10 reveal">
+      <h2 class="section-heading font-display font-bold text-3xl text-white">Personal Life</h2>
+    </div>
+
+    <div class="glass rounded-3xl p-8 reveal reveal-delay-1">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+        <!-- Spouse -->
+        <div class="text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center" style="background:linear-gradient(135deg,rgba(251,113,133,0.15),rgba(244,63,94,0.08));border:1px solid rgba(251,113,133,0.3);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-bold text-sm">Viji Murali</p>
+            <p class="text-slate-500 text-xs">Spouse, Homemaker</p>
+          </div>
+        </div>
+
+        <!-- Children -->
+        <div class="text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center" style="background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(245,158,11,0.08));border:1px solid rgba(251,191,36,0.3);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-bold text-sm">Ishita (21) + Anora (10)</p>
+            <p class="text-slate-500 text-xs">Children</p>
+          </div>
+        </div>
+
+        <!-- Hobbies -->
+        <div class="text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.08));border:1px solid rgba(16,185,129,0.3);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-bold text-sm">Fitness + Music</p>
+            <p class="text-slate-500 text-xs">Weight training, Bollywood, Western</p>
+          </div>
+        </div>
+
+        <!-- Hidden talent -->
+        <div class="text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center" style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(109,40,217,0.08));border:1px solid rgba(139,92,246,0.3);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </div>
+          <div>
+            <p class="text-white font-bold text-sm">Intelligent Humour</p>
+            <p class="text-slate-500 text-xs">Hidden talent: cracking smart jokes</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- City + books -->
+      <div class="mt-6 pt-6 border-t border-white/5 flex flex-wrap gap-3 justify-center">
+        <span class="skill-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Nagpur, 35 years
+        </span>
+        <span class="skill-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+          Fiction books
+        </span>
+        <span class="skill-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z"/></svg>
+          Music lover
+        </span>
+        <span class="skill-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+          Fitness and weight training
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 4 — GAINS EXCHANGE
+════════════════════════════════════════════════════ -->
+<section class="relative py-20 overflow-hidden">
+  <div class="orb" style="width:400px;height:400px;background:rgba(16,185,129,0.07);bottom:-100px;left:0;animation-delay:-5s;"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="mb-4 reveal">
+      <h2 class="section-heading font-display font-bold text-3xl text-white">GAINS Exchange</h2>
+    </div>
+    <p class="text-slate-400 text-sm mb-12 reveal">Goals · Accomplishments · Interests · Networks · Skills</p>
+
+    <div class="space-y-4">
+
+      <!-- GOALS -->
+      <div class="glass glass-hover rounded-2xl overflow-hidden reveal reveal-delay-1">
+        <div class="flex">
+          <div class="flex-shrink-0 w-16 flex flex-col items-center justify-center py-6" style="background:linear-gradient(180deg,rgba(16,185,129,0.2),rgba(16,185,129,0.08));border-right:1px solid rgba(16,185,129,0.2);">
+            <div class="gains-letter" style="background:rgba(16,185,129,0.2);color:#10b981;">G</div>
+          </div>
+          <div class="flex-1 p-6">
+            <p class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-3">Goals</p>
+            <ul class="space-y-2">
+              <li class="flex items-start gap-2 text-slate-300 text-sm">
+                <span class="text-emerald-500 mt-0.5 flex-shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                </span>
+                Build a chain of tertiary care orthopaedic hospitals
+              </li>
+              <li class="flex items-start gap-2 text-slate-300 text-sm">
+                <span class="text-emerald-500 mt-0.5 flex-shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                </span>
+                Build an AI-powered healthcare technology ecosystem reaching every district hospital in India
+              </li>
+              <li class="flex items-start gap-2 text-slate-300 text-sm">
+                <span class="text-emerald-500 mt-0.5 flex-shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                </span>
+                Expand AI consulting practice internationally via BNI network
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOMPLISHMENTS -->
+      <div class="glass glass-hover rounded-2xl overflow-hidden reveal reveal-delay-2">
+        <div class="flex">
+          <div class="flex-shrink-0 w-16 flex flex-col items-center justify-center py-6" style="background:linear-gradient(180deg,rgba(251,191,36,0.15),rgba(251,191,36,0.05));border-right:1px solid rgba(251,191,36,0.2);">
+            <div class="gains-letter" style="background:rgba(251,191,36,0.15);color:#fbbf24;">A</div>
+          </div>
+          <div class="flex-1 p-6">
+            <p class="text-yellow-400 text-xs font-bold uppercase tracking-widest mb-3">Accomplishments</p>
+            <div class="grid sm:grid-cols-2 gap-2">
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="text-yellow-500 flex-shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>IIGP Winner 2013, Biggest innovation award in India</div>
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="text-yellow-500 flex-shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>NABH Accredited since 2012</div>
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="text-yellow-500 flex-shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>eIndia Awards 2012 to 2016</div>
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="text-yellow-500 flex-shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>Stanford Business School Management Graduate</div>
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="text-yellow-500 flex-shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>Knee joint replacement research published</div>
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="text-yellow-500 flex-shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>100+ software products incl. SCADA, HMS, AI agents</div>
+              <div class="flex items-center gap-2 text-slate-300 text-sm sm:col-span-2"><span class="text-yellow-500 flex-shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>Built first SaaS cloud HMS in India</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTERESTS -->
+      <div class="glass glass-hover rounded-2xl overflow-hidden reveal reveal-delay-2">
+        <div class="flex">
+          <div class="flex-shrink-0 w-16 flex flex-col items-center justify-center py-6" style="background:linear-gradient(180deg,rgba(99,102,241,0.15),rgba(99,102,241,0.05));border-right:1px solid rgba(99,102,241,0.2);">
+            <div class="gains-letter" style="background:rgba(99,102,241,0.15);color:#818cf8;">I</div>
+          </div>
+          <div class="flex-1 p-6">
+            <p class="text-indigo-400 text-xs font-bold uppercase tracking-widest mb-3">Interests</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="skill-pill" style="background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.25);color:#a5b4fc;">Growing healthcare in India</span>
+              <span class="skill-pill" style="background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.25);color:#a5b4fc;">AI adoption at district hospitals</span>
+              <span class="skill-pill" style="background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.25);color:#a5b4fc;">SCADA and industrial automation</span>
+              <span class="skill-pill" style="background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.25);color:#a5b4fc;">Surgical innovation</span>
+              <span class="skill-pill" style="background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.25);color:#a5b4fc;">Mentoring tech entrepreneurs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NETWORKS -->
+      <div class="glass glass-hover rounded-2xl overflow-hidden reveal reveal-delay-3">
+        <div class="flex">
+          <div class="flex-shrink-0 w-16 flex flex-col items-center justify-center py-6" style="background:linear-gradient(180deg,rgba(59,130,246,0.15),rgba(59,130,246,0.05));border-right:1px solid rgba(59,130,246,0.2);">
+            <div class="gains-letter" style="background:rgba(59,130,246,0.15);color:#60a5fa;">N</div>
+          </div>
+          <div class="flex-1 p-6">
+            <p class="text-blue-400 text-xs font-bold uppercase tracking-widest mb-3">Networks</p>
+            <div class="grid sm:grid-cols-2 gap-2">
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>Orthopaedic associations: city, state, national level</div>
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>BNI Diorite, Nagpur</div>
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>National AI and startup ecosystem</div>
+              <div class="flex items-center gap-2 text-slate-300 text-sm"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>Hospital administrator networks across Vidarbha</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKILLS -->
+      <div class="glass glass-hover rounded-2xl overflow-hidden reveal reveal-delay-3">
+        <div class="flex">
+          <div class="flex-shrink-0 w-16 flex flex-col items-center justify-center py-6" style="background:linear-gradient(180deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05));border-right:1px solid rgba(239,68,68,0.2);">
+            <div class="gains-letter" style="background:rgba(239,68,68,0.15);color:#f87171;">S</div>
+          </div>
+          <div class="flex-1 p-6">
+            <p class="text-red-400 text-xs font-bold uppercase tracking-widest mb-4">Skills</p>
+            <div class="grid sm:grid-cols-2 gap-5">
+              <!-- Surgical skills -->
+              <div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Surgical</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="skill-pill" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#fca5a5;">Complex fractures (pelvic, open contaminated)</span>
+                  <span class="skill-pill" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#fca5a5;">Vascular injuries</span>
+                  <span class="skill-pill" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#fca5a5;">Knee replacement</span>
+                  <span class="skill-pill" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#fca5a5;">Hip replacement</span>
+                  <span class="skill-pill" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#fca5a5;">Spine surgeries</span>
+                  <span class="skill-pill" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#fca5a5;">Multiorgan critical care</span>
+                </div>
+              </div>
+              <!-- Tech skills -->
+              <div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Technology</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="skill-pill" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:#6ee7b7;">Healthcare AI architecture</span>
+                  <span class="skill-pill" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:#6ee7b7;">Hospital management systems</span>
+                  <span class="skill-pill" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:#6ee7b7;">Industrial SCADA</span>
+                  <span class="skill-pill" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:#6ee7b7;">AI agent development</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 5 — LANGUAGE SKILLS
+════════════════════════════════════════════════════ -->
+<section class="relative py-16">
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="mb-10 reveal">
+      <h2 class="section-heading font-display font-bold text-3xl text-white">Languages</h2>
+    </div>
+
+    <div class="glass rounded-3xl p-8 reveal reveal-delay-1">
+      <div class="grid sm:grid-cols-2 gap-8">
+
+        <!-- English 9/10 -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-white font-semibold text-sm">English</span>
+            <span class="text-emerald-400 font-bold text-sm">9 / 10</span>
+          </div>
+          <div class="h-2 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.08);">
+            <div class="lang-bar-fill" style="background:linear-gradient(90deg,#10b981,#34d399);width:90%;"></div>
+          </div>
+          <div class="flex gap-1 mt-2">
+            <span class="text-emerald-400 text-xs">&#9679;</span><span class="text-emerald-400 text-xs">&#9679;</span><span class="text-emerald-400 text-xs">&#9679;</span><span class="text-emerald-400 text-xs">&#9679;</span><span class="text-emerald-400 text-xs">&#9679;</span>
+            <span class="text-emerald-400 text-xs">&#9679;</span><span class="text-emerald-400 text-xs">&#9679;</span><span class="text-emerald-400 text-xs">&#9679;</span><span class="text-emerald-400 text-xs">&#9679;</span>
+            <span class="text-slate-700 text-xs">&#9679;</span>
+          </div>
+        </div>
+
+        <!-- Hindi 7/10 -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-white font-semibold text-sm">Hindi</span>
+            <span class="text-blue-400 font-bold text-sm">7 / 10</span>
+          </div>
+          <div class="h-2 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.08);">
+            <div class="lang-bar-fill" style="background:linear-gradient(90deg,#3b82f6,#60a5fa);width:70%;"></div>
+          </div>
+          <div class="flex gap-1 mt-2">
+            <span class="text-blue-400 text-xs">&#9679;</span><span class="text-blue-400 text-xs">&#9679;</span><span class="text-blue-400 text-xs">&#9679;</span><span class="text-blue-400 text-xs">&#9679;</span><span class="text-blue-400 text-xs">&#9679;</span>
+            <span class="text-blue-400 text-xs">&#9679;</span><span class="text-blue-400 text-xs">&#9679;</span>
+            <span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span>
+          </div>
+        </div>
+
+        <!-- Tamil 5/10 -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-white font-semibold text-sm">Tamil</span>
+            <span class="text-indigo-400 font-bold text-sm">5 / 10</span>
+          </div>
+          <div class="h-2 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.08);">
+            <div class="lang-bar-fill" style="background:linear-gradient(90deg,#6366f1,#818cf8);width:50%;"></div>
+          </div>
+          <div class="flex gap-1 mt-2">
+            <span class="text-indigo-400 text-xs">&#9679;</span><span class="text-indigo-400 text-xs">&#9679;</span><span class="text-indigo-400 text-xs">&#9679;</span><span class="text-indigo-400 text-xs">&#9679;</span><span class="text-indigo-400 text-xs">&#9679;</span>
+            <span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span>
+          </div>
+        </div>
+
+        <!-- Marathi 3/10 -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-white font-semibold text-sm">Marathi</span>
+            <span class="text-slate-400 font-bold text-sm">3 / 10</span>
+          </div>
+          <div class="h-2 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.08);">
+            <div class="lang-bar-fill" style="background:linear-gradient(90deg,#64748b,#94a3b8);width:30%;"></div>
+          </div>
+          <div class="flex gap-1 mt-2">
+            <span class="text-slate-400 text-xs">&#9679;</span><span class="text-slate-400 text-xs">&#9679;</span><span class="text-slate-400 text-xs">&#9679;</span>
+            <span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span><span class="text-slate-700 text-xs">&#9679;</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 6 — CONTACT SPHERE
+════════════════════════════════════════════════════ -->
+<section class="relative py-20 overflow-hidden">
+  <div class="orb" style="width:350px;height:350px;background:rgba(99,102,241,0.07);top:-80px;right:-50px;animation-delay:-3s;"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="mb-4 reveal">
+      <h2 class="section-heading font-display font-bold text-3xl text-white">Contact Sphere</h2>
+    </div>
+    <p class="text-slate-400 text-sm mb-12 reveal">People I want to meet through BNI</p>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+
+      <!-- Healthcare contacts -->
+      <div class="glass rounded-3xl p-7 reveal reveal-delay-1">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <h3 class="text-white font-bold">Healthcare Contacts</h3>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="sphere-pill-health">General Practitioners</span>
+          <span class="sphere-pill-health">Family physicians</span>
+          <span class="sphere-pill-health">Alternative medicine</span>
+          <span class="sphere-pill-health">Physicians and specialists</span>
+          <span class="sphere-pill-health">Insurance agents + TPAs</span>
+          <span class="sphere-pill-health">Physiotherapists</span>
+          <span class="sphere-pill-health">Rehab specialists</span>
+          <span class="sphere-pill-health">Hospital administrators</span>
+          <span class="sphere-pill-health">Healthcare investors</span>
+        </div>
+      </div>
+
+      <!-- Tech/AI contacts -->
+      <div class="glass rounded-3xl p-7 reveal reveal-delay-2">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <h3 class="text-white font-bold">AI / Tech / Industry</h3>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="sphere-pill-tech">Factory owners</span>
+          <span class="sphere-pill-tech">Plant managers</span>
+          <span class="sphere-pill-tech">Enterprise tech buyers</span>
+          <span class="sphere-pill-tech">Startup founders</span>
+          <span class="sphere-pill-tech">Investors</span>
+          <span class="sphere-pill-tech">SCADA / automation buyers</span>
+          <span class="sphere-pill-tech">Digital transformation leads</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 7 — LAST 10 CUSTOMERS + REFERRAL NOTES
+════════════════════════════════════════════════════ -->
+<section class="relative py-20">
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <div class="mb-12 reveal">
+      <h2 class="section-heading font-display font-bold text-3xl text-white">Recent Customers + Referral Notes</h2>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+
+      <!-- Customer list -->
+      <div class="glass rounded-3xl p-7 reveal reveal-delay-1">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-5">Last Surgical Cases</p>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">1</span>
+            <div>
+              <p class="text-white text-sm font-semibold">Mrs. Chaturvedi</p>
+              <p class="text-slate-400 text-xs">Knee and hip joint replacement (mother of Dr. Ketan Chaturvedi, Head of Neurology, Kingsway Hospital Nagpur)</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">2</span>
+            <div>
+              <p class="text-white text-sm font-semibold">Mr. Ranka</p>
+              <p class="text-slate-400 text-xs">Hip joint replacement (Trustee, Radha Krishna Hospital)</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">3</span>
+            <p class="text-slate-300 text-sm">Vascular injury to limb</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">4</span>
+            <p class="text-slate-300 text-sm">Open contaminated fractures</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">5</span>
+            <p class="text-slate-300 text-sm">Fractures with head injury</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">6</span>
+            <p class="text-slate-300 text-sm">Executive health check-up</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">7</span>
+            <p class="text-slate-300 text-sm">Non-union fractures</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">8</span>
+            <p class="text-slate-300 text-sm">Malunited fractures</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">9</span>
+            <p class="text-slate-300 text-sm">Bone cancer</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">10</span>
+            <p class="text-slate-300 text-sm">Spine surgeries</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="cust-num mt-0.5">11</span>
+            <p class="text-slate-300 text-sm">Fractures with cardiac complications</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Referral notes -->
+      <div class="space-y-5">
+        <div class="glass rounded-3xl p-7 reveal reveal-delay-2">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">Notes on Patients</p>
+          <p class="text-slate-300 text-sm leading-relaxed mb-4">
+            Patients covered by insurance and government schemes: <span class="text-emerald-400 font-semibold">ESIC, CGHS, Ayushman Bharat</span>. From Nagpur, Madhya Pradesh, and the wider Vidarbha region.
+          </p>
+          <p class="text-slate-300 text-sm leading-relaxed">
+            Corporate employees with cashless facilities from <span class="text-white font-semibold">WCL, MOIL, Nagpur Metro</span>, central government, and police department.
+          </p>
+        </div>
+
+        <div class="glass rounded-3xl p-7 reveal reveal-delay-3">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">Best Referral Sources for Me</p>
+          <div class="space-y-2">
+            <div class="flex items-start gap-2 text-slate-300 text-sm">
+              <span class="text-emerald-500 flex-shrink-0 mt-0.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>
+              Doctors at corporate bodies (WCL, MOIL)
+            </div>
+            <div class="flex items-start gap-2 text-slate-300 text-sm">
+              <span class="text-emerald-500 flex-shrink-0 mt-0.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>
+              Insurance card holders and TPA empanelled patients
+            </div>
+            <div class="flex items-start gap-2 text-slate-300 text-sm">
+              <span class="text-emerald-500 flex-shrink-0 mt-0.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>
+              Patients with knee or hip joint pain
+            </div>
+            <div class="flex items-start gap-2 text-slate-300 text-sm">
+              <span class="text-emerald-500 flex-shrink-0 mt-0.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>
+              Back pain and spine cases
+            </div>
+            <div class="flex items-start gap-2 text-slate-300 text-sm">
+              <span class="text-emerald-500 flex-shrink-0 mt-0.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>
+              Post-road-accident trauma cases
+            </div>
+            <div class="flex items-start gap-2 text-slate-300 text-sm">
+              <span class="text-indigo-400 flex-shrink-0 mt-0.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>
+              <span>Hospital administrators seeking <span class="text-indigo-300 font-semibold">HMS software</span></span>
+            </div>
+            <div class="flex items-start gap-2 text-slate-300 text-sm">
+              <span class="text-indigo-400 flex-shrink-0 mt-0.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></span>
+              <span>Factory managers needing <span class="text-indigo-300 font-semibold">SCADA automation</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 8 — CONTACT + CTA
+════════════════════════════════════════════════════ -->
+<section class="relative py-24 overflow-hidden">
+  <div class="orb" style="width:500px;height:500px;background:rgba(16,185,129,0.09);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-6s;"></div>
+
+  <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+    <div class="reveal mb-4">
+      <span class="surgeon-badge mx-auto">
+        <div class="surgeon-badge-dot"></div>
+        Available for BNI 1-2-1 meetings
+      </span>
+    </div>
+
+    <h2 class="font-display font-bold text-white mb-4 reveal reveal-delay-1" style="font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1;">
+      Let's connect and<br>
+      <span class="text-gradient-emerald">grow together</span>
+    </h2>
+    <p class="text-slate-400 text-lg mb-12 reveal reveal-delay-2 max-w-xl mx-auto">
+      Request a 1-2-1 with Dr. Murali to explore referral opportunities across orthopaedic surgery and AI technology.
+    </p>
+
+    <!-- Contact cards -->
+    <div class="grid sm:grid-cols-3 gap-4 mb-10 reveal reveal-delay-2">
+      <a href="tel:+919373111709" class="glass glass-hover rounded-2xl p-5 flex flex-col items-center gap-3 text-center no-underline">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.4 11.5a19.79 19.79 0 01-3.07-8.67A2 2 0 012.3 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.09a16 16 0 006 6l.66-.66a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
+        <div>
+          <p class="text-white font-bold text-sm">Phone</p>
+          <p class="text-slate-400 text-xs">+91 93731 11709</p>
+        </div>
+      </a>
+      <a href="mailto:cmd@hopehospital.com" class="glass glass-hover rounded-2xl p-5 flex flex-col items-center gap-3 text-center no-underline">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div>
+          <p class="text-white font-bold text-sm">Email</p>
+          <p class="text-slate-400 text-xs">cmd@hopehospital.com</p>
+        </div>
+      </a>
+      <a href="https://wa.me/919373111709" target="_blank" rel="noopener" class="glass glass-hover rounded-2xl p-5 flex flex-col items-center gap-3 text-center no-underline">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </div>
+        <div>
+          <p class="text-white font-bold text-sm">WhatsApp</p>
+          <p class="text-slate-400 text-xs">wa.me/919373111709</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Primary CTA -->
+    <div class="reveal reveal-delay-3">
+      <a href="https://wa.me/919373111709?text=Hi%20Dr.%20Murali%2C%20I'd%20like%20to%20schedule%20a%20BNI%201-2-1%20with%20you." target="_blank" rel="noopener"
+         class="emerald-btn inline-flex items-center gap-3 text-white font-bold px-10 py-4 rounded-2xl text-base">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Request a BNI 121 with Dr. Murali
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════ -->
+<footer class="relative border-t" style="border-color:rgba(255,255,255,0.06);">
+  <div class="max-w-7xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <span class="text-slate-400 text-sm">HopeTech BNI 121 Platform</span>
+    </div>
+    <div class="flex items-center gap-6 text-slate-500 text-sm">
+      <a href="/bni/index.html" class="hover:text-white transition-colors">BNI Chapter</a>
+      <a href="/bni/dance-card-biji.html" class="hover:text-white transition-colors">Biji Thomas</a>
+      <a href="/bni/hopephoenix.html" class="hover:text-white transition-colors">HopePhoenix</a>
+      <a href="/bni/bettroi.html" class="hover:text-white transition-colors">Bettroi</a>
+    </div>
+    <p class="text-slate-600 text-xs">BNI Diorite, Nagpur</p>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT — SCROLL REVEAL + NAVBAR
+════════════════════════════════════════════════════ -->
+<script>
+  // Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Scroll reveal with IntersectionObserver
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  );
+  revealEls.forEach(el => revealObserver.observe(el));
+
+  // Trigger hero elements immediately (above the fold)
+  document.querySelectorAll('.reveal').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight) {
+      el.classList.add('visible');
+    }
+  });
+
+  // Animate language bars when they come into view
+  const langBars = document.querySelectorAll('.lang-bar-fill');
+  langBars.forEach(bar => {
+    // Store final width, reset to 0, apply transition
+    const targetWidth = bar.style.width;
+    bar.dataset.targetWidth = targetWidth;
+    bar.style.width = '0%';
+    bar.style.transition = 'width 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s';
+  });
+
+  const barObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.dataset.animated) {
+          entry.target.dataset.animated = 'true';
+          // Small rAF delay so CSS transition fires properly
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              entry.target.style.width = entry.target.dataset.targetWidth;
+            });
+          });
+          barObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.3 }
+  );
+  langBars.forEach(bar => barObserver.observe(bar));
+</script>
+
+</body>
+</html>

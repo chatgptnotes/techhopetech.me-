@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pipeline — BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; }
+    .column { flex: 1; min-width: 260px; background: #f1f5f9; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; max-height: calc(100vh - 180px); }
+    .column-header { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 10px; border-bottom: 1px solid #e2e8f0; margin-bottom: 10px; }
+    .column-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; }
+    .column-count { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: white; color: #64748b; border: 1px solid #e2e8f0; }
+    .column-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 2px; }
+    .column.dragover { background: #dbeafe; outline: 2px dashed #3b82f6; }
+    .pcard { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; cursor: grab; transition: all 0.15s; box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
+    .pcard:hover { box-shadow: 0 4px 12px rgba(15,23,42,0.08); border-color: #cbd5e1; transform: translateY(-1px); }
+    .pcard.dragging { opacity: 0.4; cursor: grabbing; }
+    .pcard .name { font-weight: 700; color: #0f172a; font-size: 14px; letter-spacing: -0.01em; }
+    .pcard .company { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .pcard .meta-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .pcard .chip { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.02em; }
+    .pcard .deal { font-size: 11px; color: #065f46; background: #d1fae5; padding: 3px 8px; border-radius: 6px; font-weight: 700; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 4px; }
+    .pcard .score { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px; letter-spacing: 0.03em; }
+    .col-sum { font-size: 11px; color: #64748b; font-weight: 600; padding-top: 8px; margin-top: 8px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+<div id="bni-sidebar-mount"></div>
+
+<main class="p-6" style="margin-left:240px;">
+  <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#2563eb,#6366f1);color:white;"><i data-lucide="trello" style="width:20px;height:20px"></i></div>
+      <div>
+        <h1 class="text-xl font-bold text-slate-900">Sales Pipeline</h1>
+        <p class="text-xs text-slate-500">Drag cards between columns to change status. Auto-saves to Supabase.</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <input type="text" id="searchBox" placeholder="Filter by name, company…" oninput="render()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+      <select id="assigneeFilter" onchange="render()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm">
+        <option value="">All Developers</option>
+      </select>
+      <button onclick="refresh()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50"><i data-lucide="refresh-cw"></i>Refresh</button>
+    </div>
+  </div>
+
+  <div id="summaryBar" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
+
+  <div id="board" class="flex gap-3 overflow-x-auto pb-4">
+    <div class="text-slate-400 py-10 w-full text-center">Loading pipeline…</div>
+  </div>
+</main>
+
+<script src="supabase-config.js"></script>
+<script src="bni-sidebar.js"></script>
+<script>
+const STAGES = [
+  { k: 'Identified',        color: '#3b82f6' },
+  { k: 'Contacted',         color: '#f59e0b' },
+  { k: 'Meeting Scheduled', color: '#15803d' },
+  { k: 'Met',               color: '#8b5cf6' },
+  { k: 'Follow-up',         color: '#c2410c' },
+  { k: 'Converted',         color: '#10b981' },
+];
+
+let _contacts = [];
+let _details  = {};
+
+async function refresh() {
+  const { data: cs } = await window.sb.from('bni_contacts').select('*');
+  const { data: ds } = await window.sb.from('bni_contact_details').select('contact_id,priority,next_date');
+  _contacts = cs || [];
+  _details  = Object.fromEntries((ds || []).map(d => [d.contact_id, d]));
+  populateAssigneeFilter();
+  render();
+}
+
+function populateAssigneeFilter() {
+  const sel = document.getElementById('assigneeFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Developers</option>' +
+    (window.BNI_DEVS || []).map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function formatMoney(n) {
+  if (!n) return '';
+  const v = Number(n);
+  if (v >= 100000) return '₹' + (v / 100000).toFixed(1) + 'L';
+  if (v >= 1000) return '₹' + (v / 1000).toFixed(0) + 'k';
+  return '₹' + v;
+}
+
+function render() {
+  const search = (document.getElementById('searchBox').value || '').toLowerCase();
+  const assignee = document.getElementById('assigneeFilter').value;
+  const list = _contacts.filter(c => {
+    if (c.hidden) return false;
+    if (assignee && !window.contactAssigneeIds(c).includes(assignee)) return false;
+    if (search) {
+      const t = ((c.first||'')+' '+(c.last||'')+' '+(c.company||'')+' '+(c.city||'')).toLowerCase();
+      if (!t.includes(search)) return false;
+    }
+    return true;
+  });
+
+  // summary
+  const totalVal = list.reduce((s, c) => s + (Number(c.deal_value) || 0), 0);
+  const weighted = list.reduce((s, c) => s + (Number(c.deal_value) || 0) * ((c.deal_probability ?? 50) / 100), 0);
+  const converted = list.filter(c => c.status === 'Converted').length;
+  const inPlay = list.filter(c => ['Meeting Scheduled','Met','Follow-up'].includes(c.status)).length;
+  document.getElementById('summaryBar').innerHTML = [
+    { label: 'Total Pipeline', val: formatMoney(totalVal), color: '#2563eb' },
+    { label: 'Weighted Value', val: formatMoney(weighted), color: '#7c3aed' },
+    { label: 'In Play',        val: inPlay,               color: '#f59e0b' },
+    { label: 'Converted',      val: converted,            color: '#10b981' },
+  ].map(s => `<div class="bg-white border border-slate-200 rounded-xl p-4"><p class="text-2xl font-extrabold" style="color:${s.color}">${s.val || '0'}</p><p class="text-[11px] uppercase tracking-wider font-bold text-slate-500 mt-1">${s.label}</p></div>`).join('');
+
+  const board = document.getElementById('board');
+  board.innerHTML = STAGES.map(stage => {
+    const items = list.filter(c => c.status === stage.k);
+    const colVal = items.reduce((s, c) => s + (Number(c.deal_value) || 0), 0);
+    const cardsHTML = items.map(c => cardHTML(c, stage)).join('');
+    return `
+      <div class="column" data-stage="${stage.k}"
+           ondragover="event.preventDefault(); this.classList.add('dragover');"
+           ondragleave="this.classList.remove('dragover');"
+           ondrop="onDrop(event, '${stage.k}')">
+        <div class="column-header">
+          <div class="flex items-center gap-2">
+            <span style="width:8px;height:8px;border-radius:50%;background:${stage.color};"></span>
+            <span class="column-title">${stage.k}</span>
+          </div>
+          <span class="column-count">${items.length}</span>
+        </div>
+        <div class="column-body">${cardsHTML || '<p class="text-xs text-slate-400 text-center py-4">Drop here</p>'}</div>
+        ${colVal ? `<div class="col-sum"><span>Value</span><span style="color:${stage.color};font-weight:800;">${formatMoney(colVal)}</span></div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function cardHTML(c, stage) {
+  const name = ((c.first||'') + ' ' + (c.last||'')).trim();
+  const det  = _details[c.id] || {};
+  const score = window.leadScore(c, det);
+  const sc = window.scoreColor(score);
+  const devs = window.contactAssigneeNames(c);
+  const deal = Number(c.deal_value) || 0;
+  const prob = c.deal_probability ?? 50;
+  return `
+    <div class="pcard" draggable="true" data-id="${c.id}"
+         ondragstart="onDragStart(event, '${c.id}')"
+         ondragend="this.classList.remove('dragging')"
+         onclick="location.href='contact.html?id=${c.id}'">
+      <div class="name">${name || '(no name)'}</div>
+      ${c.company ? `<div class="company">${c.company}</div>` : ''}
+      <div class="meta-row">
+        ${deal ? `<span class="deal"><i data-lucide="indian-rupee" style="width:10px;height:10px"></i>${formatMoney(deal)} · ${prob}%</span>` : ''}
+        <span class="score" style="background:${sc.bg};color:${sc.fg};border:1px solid ${sc.bd};">Score ${score}</span>
+        ${devs.map(n => `<span class="chip" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">${n}</span>`).join('')}
+        ${det.next_date ? `<span class="chip" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;">Rem ${det.next_date.slice(5)}</span>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function onDragStart(ev, id) {
+  ev.dataTransfer.setData('text/plain', id);
+  ev.currentTarget.classList.add('dragging');
+}
+async function onDrop(ev, newStatus) {
+  ev.preventDefault();
+  const id = ev.dataTransfer.getData('text/plain');
+  document.querySelectorAll('.column').forEach(c => c.classList.remove('dragover'));
+  const c = _contacts.find(x => x.id === id);
+  if (!c || c.status === newStatus) return;
+  const prev = c.status;
+  c.status = newStatus;
+  render();
+  const { error } = await window.sb.from('bni_contacts').update({ status: newStatus }).eq('id', id);
+  if (error) {
+    c.status = prev;
+    render();
+    window.bniToast('Failed to update status', 'error');
+  } else {
+    window.logActivity(id, 'Status', `${prev} → ${newStatus} (via pipeline)`);
+    window.bniToast(`Moved to ${newStatus}`, 'success');
+  }
+}
+
+async function init() {
+  await window.loadDevelopers();
+  await refresh();
+}
+init();
+</script>
+</body>
+</html>

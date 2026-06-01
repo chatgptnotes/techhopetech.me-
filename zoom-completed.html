@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoom Meetings Completed with BNI Members — Dr. BK Murali</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background:#f8fafc; color:#0f172a; }
+    .glass { background:white; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+    input, select { background:white; border:1px solid #e2e8f0; color:#0f172a; border-radius:8px; padding:8px 12px; outline:none; transition:border-color 0.15s; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+    input:focus, select:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+    input::placeholder { color:#94a3b8; }
+    .member-card { transition:all 0.15s; cursor:pointer; }
+    .member-card:hover { background:#f1f5f9; border-color:#cbd5e1; transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+    .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:0.68rem; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; }
+    .avatar { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1rem; flex-shrink:0; }
+    .qf-btn { padding:4px 10px; border-radius:20px; font-size:0.72rem; font-weight:600; border:1.5px solid #e2e8f0; background:white; color:#64748b; cursor:pointer; transition:all 0.12s; white-space:nowrap; }
+    .qf-btn:hover { border-color:#3b82f6; color:#3b82f6; }
+    .qf-btn.active { background:#3b82f6; color:white; border-color:#3b82f6; }
+    .group-header { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; padding:12px 4px 6px; border-bottom:1px solid #e2e8f0; margin-bottom:6px; display:flex; align-items:center; justify-content:space-between; }
+    .date-tile { width:58px; flex-shrink:0; border-radius:10px; padding:6px 4px; text-align:center; border:1.5px solid; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .date-tile .dt-day { font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
+    .date-tile .dt-num { font-size:1.35rem; font-weight:800; line-height:1.1; }
+    .date-tile .dt-mon { font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
+    .assignee-chip { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:999px; font-size:0.72rem; font-weight:700; letter-spacing:0.02em; border:1px solid; }
+    .action-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:9px; font-size:0.8rem; font-weight:600; border:1px solid transparent; cursor:pointer; transition:all 0.12s; text-decoration:none; white-space:nowrap; letter-spacing:-0.005em; }
+    .action-btn [data-lucide] { width:14px; height:14px; stroke-width:2.25; }
+    .action-call  { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .action-call:hover  { background:#dbeafe; border-color:#93c5fd; }
+    .action-wa    { background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+    .action-wa:hover    { background:#d1fae5; border-color:#6ee7b7; }
+    .action-mail  { background:#fef3c7; color:#92400e; border-color:#fde68a; }
+    .action-mail:hover  { background:#fde68a; border-color:#fcd34d; }
+    .action-open  { background:#2563eb; color:#ffffff; border-color:#2563eb; box-shadow:0 1px 2px rgba(37,99,235,0.25); }
+    .action-open:hover  { background:#1d4ed8; }
+    .action-ghost { background:transparent; color:#64748b; border-color:transparent; padding:7px 9px; }
+    .action-ghost:hover { background:#f1f5f9; color:#0f172a; }
+    .member-card { transition:all 0.18s ease; border-radius:16px !important; box-shadow:0 1px 3px rgba(15,23,42,0.04) !important; }
+    .member-card:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(15,23,42,0.08) !important; border-color:#cbd5e1 !important; }
+    .tag-chip { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:600; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; }
+    .tag-chip-filter { cursor:pointer; }
+    .tag-chip-filter:hover { background:#e0e7ff; color:#3730a3; border-color:#c7d2fe; }
+    .reminder-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.02em; border:1px solid; }
+    .reminder-overdue { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+    .reminder-today   { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+    .reminder-future  { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .wa-dropdown { position:relative; display:inline-block; }
+    .wa-dropdown-menu { position:absolute; top:100%; left:0; margin-top:4px; background:white; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 10px 25px rgba(15,23,42,0.1); min-width:200px; z-index:30; overflow:hidden; display:none; }
+    .wa-dropdown.open .wa-dropdown-menu { display:block; }
+    .wa-dropdown-menu a { display:block; padding:8px 12px; font-size:0.8rem; color:#0f172a; text-decoration:none; }
+    .wa-dropdown-menu a:hover { background:#f0fdf4; color:#047857; }
+    .zoom-pill { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:6px; font-size:0.66rem; font-weight:700; background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; }
+    .score-pill { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:999px; font-size:0.65rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase; }
+    .deal-pill { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:6px; font-size:0.68rem; font-weight:800; background:#dcfce7; color:#166534; border:1px solid #86efac; }
+    .bulk-checkbox { position:absolute; top:16px; left:16px; z-index:5; width:18px; height:18px; cursor:pointer; accent-color:#2563eb; }
+    .member-card { position:relative; }
+    .member-card.selected { border-color:#2563eb !important; box-shadow:0 0 0 3px rgba(37,99,235,0.15) !important; }
+    .bulk-bar { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#0f172a; color:white; padding:10px 18px; border-radius:14px; box-shadow:0 10px 30px rgba(15,23,42,0.35); display:flex; align-items:center; gap:10px; z-index:50; font-size:13px; }
+    .bulk-bar select, .bulk-bar input { background:#1e293b !important; color:white !important; border-color:#334155 !important; font-size:12px; padding:5px 10px; }
+    .bulk-bar button { padding:6px 12px; border-radius:8px; font-weight:600; font-size:12px; }
+    .sidebar-link { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; font-size:0.875rem; font-weight:500; color:#cbd5e1; transition:background 0.15s,color 0.15s; text-decoration:none; }
+    .sidebar-link:hover { background:rgba(255,255,255,0.1); color:#fff; }
+    .sidebar-link.active { background:#2563eb; color:#fff; }
+    /* Follow-up date nudge */
+    .fup-nudge { display:flex; align-items:center; gap:8px; padding:7px 12px; border-radius:9px; border:1.5px dashed #fbbf24; background:#fffbeb; color:#92400e; cursor:pointer; font-size:12px; font-weight:600; transition:all 0.15s; margin-top:8px; }
+    .fup-nudge:hover { background:#fef3c7; border-color:#f59e0b; border-style:solid; }
+    .fup-nudge .fup-hint { margin-left:auto; font-size:10px; font-weight:500; color:#b45309; opacity:0.8; white-space:nowrap; }
+    .fup-set { display:flex; align-items:center; gap:8px; padding:7px 12px; border-radius:9px; border:1.5px solid #bfdbfe; background:#eff6ff; color:#1d4ed8; cursor:pointer; font-size:12px; font-weight:700; transition:all 0.15s; margin-top:8px; }
+    .fup-set:hover { background:#dbeafe; border-color:#93c5fd; }
+    .fup-set.fup-overdue { border-color:#fecaca; background:#fef2f2; color:#b91c1c; }
+    .fup-set.fup-today   { border-color:#fde68a; background:#fffbeb; color:#92400e; }
+    .fup-set .fup-change { margin-left:auto; font-size:10px; font-weight:500; opacity:0.65; }
+    .fup-date-input { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
+  </style>
+</head>
+<body class="min-h-screen flex">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="hidden md:flex flex-col w-56 min-h-screen bg-slate-900 fixed top-0 left-0 z-40 border-r border-slate-800">
+    <div class="px-4 py-5 border-b border-slate-800">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-base flex-shrink-0">M</div>
+        <div>
+          <div class="text-white font-bold text-sm leading-tight">Dr. BK Murali</div>
+          <div class="text-blue-400 text-xs">BNI AI Tools</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="/bni/tracker.html" class="sidebar-link">Tracker</a>
+      <a href="/bni/zoom-completed.html" class="sidebar-link active">Zoom Meetings Done</a>
+      <a href="/bni/followup.html" class="sidebar-link">Meetings & Follow-ups</a>
+      <a href="/bni/templates.html" class="sidebar-link">Templates</a>
+      <a href="/bni/scheduler.html" class="sidebar-link">Book Zoom Call</a>
+    </nav>
+    <div class="px-4 py-4 border-t border-slate-800 text-xs text-slate-500">BNI 121 · Private Tool</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="flex-1 md:ml-56 flex flex-col min-h-screen">
+    <nav class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-30">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="icon-xl" style="color:var(--bni-primary)"><i data-lucide="video"></i></div>
+          <div>
+            <div class="font-bold text-gray-900 text-lg">Zoom Meetings Completed</div>
+            <div class="text-xs text-slate-500">Log of all completed 121 Zoom meetings — record outcomes, set follow-up dates, and send post-call messages</div>
+          </div>
+        </div>
+        <button onclick="openNewContactModal()" class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 shadow-sm">
+          <i data-lucide="plus"></i>Add Contact
+        </button>
+      </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto w-full px-6 py-8">
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="stats-row"></div>
+
+      <!-- Filters -->
+      <div class="glass rounded-2xl p-4 mb-6 space-y-3">
+        <div class="flex flex-wrap gap-2">
+          <input type="text" id="searchInput" placeholder="Search name, company, city, chapter…" oninput="render()" style="min-width:200px;flex:1;" />
+          <select id="statusFilter" onchange="render()" style="min-width:130px;">
+            <option value="">All Status</option>
+            <option value="Identified">Identified</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Met" selected>Met</option>
+            <option value="Meeting Scheduled">Meeting Scheduled</option>
+            <option value="Follow-up">Follow-up</option>
+            <option value="Converted">Converted</option>
+            <option value="Not Interested">Not Interested</option>
+          </select>
+          <select id="segmentFilter" onchange="render()" style="min-width:150px;">
+            <option value="">All Segments</option>
+            <option value="AI / Tech">AI / Tech</option>
+            <option value="Industrial Automation">Industrial Automation</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Other">Other</option>
+          </select>
+          <select id="assigneeFilter" onchange="render()" style="min-width:160px;">
+            <option value="">All Developers</option>
+            <option value="__none__">— Unassigned —</option>
+          </select>
+          <select id="chapterFilter" onchange="render()" style="min-width:160px;">
+            <option value="">All BNI Chapters</option>
+          </select>
+          <select id="tagFilter" onchange="render()" style="min-width:140px;">
+            <option value="">All Tags</option>
+          </select>
+          <select id="sentimentFilter" onchange="render()" style="min-width:150px;" title="Filter by sentiment">
+            <option value="">All Sentiments</option>
+            <option value="positive">😊 Positive</option>
+            <option value="neutral">😐 Neutral</option>
+            <option value="negative">😠 Negative</option>
+            <option value="__unset__">— Unset —</option>
+          </select>
+          <select id="sortBy" onchange="render()" style="min-width:170px;">
+            <option value="date" selected>Sort: Meeting Date ↓</option>
+            <option value="name">Sort: Name</option>
+            <option value="recent">Sort: Last Updated</option>
+            <option value="status">Sort: Status</option>
+          </select>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Date:</span>
+          <button class="qf-btn active" id="qf-date-all"    onclick="setDateFilter('all')">All Dates</button>
+          <button class="qf-btn"        id="qf-date-today"  onclick="setDateFilter('today')">Today</button>
+          <button class="qf-btn"        id="qf-date-week"   onclick="setDateFilter('week')">This Week</button>
+          <button class="qf-btn"        id="qf-date-month"  onclick="setDateFilter('month')">This Month</button>
+          <input type="date" id="dateExact" onchange="setDateFilter('exact')" class="qf-btn" style="padding:4px 10px;font-size:0.75rem;" title="Pick a specific date" />
+          <div class="w-px h-5 bg-slate-200"></div>
+          <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Reminders:</span>
+          <button class="qf-btn active" id="qf-rem-all"     onclick="setReminderFilter('all')">All</button>
+          <button class="qf-btn"        id="qf-rem-overdue" onclick="setReminderFilter('overdue')">Overdue</button>
+          <button class="qf-btn"        id="qf-rem-today"   onclick="setReminderFilter('today')">Due Today</button>
+          <button class="qf-btn"        id="qf-rem-week"    onclick="setReminderFilter('week')">This Week</button>
+          <div class="w-px h-5 bg-slate-200"></div>
+          <button class="qf-btn" id="qf-hidden" onclick="toggleShowHidden()" style="color:#dc2626;border-color:#fecaca;"><i data-lucide="eye-off"></i>Show Hidden</button>
+          <button onclick="refresh()" class="qf-btn" title="Refresh from Supabase"><i data-lucide="refresh-cw"></i>Refresh</button>
+          <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide ml-auto">Group:</span>
+          <select id="groupBy" onchange="render()" style="min-width:150px;padding:4px 10px;font-size:0.78rem;">
+            <option value="">No Grouping</option>
+            <option value="segment">By Segment</option>
+            <option value="chapter">By BNI Chapter</option>
+            <option value="assignee">By Developer</option>
+            <option value="date">By Meeting Date</option>
+          </select>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+          <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Proposals:</span>
+          <button class="qf-btn active" id="qf-prop-all"     onclick="setProposalFilter('all')">All</button>
+          <span class="text-xs text-slate-500 font-semibold" style="color:#0891b2">Financial:</span>
+          <button class="qf-btn" id="qf-prop-fin-pending" onclick="setProposalFilter('fin-pending')" title="To be sent" style="border-color:#a5f3fc;color:#0891b2"><i data-lucide="clock" style="width:11px;height:11px"></i>To send</button>
+          <button class="qf-btn" id="qf-prop-fin-sent"    onclick="setProposalFilter('fin-sent')"    title="Already sent"   style="border-color:#a7f3d0;color:#047857"><i data-lucide="check"  style="width:11px;height:11px"></i>Sent</button>
+          <span class="text-xs text-slate-500 font-semibold" style="color:#7c3aed">Technical:</span>
+          <button class="qf-btn" id="qf-prop-tec-pending" onclick="setProposalFilter('tec-pending')" title="To be sent" style="border-color:#ddd6fe;color:#7c3aed"><i data-lucide="clock" style="width:11px;height:11px"></i>To send</button>
+          <button class="qf-btn" id="qf-prop-tec-sent"    onclick="setProposalFilter('tec-sent')"    title="Already sent"   style="border-color:#a7f3d0;color:#047857"><i data-lucide="check"  style="width:11px;height:11px"></i>Sent</button>
+          <span class="text-xs text-slate-500 font-semibold" style="color:#16a34a">Commercial:</span>
+          <button class="qf-btn" id="qf-prop-com-pending" onclick="setProposalFilter('com-pending')" title="To be sent" style="border-color:#bbf7d0;color:#16a34a"><i data-lucide="clock" style="width:11px;height:11px"></i>To send</button>
+          <button class="qf-btn" id="qf-prop-com-sent"    onclick="setProposalFilter('com-sent')"    title="Already sent"   style="border-color:#a7f3d0;color:#047857"><i data-lucide="check"  style="width:11px;height:11px"></i>Sent</button>
+        </div>
+      </div>
+
+      <p id="result-count" class="text-xs text-slate-400 mb-3"></p>
+      <div id="loadingState" class="py-16 text-center text-slate-400">
+        <div class="flex justify-center mb-3 icon-xl" style="color:var(--bni-primary);"><i data-lucide="loader-2" class="animate-spin"></i></div>
+        <p class="text-sm">Loading meetings…</p>
+      </div>
+      <div id="member-list"></div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- INLINE EDIT MODAL (no redirect, writes to Supabase directly) -->
+  <div id="editModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b">
+        <h2 id="editModalTitle" class="text-lg font-bold text-slate-900">Edit Contact</h2>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+      </div>
+      <form id="editForm" onsubmit="saveEdit(event)" class="p-6 grid grid-cols-2 gap-4">
+        <input type="hidden" id="e_id" />
+        <div class="col-span-1"><label class="block text-xs font-semibold text-slate-600 mb-1">First Name</label><input id="e_first" required class="w-full border rounded-lg px-3 py-2 text-sm" /></div>
+        <div class="col-span-1"><label class="block text-xs font-semibold text-slate-600 mb-1">Last Name</label><input id="e_last" class="w-full border rounded-lg px-3 py-2 text-sm" /></div>
+        <div class="col-span-2"><label class="block text-xs font-semibold text-slate-600 mb-1">Company</label><input id="e_company" class="w-full border rounded-lg px-3 py-2 text-sm" /></div>
+        <div class="col-span-1"><label class="block text-xs font-semibold text-slate-600 mb-1">City</label><input id="e_city" class="w-full border rounded-lg px-3 py-2 text-sm" /></div>
+        <div class="col-span-1">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">BNI Chapter</label>
+          <input id="e_chapter" list="editChapterList" placeholder="Pick from list or type new…" class="w-full border rounded-lg px-3 py-2 text-sm" />
+          <datalist id="editChapterList"></datalist>
+        </div>
+        <div class="col-span-1">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Phone(s)</label>
+          <div id="e_phones_list" class="space-y-2"><div class="flex gap-2 phone-row"><input class="e-phone flex-1 border rounded-lg px-3 py-2 text-sm" placeholder="Primary phone" /></div></div>
+          <button type="button" onclick="addModalPhoneField()" class="mt-1 text-xs text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 font-semibold"><i data-lucide="plus" style="width:11px;height:11px"></i>Add another</button>
+        </div>
+        <div class="col-span-1"><label class="block text-xs font-semibold text-slate-600 mb-1">Email</label><input id="e_email" type="email" class="w-full border rounded-lg px-3 py-2 text-sm" /></div>
+        <div class="col-span-1">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Segment</label>
+          <select id="e_segment" class="w-full border rounded-lg px-3 py-2 text-sm">
+            <option value="AI / Tech">AI / Tech</option>
+            <option value="Industrial Automation">Industrial Automation</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="col-span-1">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Status</label>
+          <select id="e_status" class="w-full border rounded-lg px-3 py-2 text-sm">
+            <option value="Identified">Identified</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Meeting Scheduled">Meeting Scheduled</option>
+            <option value="Met">Met</option>
+            <option value="Follow-up">Follow-up</option>
+            <option value="Converted">Converted</option>
+            <option value="Not Interested">Not Interested</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Assignees (Developers) — hold ⌘/Ctrl for multiple</label>
+          <select id="e_assignees" multiple size="5" class="w-full border rounded-lg px-3 py-2 text-sm"></select>
+        </div>
+        <div class="col-span-2"><label class="block text-xs font-semibold text-slate-600 mb-1">Notes</label><textarea id="e_notes" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea></div>
+        <div class="col-span-2 flex gap-3 pt-2">
+          <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">Save Changes</button>
+          <button type="button" onclick="closeEditModal()" class="px-6 py-3 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script src="supabase-config.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+const STATUS_COLOR = {
+  'Identified':       '#3b82f6',
+  'Contacted':        '#f59e0b',
+  'Meeting Scheduled':'#15803d',
+  'Met':              '#8b5cf6',
+  'Follow-up':        '#c2410c',
+  'Converted':        '#10b981',
+  'Not Interested':   '#64748b',
+};
+const STATUS_ORDER = { 'Converted':0, 'Met':1, 'Follow-up':2, 'Meeting Scheduled':3, 'Contacted':4, 'Identified':5, 'Not Interested':9 };
+const AVATAR_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#f97316'];
+
+let _contacts = [];
+let _details  = {};   // id -> bni_contact_details row
+let _selected = new Set();
+let showHidden = false;
+let activeDateFilter = 'all';
+let activeReminderFilter = 'all';
+let activeProposalFilter = 'all';  // all | fin-pending | fin-sent | tec-pending | tec-sent | com-pending | com-sent
+let activeTagFilter = '';
+
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function avatarColor(id) { return AVATAR_COLORS[parseInt(String(id).replace(/\D/g,'')) % AVATAR_COLORS.length]; }
+function extractChapter(c) {
+  if (c.chapter) return c.chapter;
+  const m = (c.notes || '').match(/BNI Chapter:\s*([^.,(]+)/i);
+  return m ? m[1].trim() : '';
+}
+
+// Extract most-recent DD/MM/YY (or DD-MM-YY) date from notes → ISO YYYY-MM-DD.
+// Falls back to updated_at date (no time ping) if no date match in notes.
+function meetingDate(c) {
+  const re = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/g;
+  const matches = [...(c.notes || '').matchAll(re)];
+  if (matches.length) {
+    const m = matches[matches.length - 1];
+    const dd = m[1].padStart(2, '0');
+    const mm = m[2].padStart(2, '0');
+    let yy = m[3];
+    if (yy.length === 2) yy = '20' + yy;
+    return `${yy}-${mm}-${dd}`;
+  }
+  if (c.updated_at) return c.updated_at.slice(0, 10);
+  return null;
+}
+
+function dateTileHTML(iso) {
+  if (!iso) {
+    return `<div class="date-tile" style="background:#f8fafc;border-color:#e2e8f0;color:#cbd5e1;min-height:66px;">
+      <div class="dt-day">—</div><div class="dt-num" style="font-size:1rem;">?</div><div class="dt-mon">—</div>
+    </div>`;
+  }
+  const d = new Date(iso + 'T00:00:00');
+  const today = new Date().toISOString().slice(0, 10);
+  let bg = '#eff6ff', col = '#1d4ed8', bdr = '#bfdbfe';
+  if (iso < today)      { bg = '#f0fdf4'; col = '#15803d'; bdr = '#bbf7d0'; }  // past meeting (done) = green
+  else if (iso === today) { bg = '#fffbeb'; col = '#d97706'; bdr = '#fde68a'; } // today = amber
+  return `<div class="date-tile" style="background:${bg};border-color:${bdr};color:${col};">
+    <div class="dt-day">${DAYS[d.getDay()]}</div>
+    <div class="dt-num">${d.getDate()}</div>
+    <div class="dt-mon">${MONTHS[d.getMonth()]}</div>
+  </div>`;
+}
+
+async function fetchContacts() {
+  const { data, error } = await window.sb.from('bni_contacts').select('*').order('updated_at', { ascending: false });
+  if (error) {
+    window.bniToast('Failed to load: ' + error.message, 'error');
+    return [];
+  }
+  return data || [];
+}
+
+async function fetchDetails() {
+  const { data, error } = await window.sb.from('bni_contact_details').select('contact_id,next_date,zoom_recording_url,zoom_transcript_url,photo,priority,followups,financial_proposal_sent_at,technical_proposal_sent_at,commercial_proposal_sent_at,financial_proposal_url,technical_proposal_url,commercial_proposal_url,meeting_outcome,proposal_reply_received_at,sentiment,sentiment_note');
+  if (error || !data) return {};
+  const map = {};
+  data.forEach(d => { map[d.contact_id] = d; });
+  return map;
+}
+
+async function refresh() {
+  document.getElementById('loadingState').classList.remove('hidden');
+  const [contacts, details] = await Promise.all([fetchContacts(), fetchDetails()]);
+  _contacts = contacts;
+  _details  = details;
+  document.getElementById('loadingState').classList.add('hidden');
+  populateTagFilter();
+  render();
+}
+
+function populateTagFilter() {
+  const sel = document.getElementById('tagFilter');
+  if (!sel) return;
+  const tags = window.uniqueTags(_contacts);
+  const current = sel.value;
+  sel.innerHTML = '<option value="">All Tags</option>' + tags.map(t => `<option value="${t}">${t}</option>`).join('');
+  if (current) sel.value = current;
+}
+
+function populateAssigneeFilter() {
+  const sel = document.getElementById('assigneeFilter');
+  if (!sel) return;
+  const current = sel.value;
+  const devOpts = (window.BNI_DEVS || [])
+    .map(d => `<option value="${d.id}">${d.name}</option>`)
+    .join('');
+  sel.innerHTML =
+    '<option value="">All Developers</option>' +
+    '<option value="__none__">— Unassigned —</option>' +
+    devOpts;
+  if (current) sel.value = current;
+}
+
+function buildChapterDropdown(contacts) {
+  const chapters = [...new Set(contacts.map(c => extractChapter(c)).filter(Boolean))].sort();
+  const sel = document.getElementById('chapterFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All BNI Chapters</option>' +
+    chapters.map(ch => `<option value="${ch}"${ch===cur?' selected':''}>${ch}</option>`).join('');
+}
+
+function renderStats(contacts) {
+  const counts = {};
+  ['Identified','Contacted','Meeting Scheduled','Met','Follow-up','Converted'].forEach(s => counts[s] = contacts.filter(c => c.status===s).length);
+  const cards = [
+    { label:'Total',              val: contacts.length, color:'#3b82f6' },
+    { label:'Met (Zoom Done)',    val: counts['Met'],   color:'#8b5cf6' },
+    { label:'Meeting Scheduled',  val: counts['Meeting Scheduled'], color:'#15803d' },
+    { label:'Converted',          val: counts['Converted'], color:'#10b981' },
+  ];
+  document.getElementById('stats-row').innerHTML = cards.map(s => `
+    <div class="glass rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold" style="color:${s.color}">${s.val}</p>
+      <p class="text-slate-500 text-xs mt-0.5">${s.label}</p>
+    </div>
+  `).join('');
+}
+
+function populateEditAssignee(selectedIds) {
+  const sel = document.getElementById('e_assignees');
+  if (!sel) return;
+  sel.innerHTML = window.devMultiOptionsHtml(Array.isArray(selectedIds) ? selectedIds : (selectedIds ? [selectedIds] : []));
+}
+
+function selectedAssigneeIds() {
+  const sel = document.getElementById('e_assignees');
+  if (!sel) return [];
+  return [...sel.selectedOptions].map(o => o.value).filter(Boolean);
+}
+
+function setModalPhones(phones) {
+  const list = document.getElementById('e_phones_list');
+  if (!list) return;
+  const rows = phones && phones.length ? phones : [''];
+  list.innerHTML = rows.map((p, i) => `
+    <div class="flex gap-2 phone-row">
+      <input class="e-phone flex-1 border rounded-lg px-3 py-2 text-sm" value="${(p || '').replace(/"/g,'&quot;')}" placeholder="${i === 0 ? 'Primary phone' : 'Additional phone'}" />
+      ${i === 0 ? '' : '<button type="button" onclick="this.parentElement.remove()" class="px-2 text-slate-400 hover:text-red-500" title="Remove"><i data-lucide="x" style="width:14px;height:14px"></i></button>'}
+    </div>`).join('');
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function addModalPhoneField() {
+  const list = document.getElementById('e_phones_list');
+  if (!list) return;
+  const row = document.createElement('div');
+  row.className = 'flex gap-2 phone-row';
+  row.innerHTML = `
+    <input class="e-phone flex-1 border rounded-lg px-3 py-2 text-sm" placeholder="Additional phone" />
+    <button type="button" onclick="this.parentElement.remove()" class="px-2 text-slate-400 hover:text-red-500" title="Remove"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+  `;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function modalPhones() {
+  return [...document.querySelectorAll('#e_phones_list .e-phone')].map(el => el.value.trim()).filter(Boolean);
+}
+
+function populateEditChapterList() {
+  const dl = document.getElementById('editChapterList');
+  if (!dl) return;
+  let rows = (window.BNI_CHAPTERS || []).map(c => [c.name, c.city || '']);
+  if (!rows.length) {
+    const pairs = new Map();
+    (_contacts || []).forEach(c => {
+      const name = (c.chapter || '').trim();
+      if (!name) return;
+      if (!pairs.has(name) || (!pairs.get(name) && c.city)) pairs.set(name, c.city || '');
+    });
+    rows = [...pairs.entries()];
+  }
+  rows.sort((a, b) => a[0].localeCompare(b[0]));
+  dl.innerHTML = rows
+    .map(([name, city]) => `<option value="${name.replace(/"/g, '&quot;')}">${city ? city + ' — ' + name : name}</option>`)
+    .join('');
+}
+
+function nextContactId() {
+  const nums = _contacts
+    .map(c => parseInt(String(c.id || '').replace(/\D/g, ''), 10))
+    .filter(n => !isNaN(n));
+  const max = nums.length ? Math.max(...nums) : 0;
+  return 'c' + (max + 1);
+}
+
+function openNewContactModal() {
+  const form = document.getElementById('editForm');
+  if (form) form.reset();
+  document.getElementById('e_id').value       = '';
+  document.getElementById('e_status').value   = 'Met';
+  document.getElementById('e_segment').value  = 'Other';
+  document.getElementById('editModalTitle').textContent = 'Add New Contact';
+  populateEditAssignee([]);
+  setModalPhones([]);
+  populateEditChapterList();
+  document.getElementById('editModal').classList.remove('hidden');
+  setTimeout(() => { document.getElementById('e_first')?.focus(); }, 50);
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function openEditModal(id) {
+  const c = _contacts.find(x => x.id === id);
+  if (!c) return;
+  const titleEl = document.getElementById('editModalTitle');
+  if (titleEl) titleEl.textContent = 'Edit Contact';
+  document.getElementById('e_id').value      = c.id;
+  document.getElementById('e_first').value   = c.first || '';
+  document.getElementById('e_last').value    = c.last || '';
+  document.getElementById('e_company').value = c.company || '';
+  document.getElementById('e_city').value    = c.city || '';
+  document.getElementById('e_chapter').value = c.chapter || '';
+  setModalPhones(window.contactPhones(c));
+  document.getElementById('e_email').value   = c.email || '';
+  document.getElementById('e_segment').value = c.segment || 'Other';
+  document.getElementById('e_status').value  = c.status || 'Identified';
+  document.getElementById('e_notes').value   = c.notes || '';
+  populateEditAssignee(window.contactAssigneeIds(c));
+  populateEditChapterList();
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.add('hidden');
+}
+
+async function saveEdit(e) {
+  e.preventDefault();
+  const id = document.getElementById('e_id').value;
+  const isNew = !id;
+  const payload = {
+    first:       document.getElementById('e_first').value.trim(),
+    last:        document.getElementById('e_last').value.trim(),
+    company:     document.getElementById('e_company').value.trim(),
+    city:        document.getElementById('e_city').value.trim(),
+    chapter:     document.getElementById('e_chapter').value.trim(),
+    phones:      modalPhones(),
+    phone:       modalPhones()[0] || '',
+    email:       document.getElementById('e_email').value.trim(),
+    segment:     document.getElementById('e_segment').value,
+    status:      document.getElementById('e_status').value,
+    notes:       document.getElementById('e_notes').value,
+    assignee_ids: selectedAssigneeIds(),
+    assignee_id:  selectedAssigneeIds()[0] || null,
+  };
+  if (payload.chapter) await window.ensureChapter(payload.chapter, payload.city);
+
+  if (isNew) {
+    // Duplicate detection — same phone (last 10 digits) OR same first+last
+    const normPhone = (s) => ((s || '').match(/\d+/g) || []).join('').slice(-10);
+    const normName  = (c) => (((c.first || '') + ' ' + (c.last || '')).trim().toLowerCase());
+    const newPhone = normPhone(payload.phone);
+    const newName  = normName(payload);
+    const matches = _contacts.filter(c => {
+      if (newPhone && normPhone(c.phone) === newPhone) return true;
+      if (newName && normName(c) === newName) return true;
+      return false;
+    });
+    if (matches.length) {
+      const list = matches.slice(0, 3).map(c => `• ${c.first || ''} ${c.last || ''} — ${c.company || '(no company)'}`).join('\n');
+      const choice = confirm(
+        `Possible duplicate detected. Existing record(s):\n\n${list}\n\n` +
+        `Click OK to OPEN the existing record for editing (recommended).\n` +
+        `Click Cancel to create a new separate contact anyway.`
+      );
+      if (choice) {
+        closeEditModal();
+        openEditModal(matches[0].id);
+        return;
+      }
+    }
+    const newId = nextContactId();
+    const row = { id: newId, ...payload };
+    const { error } = await window.sb.from('bni_contacts').insert(row);
+    if (error) { window.bniToast('Create failed: ' + error.message, 'error'); return; }
+    _contacts.unshift({ ...row, hidden: false, tags: [], updated_at: new Date().toISOString() });
+    window.logActivity(newId, 'Created', 'Added via Zoom Meetings page');
+    closeEditModal();
+    window.bniToast(`Added ${payload.first} ${payload.last}`, 'success');
+    populateTagFilter();
+    render();
+    return;
+  }
+
+  const { error } = await window.sb.from('bni_contacts').update(payload).eq('id', id);
+  if (error) { window.bniToast('Save failed: ' + error.message, 'error'); return; }
+  const c = _contacts.find(x => x.id === id);
+  if (c) Object.assign(c, payload);
+  closeEditModal();
+  window.bniToast('Contact updated', 'success');
+  render();
+}
+
+function formatMoney(n) {
+  if (!n) return '';
+  const v = Number(n);
+  if (v >= 100000) return '₹' + (v / 100000).toFixed(1) + 'L';
+  if (v >= 1000) return '₹' + (v / 1000).toFixed(0) + 'k';
+  return '₹' + v;
+}
+
+function toggleSelect(id, checked) {
+  if (checked) _selected.add(id);
+  else _selected.delete(id);
+  renderBulkBar();
+  // lightweight card update instead of full re-render
+  document.querySelectorAll('.member-card').forEach(el => {
+    const cb = el.querySelector('.bulk-checkbox');
+    if (cb) el.classList.toggle('selected', cb.checked);
+  });
+}
+
+function renderBulkBar() {
+  let bar = document.getElementById('bulkBar');
+  if (_selected.size === 0) {
+    if (bar) bar.remove();
+    return;
+  }
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'bulkBar';
+    bar.className = 'bulk-bar';
+    document.body.appendChild(bar);
+  }
+  const devOpts = (window.BNI_DEVS || []).map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+  const statusOpts = ['Identified','Contacted','Meeting Scheduled','Met','Follow-up','Converted','Not Interested']
+    .map(s => `<option value="${s}">${s}</option>`).join('');
+  bar.innerHTML = `
+    <span><strong>${_selected.size}</strong> selected</span>
+    <select id="bulkStatus"><option value="">Change status…</option>${statusOpts}</select>
+    <select id="bulkAssignee"><option value="">Add assignee…</option><option value="__none__">— Clear all —</option>${devOpts}</select>
+    <input id="bulkTag" placeholder="Add tag…" style="width:120px;" />
+    <button onclick="bulkApply()" style="background:#2563eb;color:white;">Apply</button>
+    <button onclick="bulkHide()" style="background:#334155;color:white;">Hide</button>
+    <button onclick="clearSelection()" style="background:transparent;color:#94a3b8;">Clear</button>
+  `;
+}
+
+function clearSelection() { _selected.clear(); renderBulkBar(); render(); }
+
+async function bulkApply() {
+  const status   = document.getElementById('bulkStatus').value;
+  const assignee = document.getElementById('bulkAssignee').value;
+  const tag      = document.getElementById('bulkTag').value.trim();
+  if (!status && !assignee && !tag) { window.bniToast('Nothing to apply', 'error'); return; }
+  const ids = [..._selected];
+  for (const id of ids) {
+    const updates = {};
+    const c = _contacts.find(x => x.id === id);
+    if (status) updates.status = status;
+    if (assignee) {
+      const existingAssignees = window.contactAssigneeIds(c || {});
+      if (assignee === '__none__') {
+        updates.assignee_ids = [];
+        updates.assignee_id = null;
+      } else if (!existingAssignees.includes(assignee)) {
+        updates.assignee_ids = [...existingAssignees, assignee];
+        updates.assignee_id = updates.assignee_ids[0];
+      }
+    }
+    if (tag) {
+      const existingTags = c ? (c.tags || []) : [];
+      if (!existingTags.includes(tag)) updates.tags = [...existingTags, tag];
+    }
+    if (Object.keys(updates).length === 0) continue;
+    const { error } = await window.sb.from('bni_contacts').update(updates).eq('id', id);
+    if (!error) {
+      const c = _contacts.find(x => x.id === id);
+      if (c) Object.assign(c, updates);
+      if (status) window.logActivity(id, 'Status', `Bulk → ${status}`);
+    }
+  }
+  _selected.clear();
+  renderBulkBar();
+  populateTagFilter();
+  render();
+  window.bniToast(`Updated ${ids.length} contact(s)`, 'success');
+}
+
+async function bulkHide() {
+  if (!confirm(`Hide ${_selected.size} contact(s)?`)) return;
+  const ids = [..._selected];
+  for (const id of ids) {
+    await window.sb.from('bni_contacts').update({ hidden: true }).eq('id', id);
+    const c = _contacts.find(x => x.id === id);
+    if (c) c.hidden = true;
+  }
+  _selected.clear();
+  renderBulkBar();
+  render();
+  window.bniToast(`Hidden ${ids.length} contact(s)`, 'success');
+}
+
+function toggleWaMenu(ev, btn) {
+  ev.preventDefault(); ev.stopPropagation();
+  const dd = btn.closest('.wa-dropdown');
+  document.querySelectorAll('.wa-dropdown.open').forEach(x => { if (x !== dd) x.classList.remove('open'); });
+  dd.classList.toggle('open');
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.wa-dropdown')) {
+    document.querySelectorAll('.wa-dropdown.open').forEach(x => x.classList.remove('open'));
+  }
+});
+
+async function sendWA(contactId, templateId) {
+  const c = _contacts.find(x => x.id === contactId);
+  if (!c) return;
+  const url = window.waUrlFor(window.primaryPhone(c), c.first, templateId);
+  if (!url) return;
+  window.open(url, '_blank', 'noopener');
+  const tpl = (window.WA_TEMPLATES || []).find(t => t.id === templateId);
+  window.logActivity(contactId, 'WhatsApp', tpl ? tpl.label : 'Message sent');
+  document.querySelectorAll('.wa-dropdown.open').forEach(x => x.classList.remove('open'));
+}
+
+async function logCallActivity(id) {
+  window.logActivity(id, 'Call', 'Initiated phone call');
+}
+async function logEmailActivity(id) {
+  window.logActivity(id, 'Email', 'Opened email draft');
+}
+
+function isoAddDays(n) {
+  const d = new Date(); d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0,10);
+}
+
+async function setReminder(id, when) {
+  const map = { today: 0, tomorrow: 1, '3d': 3, '1w': 7, '1m': 30 };
+  const days = map[when] ?? 0;
+  const newDate = isoAddDays(days);
+  await window.sb.from('bni_contact_details').upsert({ contact_id: id, next_date: newDate }, { onConflict: 'contact_id' });
+  _details[id] = { ..._details[id] || { contact_id: id }, next_date: newDate };
+  window.logActivity(id, 'Reminder', `Follow-up set to ${newDate}`);
+  window.bniToast(`Reminder set to ${newDate}`, 'success');
+  document.querySelectorAll('.wa-dropdown.open').forEach(x => x.classList.remove('open'));
+  render();
+}
+
+function openReminderPicker(id) {
+  document.querySelectorAll('.wa-dropdown.open').forEach(x => x.classList.remove('open'));
+  const input = document.getElementById('fup-input-' + id);
+  if (!input) return;
+  // Pre-fill with existing date or tomorrow
+  const existing = (_details[id] || {}).next_date || isoAddDays(1);
+  input.value = existing;
+  input.min = new Date().toISOString().slice(0, 10);
+  input.showPicker ? input.showPicker() : input.click();
+}
+
+async function setReminderFromInput(id, input) {
+  const val = input.value;
+  if (!val || !/^\d{4}-\d{2}-\d{2}$/.test(val)) return;
+  await window.sb.from('bni_contact_details').upsert({ contact_id: id, next_date: val }, { onConflict: 'contact_id' });
+  _details[id] = { ..._details[id] || { contact_id: id }, next_date: val };
+  window.logActivity(id, 'Reminder', `Follow-up set to ${val}`);
+  window.bniToast(`Follow-up date set to ${val}`, 'success');
+  render();
+}
+
+async function setReminderCustom(id) {
+  openReminderPicker(id);
+}
+
+async function clearReminder(id) {
+  await window.sb.from('bni_contact_details').upsert({ contact_id: id, next_date: null }, { onConflict: 'contact_id' });
+  if (_details[id]) _details[id].next_date = null;
+  window.logActivity(id, 'Reminder', 'Cleared');
+  window.bniToast('Reminder cleared', 'success');
+  document.querySelectorAll('.wa-dropdown.open').forEach(x => x.classList.remove('open'));
+  render();
+}
+
+async function toggleHidden(id, currentlyHidden) {
+  const next = !currentlyHidden;
+  const { error } = await window.sb.from('bni_contacts').update({ hidden: next }).eq('id', id);
+  if (error) { window.bniToast('Failed: ' + error.message, 'error'); return; }
+  const c = _contacts.find(x => x.id === id);
+  if (c) c.hidden = next;
+  window.bniToast(next ? 'Hidden' : 'Unhidden', 'success');
+  render();
+}
+
+function setReminderFilter(mode) {
+  activeReminderFilter = mode;
+  ['all','overdue','today','week'].forEach(m => {
+    const btn = document.getElementById('qf-rem-' + m);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  render();
+}
+
+function setProposalFilter(mode) {
+  activeProposalFilter = mode;
+  ['all','fin-pending','fin-sent','tec-pending','tec-sent','com-pending','com-sent'].forEach(m => {
+    const btn = document.getElementById('qf-prop-' + m);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  render();
+}
+
+function passesProposalFilter(c) {
+  if (activeProposalFilter === 'all') return true;
+  const d = _details[c.id] || {};
+  const [keyShort, status] = activeProposalFilter.split('-');
+  const keyMap = { fin: 'financial', tec: 'technical', com: 'commercial' };
+  const prefix = keyMap[keyShort];
+  if (!prefix) return true;
+  const sentAt = d[prefix + '_proposal_sent_at'];
+  const url    = d[prefix + '_proposal_url'];
+  if (status === 'sent')    return !!sentAt;
+  if (status === 'pending') return !sentAt;  // includes both "no file" and "uploaded, not sent" — whatever is still To Do
+  return true;
+}
+
+function proposalPills(d) {
+  if (!d) return '';
+  const tracks = [
+    { key: 'financial',  label: 'F', color: '#0891b2' },
+    { key: 'technical',  label: 'T', color: '#7c3aed' },
+    { key: 'commercial', label: 'C', color: '#16a34a' },
+  ];
+  return tracks.map(t => {
+    const sent = !!d[t.key + '_proposal_sent_at'];
+    const hasFile = !!d[t.key + '_proposal_url'];
+    let bg, col, bd, icon;
+    if (sent)         { bg = '#dcfce7'; col = '#166534'; bd = '#86efac'; icon = 'check-circle-2'; }
+    else if (hasFile) { bg = t.color + '22'; col = t.color; bd = t.color + '55'; icon = 'clock'; }
+    else              { bg = '#f1f5f9'; col = '#94a3b8'; bd = '#e2e8f0'; icon = 'circle-dashed'; }
+    const title = `${t.key[0].toUpperCase() + t.key.slice(1)} Proposal: ${sent ? 'Sent' : hasFile ? 'Ready to send' : 'Not uploaded'}`;
+    return `<span class="badge" title="${title}" style="background:${bg};color:${col};border:1px solid ${bd};padding:2px 6px;font-size:0.6rem;"><i data-lucide="${icon}" style="width:10px;height:10px;display:inline;vertical-align:-1px"></i>${t.label}</span>`;
+  }).join('');
+}
+
+function passesReminderFilter(c) {
+  if (activeReminderFilter === 'all') return true;
+  const d = _details[c.id];
+  const nxt = d && d.next_date;
+  if (!nxt) return false;
+  const today = new Date().toISOString().slice(0, 10);
+  if (activeReminderFilter === 'overdue') return nxt < today;
+  if (activeReminderFilter === 'today')   return nxt === today;
+  if (activeReminderFilter === 'week') {
+    const now = new Date();
+    const start = new Date(now); start.setDate(now.getDate() - now.getDay());
+    const end   = new Date(start); end.setDate(start.getDate() + 6);
+    return nxt >= start.toISOString().slice(0,10) && nxt <= end.toISOString().slice(0,10);
+  }
+  return true;
+}
+
+function setDateFilter(mode) {
+  activeDateFilter = mode;
+  ['all','today','week','month'].forEach(m => {
+    const btn = document.getElementById('qf-date-' + m);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  const exactBtn = document.getElementById('dateExact');
+  if (mode !== 'exact' && exactBtn) exactBtn.style.borderColor = '#e2e8f0';
+  if (mode === 'exact' && exactBtn) {
+    exactBtn.style.borderColor = '#2563eb';
+    ['all','today','week','month'].forEach(m => document.getElementById('qf-date-' + m)?.classList.remove('active'));
+  }
+  render();
+}
+
+function passesDateFilter(c) {
+  if (activeDateFilter === 'all') return true;
+  const iso = meetingDate(c);
+  if (!iso) return false;
+  const today = new Date().toISOString().slice(0, 10);
+  if (activeDateFilter === 'today') return iso === today;
+  if (activeDateFilter === 'exact') {
+    const v = document.getElementById('dateExact').value;
+    return v ? iso === v : true;
+  }
+  const now = new Date();
+  if (activeDateFilter === 'week') {
+    const start = new Date(now); start.setDate(now.getDate() - now.getDay());
+    const end   = new Date(start); end.setDate(start.getDate() + 6);
+    return iso >= start.toISOString().slice(0,10) && iso <= end.toISOString().slice(0,10);
+  }
+  if (activeDateFilter === 'month') {
+    const ym = now.toISOString().slice(0, 7);
+    return iso.slice(0, 7) === ym;
+  }
+  return true;
+}
+
+function toggleShowHidden() {
+  showHidden = !showHidden;
+  const btn = document.getElementById('qf-hidden');
+  btn.className = showHidden ? 'qf-btn active' : 'qf-btn';
+  btn.textContent = showHidden ? 'Showing Hidden' : 'Show Hidden';
+  btn.style.cssText = showHidden ? '' : 'color:#dc2626;border-color:#fecaca;';
+  render();
+}
+
+function sentimentChip(s) {
+  const v = (s || '').toLowerCase();
+  if (v === 'positive') return '<span class="badge" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;">😊 Positive</span>';
+  if (v === 'negative') return '<span class="badge" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;">😠 Negative</span>';
+  if (v === 'neutral')  return '<span class="badge" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;">😐 Neutral</span>';
+  return '';
+}
+
+function progressDots(det) {
+  const items = [
+    { on: !!det.financial_proposal_sent_at,  label: 'Meeting Prop.' },
+    { on: !!det.technical_proposal_sent_at,  label: 'Technical Prop.' },
+    { on: !!det.commercial_proposal_sent_at, label: 'Commercial Prop.' },
+    { on: !!det.proposal_reply_received_at,  label: 'Reply' },
+  ];
+  if (items.every(i => !i.on)) return '';
+  return `<div class="flex items-center gap-1.5 flex-wrap mt-1.5">
+    ${items.map(i => `<span style="font-size:0.62rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:${i.on?'#dcfce7':'#f1f5f9'};color:${i.on?'#166534':'#94a3b8'};border:1px solid ${i.on?'#86efac':'#e2e8f0'};">
+      ${i.on ? '✓ ' : ''}${i.label}
+    </span>`).join('')}
+  </div>`;
+}
+
+function cardHTML(c) {
+  const first = c.first || '', last = c.last || '';
+  const initials = ((first[0]||'') + (last[0]||'')).toUpperCase() || '?';
+  const chapter = extractChapter(c);
+  const assigneeIds = window.contactAssigneeIds(c);
+  const assigneeChips = assigneeIds.map(id => {
+    const name = window.devName(id) || '';
+    if (!name) return '';
+    const col = avatarColor(id);
+    return `<span class="assignee-chip" style="background:${col}18;color:${col};border-color:${col}66;"><i data-lucide="user" style="width:12px;height:12px"></i>${name}</span>`;
+  }).join('');
+  const unassigned = assigneeIds.length === 0
+    ? `<span class="assignee-chip" style="background:#fef2f2;color:#b91c1c;border-color:#fecaca;"><i data-lucide="alert-circle" style="width:12px;height:12px"></i>Unassigned</span>`
+    : '';
+  const notesSnippet = (c.notes || '').slice(0, 140) + ((c.notes || '').length > 140 ? '…' : '');
+  const statusColor = STATUS_COLOR[c.status] || '#64748b';
+  const iso = meetingDate(c);
+  const timeMatch = (c.notes || '').match(/(\d{1,2}[:.]?\d{0,2}\s*(?:AM|PM|am|pm))/);
+  const timeStr = timeMatch ? timeMatch[1].toUpperCase().replace(/\./g,':') : '';
+
+  const primaryPhone = window.primaryPhone(c);
+  const allPhones = window.contactPhones(c);
+  const rawPhone = (primaryPhone || '').replace(/\D/g,'');
+  const telUrl  = primaryPhone ? `tel:${primaryPhone.replace(/\s/g,'')}` : '';
+  const mailUrl = c.email ? `mailto:${c.email}?subject=${encodeURIComponent('Following up on our BNI 121')}&body=${encodeURIComponent('Hi ' + (first || '') + ',\n\nThanks for the meeting. ')}` : '';
+  const det = _details[c.id] || {};
+  const tags = c.tags || [];
+  const nxt  = det.next_date || '';
+  const todayISO = new Date().toISOString().slice(0, 10);
+  let fupRow = '';
+  if (nxt) {
+    const dd  = new Date(nxt + 'T00:00:00');
+    const lbl = `${DAYS[dd.getDay()]}, ${dd.getDate()} ${MONTHS[dd.getMonth()]}`;
+    const extraCls = nxt < todayISO ? 'fup-overdue' : nxt === todayISO ? 'fup-today' : '';
+    const icon     = nxt < todayISO ? 'alert-triangle' : 'calendar-check';
+    const label    = nxt < todayISO ? `Overdue, was due ${lbl}` : nxt === todayISO ? `Follow up TODAY` : `Follow up on ${lbl}`;
+    fupRow = `
+      <div class="fup-set ${extraCls}" onclick="openReminderPicker('${c.id}')">
+        <i data-lucide="${icon}" style="width:14px;height:14px;flex-shrink:0;"></i>
+        <span>${label}</span>
+        <span class="fup-change">Change date</span>
+      </div>`;
+  } else {
+    fupRow = `
+      <div class="fup-nudge" onclick="openReminderPicker('${c.id}')">
+        <i data-lucide="calendar-plus" style="width:15px;height:15px;flex-shrink:0;color:#d97706;"></i>
+        <span>When will you follow up with ${first}?</span>
+        <span class="fup-hint">Tap to set date</span>
+      </div>`;
+  }
+  const zoomPill = det.zoom_recording_url ? `<a href="${det.zoom_recording_url}" target="_blank" class="zoom-pill" title="Watch Zoom recording"><i data-lucide="video" style="width:11px;height:11px"></i>Recording</a>` : '';
+  const tagChips = tags.map(t => `<span class="tag-chip tag-chip-filter" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('tagFilter').value='${t.replace(/'/g,"\\'")}'; render();"><i data-lucide="tag" style="width:10px;height:10px"></i>${t}</span>`).join('');
+  const waOptions = (window.WA_TEMPLATES || []).map(t => `<a href="javascript:void(0)" onclick="sendWA('${c.id}', '${t.id}')">${t.label}</a>`).join('');
+  const score = window.leadScore(c, det);
+  const sc = window.scoreColor(score);
+  const scorePill = `<span class="score-pill" style="background:${sc.bg};color:${sc.fg};border:1px solid ${sc.bd};" title="Lead score">${score}</span>`;
+  const dealVal = Number(c.deal_value) || 0;
+  const dealPill = dealVal ? `<span class="deal-pill" title="Deal value × probability">${formatMoney(dealVal)}${c.deal_probability != null ? ' · ' + c.deal_probability + '%' : ''}</span>` : '';
+  const isSelected = _selected.has(c.id);
+
+  return `
+    <div class="member-card glass rounded-2xl p-5 mb-3 ${isSelected ? 'selected' : ''}" style="${c.hidden ? 'opacity:0.45;border-style:dashed;' : ''}">
+      <input type="checkbox" class="bulk-checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect('${c.id}', this.checked)" onclick="event.stopPropagation()" title="Select for bulk action" />
+      <div class="flex items-start gap-4" style="padding-left:26px;">
+        ${dateTileHTML(iso)}
+        <div class="avatar" style="background:${avatarColor(c.id)}18;color:${avatarColor(c.id)};border:2px solid ${avatarColor(c.id)}55;width:56px;height:56px;font-size:1.2rem;overflow:hidden;">${det.photo ? `<img src="${det.photo}" alt="${first} ${last}" style="width:100%;height:100%;object-fit:cover;" />` : initials}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <a href="contact.html?id=${c.id}" class="font-bold text-slate-900 text-lg hover:text-blue-600" style="letter-spacing:-0.015em;">${first} ${last}</a>
+            <span class="badge" style="background:${statusColor}18;color:${statusColor};border:1px solid ${statusColor}55;">${c.status || '—'}</span>
+            ${scorePill}
+            ${dealPill}
+            ${sentimentChip(det.sentiment)}
+            ${assigneeChips}${unassigned}
+            ${timeStr ? `<span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;"><i data-lucide="clock" style="width:11px;height:11px"></i>${timeStr}</span>` : ''}
+          </div>
+          ${progressDots(det)}
+          <div class="flex items-center gap-2 mt-1.5 flex-wrap text-sm text-slate-600">
+            ${c.company ? `<span class="font-semibold text-slate-700">${c.company}</span>` : ''}
+            ${c.city ? `<span style="color:#2563eb;display:inline-flex;align-items:center;gap:3px;font-weight:500;"><i data-lucide="map-pin" style="width:12px;height:12px"></i>${c.city}</span>` : ''}
+            ${chapter ? `<span class="badge" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;">${chapter}</span>` : ''}
+          </div>
+          ${fupRow}
+          ${(tagChips || zoomPill || proposalPills(det)) ? `<div class="flex items-center gap-1.5 mt-1.5 flex-wrap">${zoomPill}${proposalPills(det)}${tagChips}</div>` : ''}
+          ${notesSnippet ? `<div class="text-sm text-slate-500 mt-2 line-clamp-2 leading-snug">${notesSnippet}</div>` : ''}
+          <input type="date" id="fup-input-${c.id}" class="fup-date-input" onchange="setReminderFromInput('${c.id}', this)" />
+        </div>
+      </div>
+      <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 flex-wrap">
+        ${telUrl ? `<a href="${telUrl}" onclick="logCallActivity('${c.id}')" class="action-btn action-call" title="Call ${primaryPhone}${allPhones.length > 1 ? ' (+' + (allPhones.length - 1) + ' more on profile)' : ''}"><i data-lucide="phone"></i>Call${allPhones.length > 1 ? ' <span style="font-size:0.7em;opacity:0.7;">(' + allPhones.length + ')</span>' : ''}</a>` : ''}
+        ${rawPhone ? `<div class="wa-dropdown"><button class="action-btn action-wa" onclick="toggleWaMenu(event, this)" title="WhatsApp ${primaryPhone}"><i data-lucide="message-circle"></i>WhatsApp <i data-lucide="chevron-down" style="width:12px;height:12px"></i></button><div class="wa-dropdown-menu">${waOptions}</div></div>` : ''}
+        ${mailUrl ? `<a href="${mailUrl}" onclick="logEmailActivity('${c.id}')" class="action-btn action-mail" title="Email ${c.email}"><i data-lucide="mail"></i>Email</a>` : ''}
+        <div class="wa-dropdown">
+          <button class="action-btn" style="${nxt ? 'background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;' : 'background:#fff7ed;color:#c2410c;border-color:#fed7aa;'}" onclick="toggleWaMenu(event, this)" title="Set / change follow-up date"><i data-lucide="calendar"></i>${nxt ? nxt.slice(5) : 'Set date'} <i data-lucide="chevron-down" style="width:12px;height:12px"></i></button>
+          <div class="wa-dropdown-menu">
+            <button onclick="setReminder('${c.id}', 'today')">Today</button>
+            <button onclick="setReminder('${c.id}', 'tomorrow')">Tomorrow</button>
+            <button onclick="setReminder('${c.id}', '3d')">In 3 days</button>
+            <button onclick="setReminder('${c.id}', '1w')">Next week</button>
+            <button onclick="setReminder('${c.id}', '1m')">Next month</button>
+            <button onclick="openReminderPicker('${c.id}')">Pick a date…</button>
+            ${nxt ? `<button onclick="clearReminder('${c.id}')" style="color:#b91c1c">Clear date</button>` : ''}
+          </div>
+        </div>
+        <a href="contact.html?id=${c.id}" class="action-btn action-open" title="Open full profile"><i data-lucide="external-link"></i>Open Profile</a>
+        <span class="flex-1"></span>
+        <button onclick="openEditModal('${c.id}')" class="action-btn action-ghost" title="Quick edit"><i data-lucide="pencil-line"></i>Edit</button>
+        <button onclick="toggleHidden('${c.id}', ${c.hidden === true})" class="action-btn action-ghost" title="${c.hidden ? 'Unhide' : 'Hide from list'}"><i data-lucide="${c.hidden ? 'eye' : 'eye-off'}"></i>${c.hidden ? 'Unhide' : 'Hide'}</button>
+      </div>
+    </div>`;
+}
+
+function render() {
+  buildChapterDropdown(_contacts);
+  renderStats(_contacts);
+
+  const search   = document.getElementById('searchInput').value.toLowerCase();
+  const statusF  = document.getElementById('statusFilter').value;
+  const segF     = document.getElementById('segmentFilter').value;
+  const chF      = document.getElementById('chapterFilter').value;
+  const assignee = document.getElementById('assigneeFilter').value;
+  const sortBy   = document.getElementById('sortBy').value;
+  const groupBy  = document.getElementById('groupBy').value;
+
+  let list = _contacts.filter(c => {
+    if (c.hidden && !showHidden) return false;
+    const txt = ((c.first||'')+' '+(c.last||'')+' '+(c.company||'')+' '+(c.city||'')+' '+(c.notes||'')+' '+(c.chapter||'')).toLowerCase();
+    if (search && !txt.includes(search)) return false;
+    if (statusF && c.status !== statusF) return false;
+    if (segF && c.segment !== segF) return false;
+    if (chF && extractChapter(c) !== chF) return false;
+    if (assignee) {
+      const ids = window.contactAssigneeIds(c);
+      if (assignee === '__none__') { if (ids.length > 0) return false; }
+      else if (!ids.includes(assignee)) return false;
+    }
+    if (!passesDateFilter(c)) return false;
+    if (!passesReminderFilter(c)) return false;
+    if (!passesProposalFilter(c)) return false;
+    const tagF = document.getElementById('tagFilter')?.value;
+    if (tagF && !(c.tags || []).includes(tagF)) return false;
+    const sentF = document.getElementById('sentimentFilter')?.value;
+    if (sentF) {
+      const s = (_details[c.id]?.sentiment || '').toLowerCase();
+      if (sentF === '__unset__') { if (s) return false; }
+      else if (s !== sentF) return false;
+    }
+    return true;
+  });
+
+  if (sortBy === 'date')   list.sort((a,b) => (meetingDate(b) || '').localeCompare(meetingDate(a) || ''));
+  if (sortBy === 'name')   list.sort((a,b) => ((a.first||'')+(a.last||'')).localeCompare((b.first||'')+(b.last||'')));
+  if (sortBy === 'status') list.sort((a,b) => (STATUS_ORDER[a.status]??9) - (STATUS_ORDER[b.status]??9));
+  if (sortBy === 'recent') list.sort((a,b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
+
+  document.getElementById('result-count').textContent =
+    `${list.length} meeting${list.length!==1?'s':''} · filtered from ${_contacts.length} total`;
+
+  if (!list.length) {
+    document.getElementById('member-list').innerHTML =
+      '<p class="text-slate-400 text-center py-16">No contacts match the current filters.</p>';
+    setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+    return;
+  }
+
+  if (!groupBy) {
+    document.getElementById('member-list').innerHTML = list.map(cardHTML).join('');
+    setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+    return;
+  }
+
+  const groups = {};
+  list.forEach(c => {
+    let key;
+    if (groupBy === 'segment')       key = c.segment || 'Other';
+    else if (groupBy === 'chapter')  key = extractChapter(c) || 'No Chapter Assigned';
+    else if (groupBy === 'assignee') {
+      const names = window.contactAssigneeNames(c);
+      key = names.length ? names.join(', ') : '— Unassigned —';
+    }
+    else if (groupBy === 'date') {
+      const iso = meetingDate(c);
+      if (iso) {
+        const d = new Date(iso + 'T00:00:00');
+        key = DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+      } else key = 'No Date';
+    }
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(c);
+  });
+
+  // For date grouping, sort keys by date descending; otherwise alphabetical
+  const keys = groupBy === 'date'
+    ? Object.keys(groups).sort((a, b) => {
+        if (a === 'No Date') return 1;
+        if (b === 'No Date') return -1;
+        return new Date(b).getTime() - new Date(a).getTime();
+      })
+    : Object.keys(groups).sort();
+
+  // defer: render icons after DOM updates
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+  document.getElementById('member-list').innerHTML = keys.map(key => `
+    <div class="mt-4 mb-1">
+      <div class="group-header">
+        <span>${key}</span>
+        <span style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;padding:2px 8px;border-radius:20px;font-size:0.65rem;">${groups[key].length}</span>
+      </div>
+      ${groups[key].map(cardHTML).join('')}
+    </div>
+  `).join('');
+}
+
+async function init() {
+  await window.loadDevelopers();
+  await window.loadChapters();
+  populateAssigneeFilter();
+  await refresh();
+}
+init();
+</script>
+  <script src="bni-sidebar.js"></script>
+</body>
+</html>

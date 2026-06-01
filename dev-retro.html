@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retrospective — DevOps · BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family:'Inter',sans-serif; background:#f8fafc; color:#0f172a; }
+    .glass { background:white; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+    .l-col { border-radius:18px; padding:18px; min-height:360px; display:flex; flex-direction:column; }
+    .l-col h3 { font-weight:800; font-size:13px; letter-spacing:0.04em; text-transform:uppercase; }
+    .l-col .desc { font-size:11px; opacity:0.8; margin-top:2px; }
+    .l-liked      { background:#ecfdf5; border:1px solid #a7f3d0; }
+    .l-liked      h3 { color:#047857; }
+    .l-learned    { background:#eff6ff; border:1px solid #bfdbfe; }
+    .l-learned    h3 { color:#1d4ed8; }
+    .l-lacked     { background:#fef3c7; border:1px solid #fde68a; }
+    .l-lacked     h3 { color:#92400e; }
+    .l-longed-for { background:#f5f3ff; border:1px solid #ddd6fe; }
+    .l-longed-for h3 { color:#6d28d9; }
+    .note { background:white; border:1px solid #e2e8f0; border-radius:10px; padding:9px 11px; font-size:13px; box-shadow:0 1px 2px rgba(0,0,0,0.03); }
+    .note .meta { font-size:10px; color:#94a3b8; margin-top:4px; display:flex; justify-content:space-between; }
+    .note button { background:none; border:none; color:#94a3b8; cursor:pointer; padding:0; font-size:10px; }
+    .note button:hover { color:#dc2626; }
+  </style>
+</head>
+<body>
+  <main class="px-4 sm:px-8 py-6 max-w-[1400px] mx-auto">
+    <header class="mb-5 flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-900" style="letter-spacing:-0.02em">Retrospective &middot; Four L's</h1>
+        <p class="text-slate-500 text-sm mt-0.5">Liked, Learned, Lacked, Longed for &mdash; one retro per sprint. Pick a sprint, then add a note in any column. Notes persist for the team.</p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <select id="projectSel" onchange="onProjectChange()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold bg-white"></select>
+        <select id="sprintSel"  onchange="onSprintChange()"  class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"></select>
+        <input id="myName" placeholder="Your name" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white w-36" />
+      </div>
+    </header>
+
+    <div id="loading" class="py-12 text-center text-slate-400 text-sm">Loading…</div>
+
+    <div id="content" class="hidden">
+      <!-- Sprint header -->
+      <div class="glass rounded-2xl p-4 mb-5 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div class="font-bold text-slate-900" id="s_name">&mdash;</div>
+          <div class="text-xs text-slate-500" id="s_dates">&mdash;</div>
+        </div>
+        <div class="text-xs text-slate-500" id="s_counts">&mdash;</div>
+      </div>
+
+      <!-- Four L's -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="l-col l-liked">
+          <h3>Liked</h3>
+          <div class="desc">What worked well? What energised the team?</div>
+          <div id="col_liked" class="space-y-2 mt-3 flex-1"></div>
+          <div class="mt-3 flex gap-2">
+            <input id="in_liked" placeholder="Add a note…" class="flex-1 border border-emerald-200 rounded-lg px-2.5 py-2 text-sm bg-white" />
+            <button onclick="addNote('liked')" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-emerald-700">Add</button>
+          </div>
+        </div>
+
+        <div class="l-col l-learned">
+          <h3>Learned</h3>
+          <div class="desc">What new knowledge or skill did we gain?</div>
+          <div id="col_learned" class="space-y-2 mt-3 flex-1"></div>
+          <div class="mt-3 flex gap-2">
+            <input id="in_learned" placeholder="Add a note…" class="flex-1 border border-blue-200 rounded-lg px-2.5 py-2 text-sm bg-white" />
+            <button onclick="addNote('learned')" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-blue-700">Add</button>
+          </div>
+        </div>
+
+        <div class="l-col l-lacked">
+          <h3>Lacked</h3>
+          <div class="desc">What was missing? Where did we get stuck?</div>
+          <div id="col_lacked" class="space-y-2 mt-3 flex-1"></div>
+          <div class="mt-3 flex gap-2">
+            <input id="in_lacked" placeholder="Add a note…" class="flex-1 border border-amber-200 rounded-lg px-2.5 py-2 text-sm bg-white" />
+            <button onclick="addNote('lacked')" class="bg-amber-600 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-amber-700">Add</button>
+          </div>
+        </div>
+
+        <div class="l-col l-longed-for">
+          <h3>Longed for</h3>
+          <div class="desc">What do we wish we'd had? Tools, time, info?</div>
+          <div id="col_longed_for" class="space-y-2 mt-3 flex-1"></div>
+          <div class="mt-3 flex gap-2">
+            <input id="in_longed_for" placeholder="Add a note…" class="flex-1 border border-violet-200 rounded-lg px-2.5 py-2 text-sm bg-white" />
+            <button onclick="addNote('longed_for')" class="bg-violet-600 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-violet-700">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-5 text-[11px] text-slate-400">
+        The Four L's is one of several retrospective formats. Run after every sprint review. Aim: surface what to keep, what to learn, what to fix. See the <a href="/bni/dev-glossary.html" class="text-blue-600 hover:underline">DevOps Glossary</a> for the wider Scrum vocabulary.
+      </p>
+    </div>
+  </main>
+
+  <script src="supabase-config.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="bni-sidebar.js"></script>
+  <script>
+  let _projects=[], _projectId=null, _sprints=[], _sprintId=null, _retro=null;
+
+  function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+  async function loadAll() {
+    const [{data: ps}, {data: sprints}] = await Promise.all([
+      window.sb.from('dev_projects').select('id,name').eq('hidden', false).order('name'),
+      window.sb.from('dev_sprints').select('*').order('start_date', { ascending: false }),
+    ]);
+    _projects = ps || []; _sprints = sprints || [];
+    _projectId = localStorage.getItem('dev_project') || (_projects[0] && _projects[0].id) || null;
+    document.getElementById('projectSel').innerHTML =
+      _projects.map(p => `<option value="${p.id}"${p.id===_projectId?' selected':''}>${escapeHtml(p.name)}</option>`).join('');
+    document.getElementById('myName').value = localStorage.getItem('retro_my_name') || '';
+    document.getElementById('myName').addEventListener('input', e => localStorage.setItem('retro_my_name', e.target.value));
+    populateSprintSel();
+  }
+
+  function onProjectChange() { _projectId = document.getElementById('projectSel').value; localStorage.setItem('dev_project', _projectId); populateSprintSel(); }
+
+  function populateSprintSel() {
+    const opts = _sprints.filter(s => s.project_id === _projectId);
+    if (!opts.length) {
+      document.getElementById('sprintSel').innerHTML = '<option value="">No sprints yet</option>';
+      document.getElementById('loading').textContent = 'No sprints in this project. Create one in Sprints first.';
+      document.getElementById('content').classList.add('hidden');
+      return;
+    }
+    _sprintId = localStorage.getItem('dev_sprint_'+_projectId) || opts[0].id;
+    if (!opts.some(s => s.id === _sprintId)) _sprintId = opts[0].id;
+    document.getElementById('sprintSel').innerHTML =
+      opts.map(s => `<option value="${s.id}"${s.id===_sprintId?' selected':''}>${escapeHtml(s.name)} · ${s.state}</option>`).join('');
+    loadRetro();
+  }
+
+  function onSprintChange() { _sprintId = document.getElementById('sprintSel').value; localStorage.setItem('dev_sprint_'+_projectId, _sprintId); loadRetro(); }
+
+  async function loadRetro() {
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('content').classList.add('hidden');
+    const { data } = await window.sb.from('dev_retros').select('*').eq('sprint_id', _sprintId).maybeSingle();
+    if (data) _retro = data;
+    else _retro = { sprint_id: _sprintId, liked: [], learned: [], lacked: [], longed_for: [] };
+    const sprint = _sprints.find(s => s.id === _sprintId);
+    if (sprint) {
+      document.getElementById('s_name').textContent  = sprint.name;
+      document.getElementById('s_dates').textContent = `${sprint.start_date} → ${sprint.end_date} · ${sprint.state}`;
+    }
+    renderColumns();
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+  }
+
+  function renderColumns() {
+    ['liked','learned','lacked','longed_for'].forEach(k => {
+      const arr = _retro[k] || [];
+      const html = arr.map((n, idx) => `
+        <div class="note">
+          ${escapeHtml(n.text)}
+          <div class="meta">
+            <span>${escapeHtml(n.author||'anon')} · ${new Date(n.ts).toLocaleDateString('en-IN')}</span>
+            <button onclick="removeNote('${k}', ${idx})">remove</button>
+          </div>
+        </div>`).join('');
+      document.getElementById('col_'+k).innerHTML = html || `<p class="text-slate-400 text-xs">No notes yet.</p>`;
+    });
+    const c = ['liked','learned','lacked','longed_for'].map(k => `${k.replace('_',' ')}: ${(_retro[k]||[]).length}`).join(' · ');
+    document.getElementById('s_counts').textContent = c;
+  }
+
+  async function addNote(col) {
+    const input = document.getElementById('in_'+col);
+    const text = input.value.trim();
+    if (!text) return;
+    const author = (document.getElementById('myName').value || '').trim() || 'anon';
+    const note = { text, author, ts: new Date().toISOString() };
+    _retro[col] = [..._retro[col], note];
+    await persist();
+    input.value = '';
+    renderColumns();
+  }
+
+  async function removeNote(col, idx) {
+    _retro[col] = _retro[col].filter((_, i) => i !== idx);
+    await persist();
+    renderColumns();
+  }
+
+  async function persist() {
+    const payload = { sprint_id: _sprintId, liked: _retro.liked, learned: _retro.learned, lacked: _retro.lacked, longed_for: _retro.longed_for };
+    const { data, error } = await window.sb.from('dev_retros')
+      .upsert(payload, { onConflict: 'sprint_id' })
+      .select().single();
+    if (error) { alert('Save failed: ' + error.message); return; }
+    _retro = data;
+  }
+
+  document.addEventListener('bni-auth-ready', loadAll);
+  </script>
+</body>
+</html>

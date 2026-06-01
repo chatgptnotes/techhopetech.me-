@@ -41,3 +41,10 @@ supabase/.temp/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Deployment artifacts
+.backups/
+.deployed-sha
+uploads/
+*.ai-solutions-20260430
+*.bni-app-backup-20260430

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/jpeg" href="/bni/bni-logo.jpg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dr. BK Murali, AI Entrepreneur, Physician, BNI Diorite Nagpur</title>
+  <meta name="description" content="Dr. BK Murali is a practicing physician and AI entrepreneur from Nagpur, India. Founder of HopePhoenix, DrM Hope Softwares. Director at Bettroi and Betser Life. BNI Diorite member." />
+  <meta name="keywords" content="Dr BK Murali, AI entrepreneur Nagpur, HopePhoenix, DrM Hope Softwares, Bettroi, BNI Diorite Nagpur, hospital management software, healthcare AI India" />
+  <meta property="og:title" content="Dr. BK Murali, AI Entrepreneur, Physician, BNI Diorite Nagpur" />
+  <meta property="og:description" content="Physician and AI entrepreneur from Nagpur. Founder of HopePhoenix, DrM Hope Softwares. Director at Bettroi. BNI Diorite member." />
+  <meta property="og:type" content="profile" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; overflow-x: hidden; }
+    .font-display { font-family: 'Playfair Display', serif; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+    .grid-lines {
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; animation: orb-float 10s ease-in-out infinite; }
+    @keyframes orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.06); } }
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 100ms; }
+    .reveal-delay-2 { transition-delay: 200ms; }
+    .reveal-delay-3 { transition-delay: 300ms; }
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
+    .glass-hover { transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    .glass-hover:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.15); transform: translateY(-4px); }
+    .text-gradient-blue { background: linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .text-gradient-gold { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .navbar { transition: background 0.3s ease, border-color 0.3s ease; }
+    .navbar.scrolled { background: rgba(2,8,23,0.92); border-color: rgba(255,255,255,0.08) !important; backdrop-filter: blur(20px); }
+    .cta-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(59,130,246,0.3); }
+    .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.45); }
+    .tag-pill { font-size: 0.7rem; letter-spacing: 0.06em; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; }
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #020817; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .stat-number { font-size: 2.5rem; font-weight: 800; line-height: 1; }
+    .company-card { transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    .company-card:hover { transform: translateY(-6px); }
+    .expertise-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s ease; }
+    .expertise-pill:hover { background: rgba(96,165,250,0.12); border-color: rgba(96,165,250,0.3); }
+    .photo-ring { box-shadow: 0 0 0 3px rgba(16,185,129,0.3), 0 0 0 6px rgba(16,185,129,0.1), 0 24px 64px rgba(0,0,0,0.5); }
+    .wa-btn { background: linear-gradient(135deg, #25d366, #128c7e); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(37,211,102,0.3); }
+    .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(37,211,102,0.45); }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- NAVBAR -->
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/bni/index.html" class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="font-bold text-white text-lg tracking-tight">HopeTech</span>
+        </a>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-medium">
+        <a href="/bni/index.html#founders" class="hover:text-white transition-colors">Founders</a>
+        <a href="/bni/bettroi.html" class="hover:text-white transition-colors">Bettroi</a>
+        <a href="/bni/hopephoenix.html" class="hover:text-white transition-colors">HopePhoenix</a>
+        <a href="/bni/betser.html" class="hover:text-white transition-colors">Betser</a>
+        <a href="/bni/drmhope.html" class="hover:text-white transition-colors">DrM Hope</a>
+      </div>
+      <a href="/bni/index.html" class="cta-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Book 121</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative min-h-screen grid-lines flex items-center pt-24 pb-16 overflow-hidden">
+    <div class="orb" style="width:500px;height:500px;background:rgba(16,185,129,0.12);top:-120px;right:-100px;animation-delay:0s;"></div>
+    <div class="orb" style="width:300px;height:300px;background:rgba(59,130,246,0.10);bottom:100px;left:-80px;animation-delay:-4s;"></div>
+    <div class="orb" style="width:200px;height:200px;background:rgba(99,102,241,0.10);top:40%;left:35%;animation-delay:-7s;"></div>
+
+    <div class="max-w-7xl mx-auto px-6 w-full relative z-10">
+      <div class="flex flex-col lg:flex-row items-center gap-16">
+
+        <!-- Photo -->
+        <div class="relative flex-shrink-0 reveal">
+          <div class="w-72 h-72 lg:w-80 lg:h-80 rounded-3xl overflow-hidden photo-ring">
+            <img
+              src="/bni/dr-murali.jpg"
+              alt="Dr. BK Murali"
+              class="w-full h-full object-cover"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+            />
+            <div class="w-full h-full hidden items-center justify-center rounded-3xl text-6xl font-bold text-white" style="background: linear-gradient(135deg, #065f46, #10b981); display:none;">
+              BM
+            </div>
+          </div>
+          <!-- BNI badge -->
+          <div class="absolute -bottom-4 -right-4 glass rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-xl">
+            <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+            <span class="text-xs font-semibold text-slate-200">BNI Diorite</span>
+          </div>
+        </div>
+
+        <!-- Text -->
+        <div class="flex-1 text-center lg:text-left">
+          <div class="flex flex-wrap justify-center lg:justify-start gap-2 mb-5 reveal">
+            <span class="tag-pill" style="background:rgba(16,185,129,0.15);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Physician</span>
+            <span class="tag-pill" style="background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.25);">AI Entrepreneur</span>
+            <span class="tag-pill" style="background:rgba(245,158,11,0.15);color:#fcd34d;border:1px solid rgba(245,158,11,0.25);">BNI Diorite</span>
+            <span class="tag-pill" style="background:rgba(99,102,241,0.15);color:#c4b5fd;border:1px solid rgba(99,102,241,0.25);">Nagpur, India</span>
+          </div>
+          <h1 class="font-display text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 leading-tight reveal reveal-delay-1">
+            Dr. BK<br><span class="text-gradient-blue">Murali</span>
+          </h1>
+          <p class="text-xl text-slate-300 mb-3 font-medium reveal reveal-delay-2">
+            Physician, Hope Hospital, Nagpur
+          </p>
+          <p class="text-slate-400 max-w-xl mb-8 leading-relaxed reveal reveal-delay-2">
+            Medical doctor turned technology entrepreneur. Building AI-first products for healthcare, industry, and enterprise across India and the GCC. Founder of HopePhoenix and DrM Hope Softwares. Director at Bettroi.
+          </p>
+
+          <div class="flex flex-wrap justify-center lg:justify-start gap-4 reveal reveal-delay-3">
+            <a href="https://wa.me/919373111709?text=Hi%20Dr.%20Murali%2C%20I%20found%20your%20profile%20on%20HopeTech%20and%20would%20love%20a%20121%20meeting." target="_blank" rel="noopener" class="wa-btn text-white font-semibold px-6 py-3 rounded-xl flex items-center gap-2 text-sm">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.015 22l4.932-1.409A9.953 9.953 0 0011.999 22c5.523 0 10-4.477 10-10S17.522 2 11.999 2z" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+              WhatsApp
+            </a>
+            <a href="mailto:cmd@hopehospital.com" class="glass glass-hover text-slate-200 font-semibold px-6 py-3 rounded-xl flex items-center gap-2 text-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+              cmd@hopehospital.com
+            </a>
+            <a href="tel:+919373111709" class="glass glass-hover text-slate-200 font-semibold px-6 py-3 rounded-xl flex items-center gap-2 text-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.5a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 8.1a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+              +91 9373111709
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- STATS + BIO -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <!-- Stats -->
+      <div class="grid grid-cols-3 md:grid-cols-3 gap-6 mb-16">
+        <div class="glass rounded-2xl p-6 text-center reveal">
+          <div class="stat-number text-gradient-blue mb-1">35+</div>
+          <div class="text-slate-400 text-sm font-medium">AI Products Built</div>
+        </div>
+        <div class="glass rounded-2xl p-6 text-center reveal reveal-delay-1">
+          <div class="stat-number text-gradient-gold mb-1">4</div>
+          <div class="text-slate-400 text-sm font-medium">Ventures</div>
+        </div>
+        <div class="glass rounded-2xl p-6 text-center reveal reveal-delay-2">
+          <div class="stat-number mb-1" style="font-size:2.5rem;font-weight:800;line-height:1;background:linear-gradient(135deg,#6ee7b7,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">BNI</div>
+          <div class="text-slate-400 text-sm font-medium">Diorite, Nagpur</div>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="max-w-4xl mx-auto glass rounded-3xl p-8 lg:p-12 reveal">
+        <h2 class="font-display text-3xl font-bold text-white mb-6">About Dr. Murali</h2>
+        <div class="space-y-4 text-slate-300 leading-relaxed">
+          <p>
+            Dr. BK Murali is a practicing physician at Hope Hospital, Nagpur, and one of central India's most active AI entrepreneurs. His journey bridges two worlds: the clinical precision of medicine and the transformative power of technology.
+          </p>
+          <p>
+            Over the past several years, Dr. Murali has built more than 35 AI-powered products under the HopePhoenix brand, targeting healthcare, industrial automation, and enterprise efficiency. His vision is simple: Indian institutions deserve world-class software, built by people who understand how they actually operate.
+          </p>
+          <p>
+            As a Director at Bettroi (Dubai Silicon Oasis), he connects India's talent and healthcare market with GCC's capital and enterprise demand. His company DrM Hope Softwares focuses on clinical informatics, EMR systems, and voice-first documentation tools for India's hospitals and clinics.
+          </p>
+          <p>
+            Dr. Murali is a proud member of BNI Diorite, Nagpur, where he actively exchanges referrals with professionals across sectors. He welcomes 121 meetings with anyone in healthcare, industrial manufacturing, education technology, or enterprise AI.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- COMPANIES -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-12 reveal">
+        <span class="tag-pill mb-4 inline-block" style="background:rgba(99,102,241,0.15);color:#c4b5fd;border:1px solid rgba(99,102,241,0.25);">Ventures</span>
+        <h2 class="font-display text-4xl font-bold text-white mt-3">Companies</h2>
+        <p class="text-slate-400 mt-3 max-w-xl mx-auto">Four ventures spanning healthcare AI, industrial software, and enterprise platforms across India and the GCC.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- HopePhoenix -->
+        <a href="/bni/hopephoenix.html" class="company-card glass rounded-3xl p-8 block" style="border-color:rgba(245,158,11,0.2);">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(251,191,36,0.1));border:1px solid rgba(245,158,11,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">HopePhoenix</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">35+ AI products for healthcare, industrial automation, education, and enterprise. India's most comprehensive AI product suite from a single founding team.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag-pill" style="background:rgba(245,158,11,0.12);color:#fcd34d;border:1px solid rgba(245,158,11,0.2);">Founder</span>
+            <span class="tag-pill" style="background:rgba(245,158,11,0.12);color:#fcd34d;border:1px solid rgba(245,158,11,0.2);">Healthcare AI</span>
+          </div>
+        </a>
+
+        <!-- DrM Hope -->
+        <a href="/bni/drmhope.html" class="company-card glass rounded-3xl p-8 block" style="border-color:rgba(16,185,129,0.2);">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(52,211,153,0.1));border:1px solid rgba(16,185,129,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">DrM Hope Softwares</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">Clinical informatics, EMR systems, voice-to-EMR dictation, and AI-assisted diagnostic tools built specifically for India's healthcare workflow.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag-pill" style="background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.2);">Founder</span>
+            <span class="tag-pill" style="background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.2);">Clinical AI</span>
+          </div>
+        </a>
+
+        <!-- Bettroi -->
+        <a href="/bni/bettroi.html" class="company-card glass rounded-3xl p-8 block" style="border-color:rgba(99,102,241,0.2);">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.1));border:1px solid rgba(99,102,241,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">Bettroi.com</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">Dubai Silicon Oasis-based AI platform company. 25+ enterprise products spanning energy management, industrial IoT, and enterprise workflow automation for GCC markets.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag-pill" style="background:rgba(99,102,241,0.12);color:#c4b5fd;border:1px solid rgba(99,102,241,0.2);">Director</span>
+            <span class="tag-pill" style="background:rgba(99,102,241,0.12);color:#c4b5fd;border:1px solid rgba(99,102,241,0.2);">Dubai</span>
+          </div>
+        </a>
+
+        <!-- Betser -->
+        <a href="/bni/betser.html" class="company-card glass rounded-3xl p-8 block" style="border-color:rgba(168,85,247,0.2);">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(192,132,252,0.1));border:1px solid rgba(168,85,247,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">Betser Life</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">Health and wellness technology platform connecting patients, practitioners, and healthcare supply chains across India and the Gulf.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag-pill" style="background:rgba(168,85,247,0.12);color:#e9d5ff;border:1px solid rgba(168,85,247,0.2);">Advisor</span>
+            <span class="tag-pill" style="background:rgba(168,85,247,0.12);color:#e9d5ff;border:1px solid rgba(168,85,247,0.2);">Health Tech</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- EXPERTISE -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-12 reveal">
+        <span class="tag-pill mb-4 inline-block" style="background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.25);">Skills</span>
+        <h2 class="font-display text-4xl font-bold text-white mt-3">Areas of Expertise</h2>
+      </div>
+      <div class="flex flex-wrap justify-center gap-3 reveal">
+        <span class="expertise-pill">Healthcare AI</span>
+        <span class="expertise-pill">Hospital Management Systems</span>
+        <span class="expertise-pill">Clinical Informatics</span>
+        <span class="expertise-pill">Voice-to-EMR</span>
+        <span class="expertise-pill">Industrial SCADA</span>
+        <span class="expertise-pill">Enterprise Automation</span>
+        <span class="expertise-pill">Digital Transformation</span>
+        <span class="expertise-pill">AI Product Development</span>
+        <span class="expertise-pill">ABDM Compliance</span>
+        <span class="expertise-pill">HL7 / FHIR</span>
+        <span class="expertise-pill">Telemedicine Platforms</span>
+        <span class="expertise-pill">ESIC / Ayushman Bharat</span>
+        <span class="expertise-pill">NFC Technology</span>
+        <span class="expertise-pill">Python / Node.js</span>
+        <span class="expertise-pill">LLM Application Design</span>
+        <span class="expertise-pill">SaaS Architecture</span>
+        <span class="expertise-pill">GCC Market Access</span>
+        <span class="expertise-pill">Medical Education Tech</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- BNI 121 SECTION -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-12 reveal">
+        <span class="tag-pill mb-4 inline-block" style="background:rgba(245,158,11,0.15);color:#fcd34d;border:1px solid rgba(245,158,11,0.25);">BNI 121</span>
+        <h2 class="font-display text-4xl font-bold text-white mt-3">What can we discuss in a 121?</h2>
+        <p class="text-slate-400 mt-3 max-w-xl mx-auto">A 121 meeting is 30 minutes of focused conversation. Here's how I can help you, and what I'm looking for.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- What I bring -->
+        <div class="glass rounded-3xl p-8 reveal">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(52,211,153,0.1));border:1px solid rgba(16,185,129,0.3);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-white">What I bring</h3>
+          </div>
+          <ul class="space-y-4">
+            <li class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+              </div>
+              <div>
+                <span class="text-white text-sm font-semibold">AI consulting for hospitals and clinics</span>
+                <p class="text-slate-400 text-xs mt-1">From small nursing homes to large government hospitals, I map AI opportunities to your specific workflows.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+              </div>
+              <div>
+                <span class="text-white text-sm font-semibold">Digital transformation roadmap</span>
+                <p class="text-slate-400 text-xs mt-1">A clear, phased plan to modernize any healthcare or industrial organization with AI, no fluff.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+              </div>
+              <div>
+                <span class="text-white text-sm font-semibold">Live product demos: SCADA.work and IHMS</span>
+                <p class="text-slate-400 text-xs mt-1">See real AI-powered industrial monitoring and hospital management in action, built for Indian conditions.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+              </div>
+              <div>
+                <span class="text-white text-sm font-semibold">Introduction to HopePhoenix suite</span>
+                <p class="text-slate-400 text-xs mt-1">35+ products across CliniVoice, HMS+, FactoryPulse, AI-Shu, Adamrit, and more.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- What I'm looking for -->
+        <div class="glass rounded-3xl p-8 reveal reveal-delay-1">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(99,102,241,0.1));border:1px solid rgba(59,130,246,0.3);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-white">What I'm looking for</h3>
+          </div>
+          <ul class="space-y-4">
+            <li class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);">
+                <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+              </div>
+              <div>
+                <span class="text-white text-sm font-semibold">Hospitals needing HMS</span>
+                <p class="text-slate-400 text-xs mt-1">Introductions to hospital administrators, medical directors, or clinic owners evaluating HMS solutions.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);">
+                <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+              </div>
+              <div>
+                <span class="text-white text-sm font-semibold">Factories needing SCADA</span>
+                <p class="text-slate-400 text-xs mt-1">Manufacturing plants, process industries, and utility operators who want real-time AI-powered monitoring.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);">
+                <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+              </div>
+              <div>
+                <span class="text-white text-sm font-semibold">Enterprises needing AI agents</span>
+                <p class="text-slate-400 text-xs mt-1">Organizations ready to automate workflows, knowledge management, or customer operations with LLM-based agents.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);">
+                <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+              </div>
+              <div>
+                <span class="text-white text-sm font-semibold">AI/tech professionals for collaboration</span>
+                <p class="text-slate-400 text-xs mt-1">Engineers, developers, and tech founders who want to co-build or integrate with the HopePhoenix ecosystem.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- CTA -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+      <div class="glass rounded-3xl p-12 reveal" style="border-color:rgba(16,185,129,0.2);">
+        <div class="orb" style="width:300px;height:300px;background:rgba(16,185,129,0.08);top:-60px;left:50%;transform:translateX(-50%);animation-delay:-2s;"></div>
+        <h2 class="font-display text-4xl font-bold text-white mb-4 relative z-10">Ready for a 121?</h2>
+        <p class="text-slate-400 mb-8 relative z-10">Send a WhatsApp message and let's find 30 minutes that work. I'm based in Nagpur and available for video calls globally.</p>
+        <a href="https://wa.me/919373111709?text=Hi%20Dr.%20Murali%2C%20I%20found%20your%20profile%20on%20HopeTech%20and%20would%20love%20a%20121%20meeting." target="_blank" rel="noopener" class="wa-btn text-white font-bold px-8 py-4 rounded-2xl inline-flex items-center gap-3 text-base relative z-10">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.015 22l4.932-1.409A9.953 9.953 0 0011.999 22c5.523 0 10-4.477 10-10S17.522 2 11.999 2z" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+          Book a 121 on WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- OVERVIEW IMAGE -->
+  <section class="py-16 max-w-5xl mx-auto px-6">
+    <div class="reveal text-center mb-8">
+      <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-2">The Ecosystem</p>
+      <h2 class="text-2xl font-bold text-white">Two Founders. Four Ventures. One Vision.</h2>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <img src="/bni/hopetech-overview.png" alt="HopeTech ecosystem overview" class="w-full rounded-2xl" style="border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.4);" loading="lazy"/>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 py-12 mt-8">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <span class="text-white font-semibold">HopeTech Ventures</span>
+      </div>
+      <p class="text-slate-500 text-sm">&copy; 2025 HopeTech Ventures. Dr. BK Murali &amp; Biji Thomas. All rights reserved.</p>
+      <div class="flex items-center gap-6 text-sm text-slate-500">
+        <a href="/bni/index.html" class="hover:text-white transition-colors">Home</a>
+        <a href="/bni/dr-murali.html" class="hover:text-white transition-colors">Dr. Murali</a>
+        <a href="/bni/biji-thomas.html" class="hover:text-white transition-colors">Biji Thomas</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    // Scroll reveal
+    document.querySelectorAll('.reveal').forEach(el => {
+      new IntersectionObserver(([e]) => e.isIntersecting && e.target.classList.add('visible'), { threshold: 0.1 }).observe(el);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/jpeg" href="/bni/bni-logo.jpg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bettroi: Enterprise AI &amp; Industrial Automation Platform | Dubai Silicon Oasis</title>
+  <meta name="description" content="Bettroi builds enterprise AI, energy management, healthcare, and oil &amp; gas platforms. 25+ products. Based at Dubai Silicon Oasis. Co-founded by BNI members Dr. BK Murali and Biji Thomas." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; overflow-x: hidden; }
+    .font-display { font-family: 'Playfair Display', serif; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+    .grid-lines {
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; animation: orb-float 10s ease-in-out infinite; }
+    @keyframes orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.06); } }
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 100ms; }
+    .reveal-delay-2 { transition-delay: 200ms; }
+    .reveal-delay-3 { transition-delay: 300ms; }
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
+    .glass-hover { transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    .glass-hover:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.15); transform: translateY(-4px); }
+    .text-gradient-blue { background: linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .text-gradient-indigo { background: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .navbar { transition: background 0.3s ease, border-color 0.3s ease; }
+    .navbar.scrolled { background: rgba(2,8,23,0.92); border-color: rgba(255,255,255,0.08) !important; backdrop-filter: blur(20px); }
+    .cta-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(59,130,246,0.3); }
+    .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.45); }
+    .tag-pill { font-size: 0.7rem; letter-spacing: 0.06em; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; }
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #020817; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+    /* Tab system */
+    .tab-btn { transition: all 0.2s ease; }
+    .tab-btn.active { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.5); color: #a5b4fc; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: grid; }
+
+    /* Product card dot */
+    .product-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+    /* Stagger for cards */
+    .stagger > *:nth-child(1) { transition-delay: 0ms; }
+    .stagger > *:nth-child(2) { transition-delay: 80ms; }
+    .stagger > *:nth-child(3) { transition-delay: 160ms; }
+    .stagger > *:nth-child(4) { transition-delay: 240ms; }
+    .stagger > *:nth-child(5) { transition-delay: 320ms; }
+    .stagger > *:nth-child(6) { transition-delay: 400ms; }
+    .stagger > *:nth-child(7) { transition-delay: 480ms; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/bni/index.html" class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="font-bold text-white text-lg tracking-tight">HopeTech</span>
+        </a>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-medium">
+        <a href="/bni/index.html#founders" class="hover:text-white transition-colors">Founders</a>
+        <a href="/bni/bettroi.html" class="text-white transition-colors">Bettroi</a>
+        <a href="/bni/hopephoenix.html" class="hover:text-white transition-colors">HopePhoenix</a>
+        <a href="/bni/betser.html" class="hover:text-white transition-colors">Betser</a>
+        <a href="/bni/drmhope.html" class="hover:text-white transition-colors">DrM Hope</a>
+      </div>
+      <a href="/bni/index.html" class="cta-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Book 121</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative min-h-screen flex items-center grid-lines pt-24 pb-20 overflow-hidden">
+    <!-- Orbs -->
+    <div class="orb" style="width:600px;height:600px;background:rgba(99,102,241,0.15);top:-150px;right:-150px;animation-delay:0s;"></div>
+    <div class="orb" style="width:400px;height:400px;background:rgba(139,92,246,0.12);bottom:-100px;left:-100px;animation-delay:-4s;"></div>
+    <div class="orb" style="width:300px;height:300px;background:rgba(59,130,246,0.1);top:50%;left:45%;animation-delay:-7s;"></div>
+
+    <div class="max-w-7xl mx-auto px-6 w-full relative z-10">
+      <!-- Badge -->
+      <div class="reveal flex items-center gap-2 mb-8">
+        <span class="tag-pill" style="background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3);">Enterprise AI Platform</span>
+        <span class="tag-pill" style="background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.08);">Dubai Silicon Oasis</span>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] mb-6 reveal reveal-delay-1">
+            Building the<br/>
+            <span class="text-gradient-indigo">AI Stack</span><br/>
+            for Industry
+          </h1>
+          <p class="text-slate-400 text-lg leading-relaxed mb-8 reveal reveal-delay-2 max-w-xl">
+            Bettroi delivers enterprise-grade AI, industrial automation, and sector-specific platforms
+            across energy, healthcare, and oil &amp; gas. Built for the real world, deployed at scale.
+          </p>
+          <div class="flex flex-wrap gap-4 reveal reveal-delay-3">
+            <a href="#products" class="cta-primary text-white font-semibold px-7 py-3.5 rounded-xl inline-flex items-center gap-2">
+              Explore Products
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="mailto:hello@bettroi.com" class="glass text-slate-300 font-semibold px-7 py-3.5 rounded-xl inline-flex items-center gap-2 hover:text-white transition-colors">
+              hello@bettroi.com
+            </a>
+          </div>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="grid grid-cols-2 gap-4 reveal reveal-delay-2">
+          <div class="glass glass-hover rounded-2xl p-6">
+            <div class="text-4xl font-bold text-gradient-indigo mb-1">25+</div>
+            <div class="text-slate-400 text-sm font-medium">Products Built</div>
+          </div>
+          <div class="glass glass-hover rounded-2xl p-6">
+            <div class="text-4xl font-bold text-gradient-indigo mb-1">5</div>
+            <div class="text-slate-400 text-sm font-medium">Industry Verticals</div>
+          </div>
+          <div class="glass glass-hover rounded-2xl p-6">
+            <div class="text-4xl font-bold text-gradient-indigo mb-1">DSO</div>
+            <div class="text-slate-400 text-sm font-medium">Dubai HQ</div>
+          </div>
+          <div class="glass glass-hover rounded-2xl p-6">
+            <div class="text-4xl font-bold text-gradient-indigo mb-1">3+</div>
+            <div class="text-slate-400 text-sm font-medium">Global Markets</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider max-w-7xl mx-auto"></div>
+
+  <!-- ABOUT -->
+  <section class="py-24 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-16 items-start">
+        <!-- Left: description -->
+        <div class="reveal">
+          <span class="tag-pill mb-5 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">About Bettroi</span>
+          <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-6 leading-snug">
+            Enterprise AI, <span class="text-gradient-indigo">Edge-to-Cloud</span>
+          </h2>
+          <p class="text-slate-400 leading-relaxed mb-5">
+            Bettroi is a technology company headquartered at Dubai Silicon Oasis, building intelligent
+            software platforms for enterprises across energy, oil &amp; gas, healthcare, and education.
+            Every product we ship is designed to replace manual operations with autonomous, AI-driven workflows.
+          </p>
+          <p class="text-slate-400 leading-relaxed mb-5">
+            Our platform spans the full stack, from edge devices and PLCs to cloud dashboards and
+            enterprise analytics, giving organisations a single operating system for their business.
+          </p>
+          <p class="text-slate-400 leading-relaxed">
+            Co-founded by Biji Thomas and Dr. BK Murali, both active BNI members, Bettroi combines
+            deep domain expertise in industrial engineering and AI with a startup execution culture.
+          </p>
+        </div>
+
+        <!-- Right: contact card -->
+        <div class="reveal reveal-delay-1">
+          <div class="glass rounded-2xl p-8 space-y-6">
+            <div>
+              <div class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Company</div>
+              <div class="text-white font-semibold text-lg">Bettroi.com</div>
+            </div>
+            <div class="section-divider"></div>
+            <div>
+              <div class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Location</div>
+              <div class="text-slate-300 text-sm leading-relaxed">
+                A5, Techno-Hub, DTEC<br/>
+                Dubai Silicon Oasis, UAE
+              </div>
+            </div>
+            <div class="section-divider"></div>
+            <div>
+              <div class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Email</div>
+              <a href="mailto:hello@bettroi.com" class="text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-medium">
+                hello@bettroi.com
+              </a>
+            </div>
+            <div class="section-divider"></div>
+            <div>
+              <div class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Phone</div>
+              <a href="tel:+971501988042" class="text-slate-300 hover:text-white transition-colors text-sm font-medium">
+                +971 50 1988 042
+              </a>
+            </div>
+            <div class="section-divider"></div>
+            <div>
+              <div class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Website</div>
+              <a href="https://bettroi.com" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-medium inline-flex items-center gap-1">
+                bettroi.com
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider max-w-7xl mx-auto"></div>
+
+  <!-- PRODUCTS -->
+  <section id="products" class="py-24 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-14 reveal">
+        <span class="tag-pill mb-5 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">Product Portfolio</span>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-4">25+ Platforms Across 5 Verticals</h2>
+        <p class="text-slate-400 max-w-xl mx-auto">From autonomous enterprise agents to precision industrial control, every product solves a specific operational pain.</p>
+      </div>
+
+      <!-- Tab buttons -->
+      <div class="flex flex-wrap gap-3 justify-center mb-10 reveal reveal-delay-1">
+        <button onclick="showTab('ai')" id="tab-ai" class="tab-btn active glass text-slate-400 text-sm font-semibold px-5 py-2.5 rounded-xl border border-white/8">
+          Enterprise AI
+        </button>
+        <button onclick="showTab('energy')" id="tab-energy" class="tab-btn glass text-slate-400 text-sm font-semibold px-5 py-2.5 rounded-xl border border-white/8">
+          Energy Management
+        </button>
+        <button onclick="showTab('oilgas')" id="tab-oilgas" class="tab-btn glass text-slate-400 text-sm font-semibold px-5 py-2.5 rounded-xl border border-white/8">
+          Oil &amp; Gas
+        </button>
+        <button onclick="showTab('healthcare')" id="tab-healthcare" class="tab-btn glass text-slate-400 text-sm font-semibold px-5 py-2.5 rounded-xl border border-white/8">
+          Healthcare
+        </button>
+        <button onclick="showTab('education')" id="tab-education" class="tab-btn glass text-slate-400 text-sm font-semibold px-5 py-2.5 rounded-xl border border-white/8">
+          Education
+        </button>
+      </div>
+
+      <!-- Tab: Enterprise AI -->
+      <div id="panel-ai" class="tab-panel active grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 stagger">
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#6366f1;box-shadow:0 0 8px rgba(99,102,241,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">AgentX</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;">AI Agents</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Autonomous AI agent platform for enterprise workflow automation</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#6366f1;box-shadow:0 0 8px rgba(99,102,241,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">APX</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;">Procurement</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">AI-powered procurement and vendor management</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#6366f1;box-shadow:0 0 8px rgba(99,102,241,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">Privata</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;">Data Governance</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Privacy-first enterprise data governance platform</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#6366f1;box-shadow:0 0 8px rgba(99,102,241,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">WorkX</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;">Workforce</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Intelligent workforce management and scheduling</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#6366f1;box-shadow:0 0 8px rgba(99,102,241,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">BOS</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;">Operating System</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Business Operating System, unified command center for SMEs</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#6366f1;box-shadow:0 0 8px rgba(99,102,241,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">BMX</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;">KPI Intelligence</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Business Metrics Exchange, real-time KPI intelligence</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#6366f1;box-shadow:0 0 8px rgba(99,102,241,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">AISHU</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;">EdTech AI</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">AI Study Helper for educational institutions</p>
+        </div>
+      </div>
+
+      <!-- Tab: Energy Management -->
+      <div id="panel-energy" class="tab-panel grid md:grid-cols-2 lg:grid-cols-3 gap-4 stagger">
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">Ampris</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(16,185,129,0.12);color:#6ee7b7;">Energy Monitoring</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Smart energy monitoring and optimization platform</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">FlowNexus</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(16,185,129,0.12);color:#6ee7b7;">Flow Analytics</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Industrial fluid flow management and analytics</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">NexaProc</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(16,185,129,0.12);color:#6ee7b7;">Process Automation</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Next-generation process automation framework</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">PLC Pilot</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(16,185,129,0.12);color:#6ee7b7;">No-Code PLC</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">No-code PLC programming and deployment tool</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">AutoPanel</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(16,185,129,0.12);color:#6ee7b7;">Panel Design</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Automated electrical panel design and BOM generation</p>
+        </div>
+      </div>
+
+      <!-- Tab: Oil & Gas -->
+      <div id="panel-oilgas" class="tab-panel grid md:grid-cols-2 lg:grid-cols-3 gap-4 stagger">
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">AssetX</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(245,158,11,0.12);color:#fde68a;">Asset Management</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Upstream asset lifecycle management</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">PermitX</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(245,158,11,0.12);color:#fde68a;">Permit-to-Work</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Digital permit-to-work system for oil fields</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">IntegrityX</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(245,158,11,0.12);color:#fde68a;">Pipeline Integrity</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Pipeline and structural integrity inspection platform</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">SafetyX</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(245,158,11,0.12);color:#fde68a;">HSE Compliance</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">HSE compliance and incident management system</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">GeoMineX</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(245,158,11,0.12);color:#fde68a;">Geo Survey</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Geological survey data management and visualization</p>
+        </div>
+      </div>
+
+      <!-- Tab: Healthcare -->
+      <div id="panel-healthcare" class="tab-panel grid md:grid-cols-2 lg:grid-cols-3 gap-4 stagger">
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">DDO</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(236,72,153,0.12);color:#f9a8d4;">Clinic Ops</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Doctor-Driven Operations, clinic workflow automation</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">IHMS</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(236,72,153,0.12);color:#f9a8d4;">Hospital Mgmt</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Integrated Hospital Management System</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">HMS+</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(236,72,153,0.12);color:#f9a8d4;">AI Diagnostics</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Advanced hospital management with AI diagnostics</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">OnePatientOneDoctor</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(236,72,153,0.12);color:#f9a8d4;">Continuity of Care</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">Continuity-of-care platform linking patients to primary physicians</p>
+        </div>
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#ec4899;box-shadow:0 0 8px rgba(236,72,153,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">Aide</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(236,72,153,0.12);color:#f9a8d4;">Clinical AI</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">AI-powered clinical documentation assistant</p>
+        </div>
+      </div>
+
+      <!-- Tab: Education -->
+      <div id="panel-education" class="tab-panel grid md:grid-cols-2 lg:grid-cols-3 gap-4 stagger">
+        <div class="glass glass-hover rounded-2xl p-5 reveal">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="product-dot mt-1" style="background:#60a5fa;box-shadow:0 0 8px rgba(96,165,250,0.5);"></div>
+            <div>
+              <div class="text-white font-semibold text-sm">Aishu</div>
+              <span class="tag-pill mt-1 inline-block" style="background:rgba(96,165,250,0.12);color:#bfdbfe;">EdTech AI</span>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs leading-relaxed">AI study companion for K-12 and higher education, personalised learning at scale</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider max-w-7xl mx-auto"></div>
+
+  <!-- TEAM -->
+  <section class="py-24 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-14 reveal">
+        <span class="tag-pill mb-5 inline-block" style="background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">Founders</span>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-4">The People Behind Bettroi</h2>
+        <p class="text-slate-400 max-w-xl mx-auto">Two BNI members, one shared vision: make enterprise software work the way industrial operations actually do.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+        <!-- Biji Thomas -->
+        <a href="/bni/biji-thomas.html" class="glass glass-hover rounded-2xl p-8 block group reveal">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 text-2xl font-bold text-white" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">B</div>
+          <div class="text-white font-bold text-xl mb-1">Biji Thomas</div>
+          <div class="text-indigo-400 text-sm font-semibold mb-4">CEO &amp; Co-Founder</div>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">Industrial automation expert driving Bettroi's enterprise AI platform strategy and global growth.</p>
+          <div class="inline-flex items-center gap-2 text-indigo-400 text-sm font-medium group-hover:gap-3 transition-all">
+            View Profile
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+
+        <!-- Dr. BK Murali -->
+        <a href="/bni/dr-murali.html" class="glass glass-hover rounded-2xl p-8 block group reveal reveal-delay-1">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 text-2xl font-bold text-white" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">M</div>
+          <div class="text-white font-bold text-xl mb-1">Dr. BK Murali</div>
+          <div class="text-indigo-400 text-sm font-semibold mb-4">Director &amp; Co-Founder</div>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">Physician-technologist bridging healthcare operations with AI infrastructure across India and the UAE.</p>
+          <div class="inline-flex items-center gap-2 text-indigo-400 text-sm font-medium group-hover:gap-3 transition-all">
+            View Profile
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider max-w-7xl mx-auto"></div>
+
+  <!-- CTA -->
+  <section class="py-24 relative z-10 overflow-hidden">
+    <div class="orb" style="width:500px;height:500px;background:rgba(99,102,241,0.1);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-2s;"></div>
+    <div class="max-w-3xl mx-auto px-6 text-center relative z-10 reveal">
+      <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-5">
+        Ready to see Bettroi in action?
+      </h2>
+      <p class="text-slate-400 leading-relaxed mb-10 max-w-lg mx-auto">
+        Book a 121 with our founders. We'll show you exactly where AI fits your operation, no fluff, no demos, just direct answers.
+      </p>
+      <a href="/bni/index.html" class="cta-primary text-white font-bold px-10 py-4 rounded-2xl inline-flex items-center gap-3 text-base">
+        Explore a 121 with Our Founders
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 py-12 mt-4 relative z-10">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <span class="text-white font-semibold">HopeTech Ventures</span>
+      </div>
+      <p class="text-slate-500 text-sm">&copy; 2025 HopeTech Ventures. Dr. BK Murali &amp; Biji Thomas. All rights reserved.</p>
+      <div class="flex items-center gap-6 text-sm text-slate-500">
+        <a href="/bni/index.html" class="hover:text-white transition-colors">Home</a>
+        <a href="/bni/dr-murali.html" class="hover:text-white transition-colors">Dr. Murali</a>
+        <a href="/bni/biji-thomas.html" class="hover:text-white transition-colors">Biji Thomas</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    // Scroll reveal
+    document.querySelectorAll('.reveal').forEach(el => {
+      new IntersectionObserver(([e]) => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+      }, { threshold: 0.1 }).observe(el);
+    });
+
+    // Tab switching
+    function showTab(id) {
+      // Hide all panels
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+      // Show selected
+      document.getElementById('panel-' + id).classList.add('active');
+      document.getElementById('tab-' + id).classList.add('active');
+
+      // Re-trigger reveals in new panel
+      document.querySelectorAll('#panel-' + id + ' .reveal').forEach(el => {
+        el.classList.remove('visible');
+        setTimeout(() => el.classList.add('visible'), 50);
+      });
+    }
+
+    // Show initial tab reveals
+    document.querySelectorAll('#panel-ai .reveal').forEach(el => el.classList.add('visible'));
+  </script>
+</body>
+</html>

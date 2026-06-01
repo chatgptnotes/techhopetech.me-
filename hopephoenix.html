@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/jpeg" href="/bni/bni-logo.jpg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HopePhoenix: AI Products for Healthcare, Industrial Automation &amp; Enterprise | Nagpur</title>
+  <meta name="description" content="HopePhoenix is a joint venture co-founded by Dr. BK Murali (Nagpur) and Biji Thomas (Dubai). 35+ AI products across healthcare, industrial automation, enterprise, beauty, and education." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; overflow-x: hidden; }
+    .font-display { font-family: 'Playfair Display', serif; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+    .grid-lines {
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; animation: orb-float 10s ease-in-out infinite; }
+    @keyframes orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.06); } }
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 100ms; }
+    .reveal-delay-2 { transition-delay: 200ms; }
+    .reveal-delay-3 { transition-delay: 300ms; }
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
+    .glass-hover { transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    .glass-hover:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.15); transform: translateY(-4px); }
+    .text-gradient-blue { background: linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .text-gradient-amber { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .navbar { transition: background 0.3s ease, border-color 0.3s ease; }
+    .navbar.scrolled { background: rgba(2,8,23,0.92); border-color: rgba(255,255,255,0.08) !important; backdrop-filter: blur(20px); }
+    .cta-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(59,130,246,0.3); }
+    .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.45); }
+    .cta-amber { background: linear-gradient(135deg, #f59e0b, #d97706); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(245,158,11,0.3); }
+    .cta-amber:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(245,158,11,0.45); }
+    .tag-pill { font-size: 0.7rem; letter-spacing: 0.06em; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; }
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #020817; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+    /* Product filter tabs */
+    .filter-btn { transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.1); }
+    .filter-btn.active { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); color: #f59e0b; }
+    .filter-btn:not(.active):hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18); }
+
+    /* Product cards hidden state */
+    .product-card { transition: opacity 0.3s ease, transform 0.3s ease; }
+    .product-card.hidden-card { display: none; }
+
+    /* Featured card */
+    .featured-card { transition: all 0.3s ease; border: 1px solid rgba(245,158,11,0.15); }
+    .featured-card:hover { border-color: rgba(245,158,11,0.35); transform: translateY(-6px); box-shadow: 0 24px 60px rgba(245,158,11,0.08); }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- NAVBAR -->
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/bni/index.html" class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="font-bold text-white text-lg tracking-tight">HopeTech</span>
+        </a>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-medium">
+        <a href="/bni/index.html#founders" class="hover:text-white transition-colors">Founders</a>
+        <a href="/bni/bettroi.html" class="hover:text-white transition-colors">Bettroi</a>
+        <a href="/bni/hopephoenix.html" class="text-amber-400">HopePhoenix</a>
+        <a href="/bni/betser.html" class="hover:text-white transition-colors">Betser</a>
+        <a href="/bni/drmhope.html" class="hover:text-white transition-colors">DrM Hope</a>
+      </div>
+      <a href="/bni/index.html" class="cta-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Book 121</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative min-h-screen flex items-center grid-lines overflow-hidden pt-20">
+    <div class="orb" style="width:520px;height:520px;background:rgba(245,158,11,0.12);top:-120px;right:-100px;animation-delay:0s;"></div>
+    <div class="orb" style="width:380px;height:380px;background:rgba(251,191,36,0.08);bottom:-80px;left:-80px;animation-delay:-4s;"></div>
+    <div class="orb" style="width:280px;height:280px;background:rgba(245,158,11,0.06);top:40%;left:35%;animation-delay:-7s;"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-6 py-24 w-full">
+      <div class="max-w-4xl">
+        <!-- Badge -->
+        <div class="reveal mb-6 inline-flex items-center gap-2">
+          <span class="tag-pill" style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);">HopePhoenix</span>
+          <span class="tag-pill" style="background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);">Nagpur, India</span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="reveal reveal-delay-1 font-display text-5xl md:text-7xl font-bold leading-tight mb-6">
+          <span class="text-white">35+ AI Products.</span><br/>
+          <span class="text-gradient-amber">One Mission.</span>
+        </h1>
+
+        <p class="reveal reveal-delay-2 text-slate-400 text-xl leading-relaxed max-w-2xl mb-10">
+          AI-powered products for Healthcare, Industrial Automation &amp; Enterprise. Built in Nagpur. Deployed across India.
+        </p>
+
+        <div class="reveal reveal-delay-3 flex flex-wrap gap-4">
+          <a href="#products" class="cta-amber text-white font-semibold px-7 py-3.5 rounded-xl text-sm">Explore Products</a>
+          <a href="https://hopephoenix.in" target="_blank" class="glass glass-hover text-slate-300 font-semibold px-7 py-3.5 rounded-xl text-sm">Visit hopephoenix.in</a>
+        </div>
+      </div>
+
+      <!-- Stat bar -->
+      <div class="reveal mt-20 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-gradient-amber mb-1">35+</div>
+          <div class="text-slate-400 text-sm">AI Products</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-white mb-1">5</div>
+          <div class="text-slate-400 text-sm">Verticals</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-white mb-1 text-sm md:text-2xl" style="font-size:1.4rem;">Healthcare + Industry</div>
+          <div class="text-slate-400 text-sm">Core Focus</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-white mb-1">Nagpur</div>
+          <div class="text-slate-400 text-sm">HQ</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider mx-auto max-w-7xl"></div>
+
+  <!-- FEATURED PRODUCTS -->
+  <section class="relative py-24 max-w-7xl mx-auto px-6">
+    <div class="reveal text-center mb-16">
+      <span class="tag-pill mb-4 inline-block" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);">Flagship Products</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold text-white mt-4">Built for Real Scale</h2>
+      <p class="text-slate-400 mt-4 text-lg max-w-2xl mx-auto">Three products leading the HopePhoenix portfolio, each solving a critical gap in their domain.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- SCADA.work -->
+      <div class="reveal featured-card glass rounded-2xl p-7">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background:rgba(99,102,241,0.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;border:1px solid rgba(99,102,241,0.25);">Industrial Automation</span>
+        <h3 class="text-white text-xl font-bold mb-3">SCADA.work</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5">Cloud-based SCADA platform for industrial monitoring. No software installation needed. Access your factory floor from any browser, anywhere.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs text-slate-500 bg-white/5 rounded-lg px-2.5 py-1">Cloud SCADA</span>
+          <span class="text-xs text-slate-500 bg-white/5 rounded-lg px-2.5 py-1">Real-time monitoring</span>
+          <span class="text-xs text-slate-500 bg-white/5 rounded-lg px-2.5 py-1">Zero install</span>
+        </div>
+      </div>
+
+      <!-- Adamrit -->
+      <div class="reveal reveal-delay-1 featured-card glass rounded-2xl p-7">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background:rgba(16,185,129,0.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25);">Healthcare AI</span>
+        <h3 class="text-white text-xl font-bold mb-3">Adamrit</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5">AI-powered hospital referral and patient routing system for government hospitals. Routes patients to the right specialist at the right facility, instantly.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs text-slate-500 bg-white/5 rounded-lg px-2.5 py-1">Govt hospitals</span>
+          <span class="text-xs text-slate-500 bg-white/5 rounded-lg px-2.5 py-1">Patient routing</span>
+          <span class="text-xs text-slate-500 bg-white/5 rounded-lg px-2.5 py-1">AI triage</span>
+        </div>
+      </div>
+
+      <!-- AgentSDR -->
+      <div class="reveal reveal-delay-2 featured-card glass rounded-2xl p-7">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background:rgba(139,92,246,0.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        </div>
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(139,92,246,0.12);color:#8b5cf6;border:1px solid rgba(139,92,246,0.25);">Enterprise AI</span>
+        <h3 class="text-white text-xl font-bold mb-3">AgentSDR</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-5">Autonomous AI sales development representative for lead generation. Researches prospects, writes personalised outreach, and books meetings without human intervention.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs text-slate-500 bg-white/5 rounded-lg px-2.5 py-1">Autonomous AI</span>
+          <span class="text-xs text-slate-500 bg-white/5 rounded-lg px-2.5 py-1">Lead generation</span>
+          <span class="text-xs text-slate-500 bg-white/5 rounded-lg px-2.5 py-1">Sales automation</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider mx-auto max-w-7xl"></div>
+
+  <!-- ALL PRODUCTS with filter tabs -->
+  <section id="products" class="relative py-24 max-w-7xl mx-auto px-6">
+    <div class="reveal text-center mb-12">
+      <span class="tag-pill mb-4 inline-block" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);">Full Portfolio</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold text-white mt-4">All 35+ Products</h2>
+      <p class="text-slate-400 mt-4 text-lg">Filter by vertical to explore the full HopePhoenix product suite.</p>
+    </div>
+
+    <!-- Filter buttons -->
+    <div class="reveal flex flex-wrap justify-center gap-3 mb-12">
+      <button onclick="filterProducts('all')" class="filter-btn active text-sm font-medium px-5 py-2 rounded-full text-slate-300" data-filter="all">All Products</button>
+      <button onclick="filterProducts('healthcare')" class="filter-btn text-sm font-medium px-5 py-2 rounded-full text-slate-400" data-filter="healthcare">Healthcare AI</button>
+      <button onclick="filterProducts('industrial')" class="filter-btn text-sm font-medium px-5 py-2 rounded-full text-slate-400" data-filter="industrial">Industrial</button>
+      <button onclick="filterProducts('enterprise')" class="filter-btn text-sm font-medium px-5 py-2 rounded-full text-slate-400" data-filter="enterprise">Enterprise</button>
+      <button onclick="filterProducts('lifestyle')" class="filter-btn text-sm font-medium px-5 py-2 rounded-full text-slate-400" data-filter="lifestyle">Lifestyle</button>
+      <button onclick="filterProducts('education')" class="filter-btn text-sm font-medium px-5 py-2 rounded-full text-slate-400" data-filter="education">Education</button>
+      <button onclick="filterProducts('tools')" class="filter-btn text-sm font-medium px-5 py-2 rounded-full text-slate-400" data-filter="tools">AI Tools</button>
+    </div>
+
+    <!-- Product grid -->
+    <div id="product-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+
+      <!-- HEALTHCARE (15) -->
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">Adamrit</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI-powered hospital referral and patient routing for government hospitals.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">NeuroSense 360</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Neurological patient monitoring and early-warning system.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">IHMS</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Integrated Hospital Management System with billing, OPD, and IPD workflows.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">AI Surgeon Pilot</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Surgical procedure planning and pre-op checklist AI assistant.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">CliniVoice</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Voice-to-EMR: converts doctor dictation to structured electronic medical records.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">RSeva Health</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Rural healthcare delivery connecting village health workers to district systems.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">HospiView</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Hospital operations dashboard with live bed management and ward analytics.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">Anohra Deep Guard AI</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Infection control and antimicrobial stewardship platform for hospitals.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">DDO</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Doctor-Driven Operations: clinic workflow and appointment optimisation.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">Aide</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI clinical documentation and coding assistant for faster, accurate billing.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">OnePatientOneDoctor</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Continuity of care linking patients to primary physicians throughout treatment.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">HMS+</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Advanced Hospital Management System with AI-assisted diagnostics.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">PrewedAI</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Pre-wedding health screening and couple wellness planning platform.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">StyleMy.Hair</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI hairstyle recommender for clinics, powered by visual AI analysis.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="healthcare">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(16,185,129,0.1);color:#10b981;">Healthcare AI</span>
+        <h3 class="text-white font-semibold text-base mb-2">Linkist</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">NFC business card and referral network for medical professionals.</p>
+      </div>
+
+      <!-- INDUSTRIAL (10) -->
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">SCADA.work</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Cloud-based SCADA platform for industrial monitoring. Zero software install.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">PLCAutoPilot</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI-assisted PLC programming and ladder logic generation for engineers.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">AIMS</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI Industrial Management System for predictive maintenance and asset intelligence.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">FactoryPulse</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Real-time OEE monitoring targeting 85% overall equipment effectiveness.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">AutoPanelDesign</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Automated electrical panel and schematic design tool for panel builders.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">Galvon</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Electroplating process optimisation and quality tracking platform.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">Ampris SCADA</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Energy and utility monitoring for manufacturing plants and industrial campuses.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">FlowNexus</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Industrial fluid and gas flow management and leak detection system.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">Fluxio.work</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Workflow and job-card management for manufacturing floor operations.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="industrial">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(99,102,241,0.12);color:#818cf8;">Industrial</span>
+        <h3 class="text-white font-semibold text-base mb-2">NexaProc</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Process recipe management and batch tracking for process industries.</p>
+      </div>
+
+      <!-- ENTERPRISE (7) -->
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="enterprise">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">Enterprise</span>
+        <h3 class="text-white font-semibold text-base mb-2">AgentSDR</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Autonomous AI sales development representative for lead generation and outreach.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="enterprise">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">Enterprise</span>
+        <h3 class="text-white font-semibold text-base mb-2">Proposify AI</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI-powered proposal and RFQ generation for enterprise sales teams.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="enterprise">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">Enterprise</span>
+        <h3 class="text-white font-semibold text-base mb-2">PulseOfProject</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Project health monitoring and milestone intelligence dashboard.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="enterprise">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">Enterprise</span>
+        <h3 class="text-white font-semibold text-base mb-2">4C Secure</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Cybersecurity compliance and vulnerability scanning platform for enterprises.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="enterprise">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">Enterprise</span>
+        <h3 class="text-white font-semibold text-base mb-2">AIVA</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI virtual assistant for enterprise customer service and support automation.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="enterprise">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">Enterprise</span>
+        <h3 class="text-white font-semibold text-base mb-2">Privata</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Privacy-first enterprise data governance and compliance platform.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="enterprise">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">Enterprise</span>
+        <h3 class="text-white font-semibold text-base mb-2">Linkist</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Enterprise NFC networking and contact management for professional teams.</p>
+      </div>
+
+      <!-- LIFESTYLE (3) -->
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="lifestyle">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(244,114,182,0.12);color:#f472b6;">Lifestyle</span>
+        <h3 class="text-white font-semibold text-base mb-2">StyleMy.Hair</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI hairstyle try-on and recommendation app for salons and consumers.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="lifestyle">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(244,114,182,0.12);color:#f472b6;">Lifestyle</span>
+        <h3 class="text-white font-semibold text-base mb-2">Headz</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Hair and beauty salon management platform with booking and analytics.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="lifestyle">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(244,114,182,0.12);color:#f472b6;">Lifestyle</span>
+        <h3 class="text-white font-semibold text-base mb-2">PreWed AI</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">End-to-end AI wedding planning platform for couples and event professionals.</p>
+      </div>
+
+      <!-- EDUCATION (1) -->
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="education">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(251,191,36,0.12);color:#fbbf24;">Education</span>
+        <h3 class="text-white font-semibold text-base mb-2">AI-Shu</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI-powered adaptive learning platform for K-12 students and educators.</p>
+      </div>
+
+      <!-- AI TOOLS (2) -->
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="tools">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(245,158,11,0.12);color:#f59e0b;">AI Tools</span>
+        <h3 class="text-white font-semibold text-base mb-2">BhashAI</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">Multilingual AI translation and localisation tool for Indian languages and beyond.</p>
+      </div>
+      <div class="product-card glass glass-hover rounded-2xl p-5" data-vertical="tools">
+        <span class="tag-pill mb-3 inline-block" style="background:rgba(245,158,11,0.12);color:#f59e0b;">AI Tools</span>
+        <h3 class="text-white font-semibold text-base mb-2">ORMA AI Studio</h3>
+        <p class="text-slate-500 text-xs leading-relaxed">AI content creation and brand asset generator for marketing teams.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider mx-auto max-w-7xl"></div>
+
+  <!-- FOUNDER SECTION -->
+  <section class="relative py-24 max-w-7xl mx-auto px-6">
+    <div class="reveal text-center mb-16">
+      <span class="tag-pill mb-4 inline-block" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);">Behind HopePhoenix</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold text-white mt-4">The Co-Founders</h2>
+      <p class="text-slate-400 mt-4 max-w-xl mx-auto">A joint venture between Nagpur and Dubai, combining surgical precision with enterprise technology leadership.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+      <!-- Dr. BK Murali -->
+      <div class="reveal glass glass-hover rounded-2xl p-8 text-center">
+        <img src="/bni/dr-murali.jpg" alt="Dr. BK Murali" class="w-20 h-20 rounded-2xl mx-auto mb-5 object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="w-20 h-20 rounded-2xl mx-auto mb-5 items-center justify-center hidden" style="background: linear-gradient(135deg, #10b981, #059669);">
+          <span class="text-white font-bold text-xl">BM</span>
+        </div>
+        <h3 class="text-white text-xl font-bold mb-1">Dr. BK Murali</h3>
+        <p class="text-amber-400 text-sm font-medium mb-1">Co-Founder, HopePhoenix</p>
+        <p class="text-slate-500 text-xs mb-4">Orthopaedic Surgeon · AI Consultant · Nagpur, India</p>
+        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+          Practicing orthopaedic surgeon and technology entrepreneur. Brings deep healthcare domain expertise and 100+ software products to HopePhoenix. BNI Diorite, Nagpur member.
+        </p>
+        <div class="flex justify-center gap-3 flex-wrap">
+          <a href="/bni/dr-murali.html" class="cta-amber text-white text-sm font-semibold px-5 py-2.5 rounded-xl">View Profile</a>
+          <a href="/bni/dance-card-murali.html" class="glass glass-hover text-slate-300 text-sm font-semibold px-5 py-2.5 rounded-xl">Dance Card</a>
+        </div>
+      </div>
+
+      <!-- Biji Thomas -->
+      <div class="reveal reveal-delay-1 glass glass-hover rounded-2xl p-8 text-center">
+        <img src="/bni/biji-thomas.png" alt="Biji Thomas" class="w-20 h-20 rounded-2xl mx-auto mb-5 object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="w-20 h-20 rounded-2xl mx-auto mb-5 items-center justify-center hidden" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+          <span class="text-white font-bold text-xl">BT</span>
+        </div>
+        <h3 class="text-white text-xl font-bold mb-1">Biji Thomas</h3>
+        <p class="text-amber-400 text-sm font-medium mb-1">Co-Founder, HopePhoenix</p>
+        <p class="text-slate-500 text-xs mb-4">CEO Bettroi · AI Solutions Architect · Dubai, UAE</p>
+        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+          Technology leader with 25 years at GE and global enterprises. Drives enterprise product architecture and GCC market access for HopePhoenix. BNI Dubai member.
+        </p>
+        <div class="flex justify-center gap-3 flex-wrap">
+          <a href="/bni/biji-thomas.html" class="cta-amber text-white text-sm font-semibold px-5 py-2.5 rounded-xl">View Profile</a>
+          <a href="/bni/dance-card-biji.html" class="glass glass-hover text-slate-300 text-sm font-semibold px-5 py-2.5 rounded-xl">Dance Card</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider mx-auto max-w-7xl"></div>
+
+  <!-- CTA SECTION -->
+  <section class="relative py-24 overflow-hidden">
+    <div class="orb" style="width:400px;height:400px;background:rgba(245,158,11,0.08);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-2s;"></div>
+    <div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
+      <div class="reveal">
+        <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-6">
+          Ready to explore<br/><span class="text-gradient-amber">what AI can build?</span>
+        </h2>
+        <p class="text-slate-400 text-lg mb-10">Book a 121 with Dr. BK Murali or Biji Thomas. Discover which HopePhoenix product fits your organisation.</p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <a href="/bni/index.html" class="cta-amber text-white font-semibold px-8 py-4 rounded-xl text-sm">Book a 121 Meeting</a>
+          <a href="https://hopephoenix.in" target="_blank" class="glass glass-hover text-slate-300 font-semibold px-8 py-4 rounded-xl text-sm">hopephoenix.in</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 py-12 mt-0">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <span class="text-white font-semibold">HopeTech Ventures</span>
+      </div>
+      <p class="text-slate-500 text-sm">&copy; 2025 HopeTech Ventures. Dr. BK Murali &amp; Biji Thomas. All rights reserved.</p>
+      <div class="flex items-center gap-6 text-sm text-slate-500">
+        <a href="/bni/index.html" class="hover:text-white transition-colors">Home</a>
+        <a href="/bni/dr-murali.html" class="hover:text-white transition-colors">Dr. Murali</a>
+        <a href="/bni/biji-thomas.html" class="hover:text-white transition-colors">Biji Thomas</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    // Scroll reveal
+    document.querySelectorAll('.reveal').forEach(el => {
+      new IntersectionObserver(([e]) => e.isIntersecting && e.target.classList.add('visible'), { threshold: 0.1 }).observe(el);
+    });
+
+    // Product filter
+    function filterProducts(vertical) {
+      // Update button states
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === vertical) btn.classList.add('active');
+      });
+
+      // Show/hide product cards
+      document.querySelectorAll('.product-card').forEach(card => {
+        if (vertical === 'all' || card.dataset.vertical === vertical) {
+          card.classList.remove('hidden-card');
+        } else {
+          card.classList.add('hidden-card');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

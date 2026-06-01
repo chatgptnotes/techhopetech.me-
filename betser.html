@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/jpeg" href="/bni/bni-logo.jpg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Betser Life: Personal Growth, Wellness &amp; Leadership Transformation Platform</title>
+  <meta name="description" content="Betser Life is a personal development and organizational wellbeing platform. 5 years, 750+ users, 12 countries. Founded by Biji Thomas, BNI member Dubai." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; overflow-x: hidden; }
+    .font-display { font-family: 'Playfair Display', serif; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+    .grid-lines {
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; animation: orb-float 10s ease-in-out infinite; }
+    @keyframes orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.06); } }
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 100ms; }
+    .reveal-delay-2 { transition-delay: 200ms; }
+    .reveal-delay-3 { transition-delay: 300ms; }
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
+    .glass-hover { transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    .glass-hover:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.15); transform: translateY(-4px); }
+    .text-gradient-blue { background: linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .text-gradient-violet { background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .navbar { transition: background 0.3s ease, border-color 0.3s ease; }
+    .navbar.scrolled { background: rgba(2,8,23,0.92); border-color: rgba(255,255,255,0.08) !important; backdrop-filter: blur(20px); }
+    .cta-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(59,130,246,0.3); }
+    .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.45); }
+    .cta-violet { background: linear-gradient(135deg, #8b5cf6, #6d28d9); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(139,92,246,0.3); }
+    .cta-violet:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(139,92,246,0.45); }
+    .tag-pill { font-size: 0.7rem; letter-spacing: 0.06em; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; }
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #020817; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+    /* Methodology step */
+    .step-connector { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(139,92,246,0.3), rgba(139,92,246,0.1)); margin: 0 8px; }
+
+    /* Platform cards */
+    .platform-card { transition: all 0.3s ease; border: 1px solid rgba(139,92,246,0.12); }
+    .platform-card:hover { border-color: rgba(139,92,246,0.3); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(139,92,246,0.07); background: rgba(139,92,246,0.05); }
+
+    /* Audience cards */
+    .audience-card { transition: all 0.3s ease; }
+    .audience-card:hover { transform: translateY(-6px); }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- NAVBAR -->
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/bni/index.html" class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="font-bold text-white text-lg tracking-tight">HopeTech</span>
+        </a>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-medium">
+        <a href="/bni/index.html#founders" class="hover:text-white transition-colors">Founders</a>
+        <a href="/bni/bettroi.html" class="hover:text-white transition-colors">Bettroi</a>
+        <a href="/bni/hopephoenix.html" class="hover:text-white transition-colors">HopePhoenix</a>
+        <a href="/bni/betser.html" class="text-violet-400">Betser</a>
+        <a href="/bni/drmhope.html" class="hover:text-white transition-colors">DrM Hope</a>
+      </div>
+      <a href="/bni/index.html" class="cta-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Book 121</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative min-h-screen flex items-center grid-lines overflow-hidden pt-20">
+    <div class="orb" style="width:560px;height:560px;background:rgba(139,92,246,0.13);top:-140px;right:-120px;animation-delay:0s;"></div>
+    <div class="orb" style="width:380px;height:380px;background:rgba(167,139,250,0.08);bottom:-60px;left:-80px;animation-delay:-4s;"></div>
+    <div class="orb" style="width:240px;height:240px;background:rgba(139,92,246,0.06);top:50%;left:30%;animation-delay:-7s;"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-6 py-24 w-full">
+      <div class="max-w-4xl">
+        <!-- Badge -->
+        <div class="reveal mb-6 inline-flex items-center gap-2">
+          <span class="tag-pill" style="background:rgba(139,92,246,0.12);color:#a78bfa;border:1px solid rgba(139,92,246,0.25);">Betser Life</span>
+          <span class="tag-pill" style="background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);">betserlife.com</span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="reveal reveal-delay-1 font-display text-5xl md:text-7xl font-bold leading-tight mb-6">
+          <span class="text-white">Discover. Design.</span><br/>
+          <span class="text-gradient-violet">Enable. Scale.</span>
+        </h1>
+
+        <p class="reveal reveal-delay-2 text-slate-400 text-xl leading-relaxed max-w-2xl mb-4">
+          Personal growth, leadership development, and organisational wellbeing. One platform. Proven across 12 countries.
+        </p>
+        <p class="reveal reveal-delay-2 text-violet-400 text-base font-medium mb-10 italic">
+          "Discover Your Best Self. Live Better."
+        </p>
+
+        <div class="reveal reveal-delay-3 flex flex-wrap gap-4">
+          <a href="https://betserlife.com" target="_blank" class="cta-violet text-white font-semibold px-7 py-3.5 rounded-xl text-sm">Visit betserlife.com</a>
+          <a href="#methodology" class="glass glass-hover text-slate-300 font-semibold px-7 py-3.5 rounded-xl text-sm">Our Methodology</a>
+        </div>
+      </div>
+
+      <!-- Stat bar -->
+      <div class="reveal mt-20 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-gradient-violet mb-1">5+</div>
+          <div class="text-slate-400 text-sm">Years</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-white mb-1">750+</div>
+          <div class="text-slate-400 text-sm">Users</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-white mb-1">12</div>
+          <div class="text-slate-400 text-sm">Countries</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-3xl font-bold text-white mb-1">18</div>
+          <div class="text-slate-400 text-sm">Platforms</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider mx-auto max-w-7xl"></div>
+
+  <!-- METHODOLOGY -->
+  <section id="methodology" class="relative py-24 max-w-7xl mx-auto px-6">
+    <div class="reveal text-center mb-16">
+      <span class="tag-pill mb-4 inline-block" style="background:rgba(139,92,246,0.1);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);">How We Work</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold text-white mt-4">The 4-Stage Methodology</h2>
+      <p class="text-slate-400 mt-4 text-lg max-w-2xl mx-auto">Every Betser Life engagement follows a proven sequence: from self-awareness all the way to organisational scale.</p>
+    </div>
+
+    <!-- Step flow desktop -->
+    <div class="hidden md:flex items-start gap-0 mb-12 reveal">
+      <!-- Step 1 -->
+      <div class="flex-1 text-center">
+        <div class="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+        <div class="text-xs font-bold text-violet-400 tracking-widest uppercase mb-2">Stage 01</div>
+        <h3 class="text-white font-bold text-lg mb-3">Discover</h3>
+        <p class="text-slate-500 text-sm leading-relaxed px-2">Self-awareness assessments, values clarification, and strength mapping. Understand who you are before deciding where to go.</p>
+      </div>
+      <div class="step-connector mt-8 mx-2"></div>
+      <!-- Step 2 -->
+      <div class="flex-1 text-center">
+        <div class="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div class="text-xs font-bold text-violet-400 tracking-widest uppercase mb-2">Stage 02</div>
+        <h3 class="text-white font-bold text-lg mb-3">Design</h3>
+        <p class="text-slate-500 text-sm leading-relaxed px-2">Personalised growth plans, goal architecture, and milestone setting. Build a blueprint that reflects your actual ambitions.</p>
+      </div>
+      <div class="step-connector mt-8 mx-2"></div>
+      <!-- Step 3 -->
+      <div class="flex-1 text-center">
+        <div class="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="text-xs font-bold text-violet-400 tracking-widest uppercase mb-2">Stage 03</div>
+        <h3 class="text-white font-bold text-lg mb-3">Enable</h3>
+        <p class="text-slate-500 text-sm leading-relaxed px-2">Coaching, curated resources, community support, and accountability partners. Execution with structured support, not solo willpower.</p>
+      </div>
+      <div class="step-connector mt-8 mx-2"></div>
+      <!-- Step 4 -->
+      <div class="flex-1 text-center">
+        <div class="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div class="text-xs font-bold text-violet-400 tracking-widest uppercase mb-2">Stage 04</div>
+        <h3 class="text-white font-bold text-lg mb-3">Scale</h3>
+        <p class="text-slate-500 text-sm leading-relaxed px-2">Performance amplification, team extension, and organisational impact. From individual growth to collective transformation.</p>
+      </div>
+    </div>
+
+    <!-- Step flow mobile -->
+    <div class="flex flex-col gap-4 md:hidden reveal">
+      <div class="glass rounded-2xl p-6 flex items-start gap-5">
+        <div class="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style="background:rgba(139,92,246,0.15);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+        <div>
+          <div class="text-xs font-bold text-violet-400 tracking-widest uppercase mb-1">Stage 01</div>
+          <h3 class="text-white font-bold mb-2">Discover</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">Self-awareness assessments, values clarification, and strength mapping.</p>
+        </div>
+      </div>
+      <div class="glass rounded-2xl p-6 flex items-start gap-5">
+        <div class="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style="background:rgba(139,92,246,0.15);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div>
+          <div class="text-xs font-bold text-violet-400 tracking-widest uppercase mb-1">Stage 02</div>
+          <h3 class="text-white font-bold mb-2">Design</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">Personalised growth plans, goal architecture, and milestone setting.</p>
+        </div>
+      </div>
+      <div class="glass rounded-2xl p-6 flex items-start gap-5">
+        <div class="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style="background:rgba(139,92,246,0.15);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="text-xs font-bold text-violet-400 tracking-widest uppercase mb-1">Stage 03</div>
+          <h3 class="text-white font-bold mb-2">Enable</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">Coaching, resources, community support, and accountability partners.</p>
+        </div>
+      </div>
+      <div class="glass rounded-2xl p-6 flex items-start gap-5">
+        <div class="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style="background:rgba(139,92,246,0.15);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div>
+          <div class="text-xs font-bold text-violet-400 tracking-widest uppercase mb-1">Stage 04</div>
+          <h3 class="text-white font-bold mb-2">Scale</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">Performance amplification, team extension, and organisational impact.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider mx-auto max-w-7xl"></div>
+
+  <!-- PLATFORMS GRID -->
+  <section id="platforms" class="relative py-24 max-w-7xl mx-auto px-6">
+    <div class="reveal text-center mb-16">
+      <span class="tag-pill mb-4 inline-block" style="background:rgba(139,92,246,0.1);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);">18 Platforms</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold text-white mt-4">The Full Suite</h2>
+      <p class="text-slate-400 mt-4 text-lg max-w-2xl mx-auto">Every tool in the Betser Life ecosystem is designed around one outcome: helping people and organisations grow with intention.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <div class="reveal platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">Betser Journey</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Personalised life transformation roadmap with AI coaching at every milestone.</p>
+      </div>
+
+      <div class="reveal reveal-delay-1 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">WellNest</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Corporate wellness and employee mental health platform for healthier workplaces.</p>
+      </div>
+
+      <div class="reveal reveal-delay-2 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">LeadEdge</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Leadership assessment and structured development program for emerging and senior leaders.</p>
+      </div>
+
+      <div class="reveal platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">MindMap Pro</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Goal visualisation and habit tracking application built for clarity and consistency.</p>
+      </div>
+
+      <div class="reveal reveal-delay-1 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">TeamSync</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Team dynamics and collaboration intelligence platform for high-performing groups.</p>
+      </div>
+
+      <div class="reveal reveal-delay-2 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">VitalMetrics</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Health and lifestyle metrics tracking dashboard for evidence-based personal decisions.</p>
+      </div>
+
+      <div class="reveal platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">GrowthLens</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">360-degree personal and professional growth analytics with actionable insights.</p>
+      </div>
+
+      <div class="reveal reveal-delay-1 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">ResiliaPath</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Resilience building and stress management program grounded in applied psychology.</p>
+      </div>
+
+      <div class="reveal reveal-delay-2 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">LifeCanvas</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Life design and vision boarding digital platform for intentional living.</p>
+      </div>
+
+      <div class="reveal platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">CareerAscent</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Career trajectory planning and mentorship matching for professionals at every stage.</p>
+      </div>
+
+      <div class="reveal reveal-delay-1 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">FocusMind</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Mindfulness and productivity fusion app for sustained deep work and calm focus.</p>
+      </div>
+
+      <div class="reveal reveal-delay-2 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">ZenFlow</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Stress reduction and work-life harmony toolkit with guided practices and check-ins.</p>
+      </div>
+
+      <div class="reveal platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">BalancePoint</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Work-life integration coaching platform designed for sustainable high performance.</p>
+      </div>
+
+      <div class="reveal reveal-delay-1 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">SuccessBlueprint</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Personal success methodology and execution tracker from intention to outcome.</p>
+      </div>
+
+      <div class="reveal reveal-delay-2 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">NetworkBoost</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Professional networking and relationship capital builder for intentional connections.</p>
+      </div>
+
+      <div class="reveal platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">CommunityThrive</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Community building and social capital platform for organisations and cohorts.</p>
+      </div>
+
+      <div class="reveal reveal-delay-1 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">ImpactDrive</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Social impact measurement and CSR tracking for purpose-driven organisations.</p>
+      </div>
+
+      <div class="reveal reveal-delay-2 platform-card glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3 class="text-white font-semibold text-base mb-2">LegacyMap</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Long-term legacy planning and life purpose platform for those building something that lasts.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider mx-auto max-w-7xl"></div>
+
+  <!-- FOR WHOM -->
+  <section class="relative py-24 max-w-7xl mx-auto px-6">
+    <div class="reveal text-center mb-16">
+      <span class="tag-pill mb-4 inline-block" style="background:rgba(139,92,246,0.1);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);">Who We Serve</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold text-white mt-4">Built For Growth at Every Level</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <!-- Individuals -->
+      <div class="reveal audience-card glass rounded-2xl p-8" style="border-color:rgba(139,92,246,0.18);">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6" style="background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(109,40,217,0.15));">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h3 class="text-white text-xl font-bold mb-4">Individuals</h3>
+        <ul class="space-y-3 text-slate-400 text-sm">
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Gain clarity on values and purpose</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Build habits aligned with your goals</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Access coaches and accountability partners</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Track personal growth with real data</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Design your life with intention</li>
+        </ul>
+      </div>
+
+      <!-- Teams -->
+      <div class="reveal reveal-delay-1 audience-card glass rounded-2xl p-8" style="border-color:rgba(139,92,246,0.25);background:rgba(139,92,246,0.04);">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6" style="background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(109,40,217,0.2));">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3 class="text-white text-xl font-bold mb-4">Teams</h3>
+        <ul class="space-y-3 text-slate-400 text-sm">
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Map team dynamics and collaboration gaps</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Strengthen trust and psychological safety</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Improve communication and decision speed</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Develop emerging leaders within the group</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Align around shared goals and values</li>
+        </ul>
+      </div>
+
+      <!-- Organisations -->
+      <div class="reveal reveal-delay-2 audience-card glass rounded-2xl p-8" style="border-color:rgba(139,92,246,0.18);">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6" style="background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(109,40,217,0.15));">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <h3 class="text-white text-xl font-bold mb-4">Organisations</h3>
+        <ul class="space-y-3 text-slate-400 text-sm">
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Embed wellbeing into company culture</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Reduce attrition through purposeful engagement</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Develop a pipeline of capable leaders</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Measure and report on people development ROI</li>
+          <li class="flex items-start gap-2"><span class="text-violet-400 mt-0.5 flex-shrink-0">+</span> Scale growth culture across 12+ countries</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider mx-auto max-w-7xl"></div>
+
+  <!-- FOUNDERS SECTION -->
+  <section class="relative py-24 max-w-7xl mx-auto px-6">
+    <div class="reveal text-center mb-16">
+      <span class="tag-pill mb-4 inline-block" style="background:rgba(139,92,246,0.1);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);">The People Behind Betser</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold text-white mt-4">Leadership</h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+
+      <!-- Biji Thomas -->
+      <div class="reveal glass glass-hover rounded-2xl p-8 text-center">
+        <div class="w-20 h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h3 class="text-white text-xl font-bold mb-1">Biji Thomas</h3>
+        <p class="text-violet-400 text-sm font-semibold mb-4">CEO, Betser Life</p>
+        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+          Seasoned transformation leader, BNI member in Dubai, and the driving force behind Betser Life. Biji brings 5 years of cross-continent experience helping individuals and organisations discover their potential.
+        </p>
+        <a href="/bni/biji-thomas.html" class="cta-violet text-white text-sm font-semibold px-6 py-2.5 rounded-xl inline-block">View Profile</a>
+      </div>
+
+      <!-- Dr. BK Murali -->
+      <div class="reveal reveal-delay-1 glass glass-hover rounded-2xl p-8 text-center">
+        <div class="w-20 h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h3 class="text-white text-xl font-bold mb-1">Dr. BK Murali</h3>
+        <p class="text-indigo-400 text-sm font-semibold mb-4">Director and Advisor, Betser Life</p>
+        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+          Physician, AI entrepreneur, and co-founder of HopeTech Ventures. Dr. Murali provides strategic direction and healthcare intelligence to Betser Life, bridging wellness with evidence-based practice.
+        </p>
+        <a href="/bni/dr-murali.html" class="glass glass-hover text-slate-300 text-sm font-semibold px-6 py-2.5 rounded-xl inline-block">View Profile</a>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider mx-auto max-w-7xl"></div>
+
+  <!-- CTA SECTION -->
+  <section class="relative py-24 overflow-hidden">
+    <div class="orb" style="width:420px;height:420px;background:rgba(139,92,246,0.08);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-3s;"></div>
+    <div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
+      <div class="reveal">
+        <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-6">
+          Ready to discover<br/><span class="text-gradient-violet">your best self?</span>
+        </h2>
+        <p class="text-slate-400 text-lg mb-10">Book a 121 with Biji Thomas or Dr. BK Murali to explore how Betser Life can serve you, your team, or your organisation.</p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <a href="/bni/index.html" class="cta-violet text-white font-semibold px-8 py-4 rounded-xl text-sm">Book a 121 Meeting</a>
+          <a href="https://betserlife.com" target="_blank" class="glass glass-hover text-slate-300 font-semibold px-8 py-4 rounded-xl text-sm">betserlife.com</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 py-12 mt-0">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <span class="text-white font-semibold">HopeTech Ventures</span>
+      </div>
+      <p class="text-slate-500 text-sm">&copy; 2025 HopeTech Ventures. Dr. BK Murali &amp; Biji Thomas. All rights reserved.</p>
+      <div class="flex items-center gap-6 text-sm text-slate-500">
+        <a href="/bni/index.html" class="hover:text-white transition-colors">Home</a>
+        <a href="/bni/dr-murali.html" class="hover:text-white transition-colors">Dr. Murali</a>
+        <a href="/bni/biji-thomas.html" class="hover:text-white transition-colors">Biji Thomas</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    // Scroll reveal
+    document.querySelectorAll('.reveal').forEach(el => {
+      new IntersectionObserver(([e]) => e.isIntersecting && e.target.classList.add('visible'), { threshold: 0.1 }).observe(el);
+    });
+  </script>
+</body>
+</html>
