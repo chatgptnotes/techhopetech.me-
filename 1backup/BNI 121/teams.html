@@ -6,17 +6,12 @@
   <title>Teams (A / B / C / D) — BNI 121</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     body { font-family: 'Inter', sans-serif; background:#f8fafc; color:#0f172a; }
     .glass { background:white; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
     .team-card { transition:all 0.18s ease; }
     .team-card:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,0.06); }
-    .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:0.66rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; }
-    .pp { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:999px; font-size:0.6rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; border:1px solid; }
-    .pp-on  { background:#dcfce7; color:#166534; border-color:#86efac; }
-    .pp-off { background:#f1f5f9; color:#94a3b8; border-color:#e2e8f0; }
     .row-action { padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; cursor:pointer; border:1px solid transparent; }
     .row-action.edit { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
     .row-action.edit:hover { background:#dbeafe; }
@@ -25,15 +20,15 @@
     .add-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px; background:#1e3a8a; color:#fff; font-size:0.78rem; font-weight:700; cursor:pointer; border:none; }
     .add-btn:hover { background:#1e40af; }
     .modal-bg { position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:80; display:flex; align-items:center; justify-content:center; }
-    .modal-card { background:white; border-radius:16px; max-width:560px; width:92%; max-height:90vh; overflow-y:auto; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.25); }
+    .modal-card { background:white; border-radius:16px; max-width:520px; width:92%; max-height:90vh; overflow-y:auto; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.25); }
   </style>
 </head>
 <body>
 
   <main class="px-4 sm:px-8 py-6 max-w-7xl mx-auto">
     <header class="mb-6">
-      <h1 class="text-2xl font-extrabold text-slate-900" style="letter-spacing:-0.02em">BNI Members met on Zoom — by team</h1>
-      <p class="text-slate-500 text-sm mt-1">Live profile data from Supabase. Click a name to open the profile, or use the Edit/Delete/Add controls per row.</p>
+      <h1 class="text-2xl font-extrabold text-slate-900" style="letter-spacing:-0.02em">BNI Teams — A / B / C / D</h1>
+      <p class="text-slate-500 text-sm mt-1">Team member roster. Add, edit, or remove members per team.</p>
     </header>
 
     <div id="loadingState" class="text-center py-10 text-slate-400 text-sm">Loading rosters…</div>
@@ -44,12 +39,11 @@
   <div id="memberModal" class="modal-bg hidden">
     <div class="modal-card">
       <div class="flex items-center justify-between mb-4">
-        <h3 id="modalTitle" class="text-lg font-bold">Edit BNI member</h3>
+        <h3 id="modalTitle" class="text-lg font-bold">Add member</h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
       </div>
       <form id="memberForm" onsubmit="saveMember(event)" class="grid grid-cols-2 gap-3 text-sm">
         <input type="hidden" id="m_id" />
-        <input type="hidden" id="m_team" />
         <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">First name *</span>
           <input id="m_first" required class="w-full border rounded-lg px-3 py-2" /></label>
         <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Last name</span>
@@ -60,30 +54,14 @@
           <input id="m_phone" class="w-full border rounded-lg px-3 py-2" /></label>
         <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Email</span>
           <input id="m_email" type="email" class="w-full border rounded-lg px-3 py-2" /></label>
-        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">City</span>
-          <input id="m_city" class="w-full border rounded-lg px-3 py-2" /></label>
-        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Chapter</span>
-          <input id="m_chapter" class="w-full border rounded-lg px-3 py-2" /></label>
-        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Status</span>
-          <select id="m_status" class="w-full border rounded-lg px-3 py-2">
-            <option>Identified</option><option>Contacted</option><option>Meeting Scheduled</option>
-            <option>Met</option><option>Follow-up</option><option>Converted</option><option>Not Interested</option>
-          </select></label>
-        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Segment</span>
-          <select id="m_segment" class="w-full border rounded-lg px-3 py-2">
-            <option value="">—</option>
-            <option>AI / Tech</option><option>Industrial Automation</option>
-            <option>Healthcare</option><option>Other</option>
-          </select></label>
         <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Meeting date</span>
-          <input id="m_next_date" type="date" class="w-full border rounded-lg px-3 py-2" /></label>
+          <input id="m_meeting_date" type="date" class="w-full border rounded-lg px-3 py-2" /></label>
         <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Meeting time</span>
           <input id="m_meeting_time" type="time" class="w-full border rounded-lg px-3 py-2" /></label>
         <label class="col-span-2"><span class="block text-xs font-semibold text-slate-600 mb-1">Team</span>
           <select id="m_team_select" class="w-full border rounded-lg px-3 py-2">
             <option value="A">Team A</option><option value="B">Team B</option>
             <option value="C">Team C</option><option value="D">Team D</option>
-            <option value="">— None —</option>
           </select></label>
         <label class="col-span-2"><span class="block text-xs font-semibold text-slate-600 mb-1">Notes</span>
           <textarea id="m_notes" rows="2" class="w-full border rounded-lg px-3 py-2"></textarea></label>
@@ -99,14 +77,6 @@
   <script src="auth-guard.js"></script>
   <script src="bni-sidebar.js"></script>
   <script>
-  // The TEAMS array stays as a fallback / canonical-id mapping. Members
-  // whose bni_contacts.team column is set will also be auto-grouped by team.
-  const TEAM_FALLBACK = {
-    A: ['c54','c55','c56','c57','c58','c78','cwa17','cwa14','cwa05'],
-    B: ['c71','cwa07','cteam_b_alifiya','cwa13'],
-    C: ['c68','c66','cteam_c_binita','c45','cteam_c_aarthy','cwa16','cwa01'],
-    D: ['c21','c18','c19','cwa04','c47','c61','c53','cteam_d_amos','c74','c65','cwa06','cwa09','cwa02','cwa03','c60','c69'],
-  };
   const TEAM_META = {
     A: { color:'#7c3aed', captain:'Roma Gehi' },
     B: { color:'#2563eb', captain:'Ruchi Raisoni' },
@@ -114,82 +84,31 @@
     D: { color:'#15803d', captain:'—' },
   };
 
-  let _contacts = {};
-  let _details = {};
+  let _members = {};
 
   async function fetchAll() {
-    const [{data: cs}, {data: ds}] = await Promise.all([
-      window.sb.from('bni_contacts').select('*'),
-      window.sb.from('bni_contact_details').select('contact_id,next_date,meeting_time,sentiment,financial_proposal_sent_at,technical_proposal_sent_at,commercial_proposal_sent_at,proposal_reply_received_at,meeting_outcome'),
-    ]);
-    _contacts = {};
-    _details = {};
-    (cs||[]).forEach(c => { _contacts[c.id] = c; });
-    (ds||[]).forEach(d => { _details[d.contact_id] = d; });
+    const { data } = await window.sb.from('bni_team_members').select('*').eq('hidden', false);
+    _members = {};
+    (data || []).forEach(m => { _members[m.id] = m; });
   }
 
-  function statusColor(s) {
-    return ({
-      'Identified':'#3b82f6','Contacted':'#a16207','Meeting Scheduled':'#15803d',
-      'Met':'#7c3aed','Follow-up':'#c2410c','Converted':'#10b981','Not Interested':'#6b7280'
-    })[s] || '#64748b';
-  }
-
-  function sentimentEmoji(s) {
-    if ((s||'').toLowerCase()==='positive') return '<span title="Positive">😊</span>';
-    if ((s||'').toLowerCase()==='negative') return '<span title="Negative">😠</span>';
-    if ((s||'').toLowerCase()==='neutral')  return '<span title="Neutral">😐</span>';
-    return '';
-  }
-
-  function proposalPills(d) {
-    if (!d) return '';
-    return [
-      ['M', !!d.financial_proposal_sent_at],
-      ['T', !!d.technical_proposal_sent_at],
-      ['C', !!d.commercial_proposal_sent_at],
-      ['R', !!d.proposal_reply_received_at],
-    ].map(([k,on])=>`<span class="pp ${on?'pp-on':'pp-off'}">${on?'✓':'·'} ${k}</span>`).join('');
-  }
-
-  // Group contacts by team — prefer the DB column `team`, else use fallback map.
   function getTeamMembers(code) {
-    const dbTeam = Object.values(_contacts).filter(c => (c.team || '').toUpperCase() === code && !c.hidden);
-    const dbIds = new Set(dbTeam.map(c => c.id));
-    const fallback = (TEAM_FALLBACK[code] || []).filter(id => !dbIds.has(id));
-    return [
-      ...dbTeam.sort((a,b) => ((a.first||'')+(a.last||'')).localeCompare((b.first||'')+(b.last||''))),
-      ...fallback.map(id => _contacts[id] || { id, _placeholder: true })
-    ];
+    return Object.values(_members)
+      .filter(m => (m.team || '').toUpperCase() === code)
+      .sort((a, b) => ((a.first||'')+(a.last||'')).localeCompare((b.first||'')+(b.last||'')));
   }
 
-  function memberRow(c, teamCode) {
-    if (c._placeholder) {
-      return `<tr class="border-b border-slate-100">
-        <td class="py-2 pr-3 text-slate-400 italic" colspan="6">${c.id} — not in DB</td>
-        <td class="py-2 text-right">
-          <button class="row-action edit" onclick="openAdd('${teamCode}')">+ Add</button>
-        </td>
-      </tr>`;
-    }
-    const d = _details[c.id];
-    const name = ((c.first||'') + ' ' + (c.last||'')).trim() || '(no name)';
-    const co = c.company || c.chapter || '';
-    const sc = statusColor(c.status);
-    const mt = d && d.next_date ? `${d.next_date}${d.meeting_time?' '+d.meeting_time:''}` : '';
+  function memberRow(m, teamCode) {
+    const name = ((m.first||'') + ' ' + (m.last||'')).trim() || '(no name)';
+    const mt = m.meeting_date ? `${m.meeting_date}${m.meeting_time ? ' ' + m.meeting_time : ''}` : '';
     return `<tr class="border-b border-slate-100 hover:bg-slate-50">
-      <td class="py-2 pr-3">
-        <a href="contact.html?id=${c.id}" class="font-semibold text-slate-900 hover:text-blue-700">${name}</a>
-        ${sentimentEmoji(d && d.sentiment)}
-      </td>
-      <td class="py-2 pr-3 text-slate-600 text-xs">${co}</td>
-      <td class="py-2 pr-3 text-slate-500 text-xs">${c.phone||''}</td>
-      <td class="py-2 pr-3"><span class="badge" style="background:${sc}18;color:${sc};border:1px solid ${sc}55;">${c.status||'—'}</span></td>
+      <td class="py-2 pr-3 font-semibold text-slate-900 text-sm">${name}</td>
+      <td class="py-2 pr-3 text-slate-600 text-xs">${m.company||''}</td>
+      <td class="py-2 pr-3 text-slate-500 text-xs">${m.phone||''}</td>
       <td class="py-2 pr-3 text-slate-500 text-xs whitespace-nowrap">${mt}</td>
-      <td class="py-2 pr-3 whitespace-nowrap">${proposalPills(d)}</td>
       <td class="py-2 text-right whitespace-nowrap">
-        <button class="row-action edit" onclick="openEdit('${c.id}','${teamCode}')">Edit</button>
-        <button class="row-action del"  onclick="deleteMember('${c.id}')">Delete</button>
+        <button class="row-action edit" onclick="openEdit('${m.id}','${teamCode}')">Edit</button>
+        <button class="row-action del"  onclick="deleteMember('${m.id}')">Delete</button>
       </td>
     </tr>`;
   }
@@ -204,8 +123,8 @@
           <div class="flex items-center gap-2 mb-3">
             <span class="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-white" style="background:${meta.color}">${code}</span>
             <h2 class="text-lg font-bold text-slate-900">Team ${code}</h2>
-            ${meta.captain && meta.captain !== '—' ? `<span class="text-slate-500 text-sm">· captain ${meta.captain}</span>` : ''}
-            <span class="ml-auto text-xs text-slate-400">${members.filter(m=>!m._placeholder).length} member${members.filter(m=>!m._placeholder).length!==1?'s':''}</span>
+            ${meta.captain && meta.captain !== '—' ? `<span class="text-slate-500 text-sm">· ${meta.captain}</span>` : ''}
+            <span class="ml-auto text-xs text-slate-400">${members.length} member${members.length!==1?'s':''}</span>
             <button class="add-btn" onclick="openAdd('${code}')">+ Add</button>
           </div>
           <div class="overflow-x-auto">
@@ -215,14 +134,12 @@
                   <th class="text-left pb-2 pr-3">Name</th>
                   <th class="text-left pb-2 pr-3">Company</th>
                   <th class="text-left pb-2 pr-3">Phone</th>
-                  <th class="text-left pb-2 pr-3">Status</th>
                   <th class="text-left pb-2 pr-3">Meeting</th>
-                  <th class="text-left pb-2 pr-3">Proposals</th>
                   <th class="text-right pb-2"></th>
                 </tr>
               </thead>
               <tbody>
-                ${members.map(m => memberRow(m, code)).join('')}
+                ${members.length ? members.map(m => memberRow(m, code)).join('') : '<tr><td colspan="5" class="py-3 text-slate-400 text-xs text-center">No members yet — click + Add</td></tr>'}
               </tbody>
             </table>
           </div>
@@ -230,17 +147,13 @@
     }).join('');
     cont.classList.remove('hidden');
     document.getElementById('loadingState').classList.add('hidden');
-    if (window.lucide) window.lucide.createIcons();
   }
 
-  // ── Modal ────────────────────────────────────────────────────────────────
   function openModalEmpty(teamCode, mode) {
-    document.getElementById('modalTitle').textContent = mode === 'add' ? `Add member to Team ${teamCode}` : 'Edit BNI member';
+    document.getElementById('modalTitle').textContent = mode === 'add' ? `Add member to Team ${teamCode}` : 'Edit member';
     document.getElementById('memberForm').reset();
     document.getElementById('m_id').value = '';
-    document.getElementById('m_team').value = teamCode || '';
-    document.getElementById('m_team_select').value = teamCode || '';
-    document.getElementById('m_status').value = mode === 'add' ? 'Met' : 'Identified';
+    document.getElementById('m_team_select').value = teamCode || 'A';
     document.getElementById('memberModal').classList.remove('hidden');
   }
 
@@ -250,23 +163,19 @@
   }
 
   function openEdit(id, teamCode) {
-    const c = _contacts[id]; const d = _details[id] || {};
-    if (!c) return alert('Contact not found');
+    const m = _members[id];
+    if (!m) return alert('Member not found');
     openModalEmpty(teamCode, 'edit');
-    document.getElementById('m_id').value         = id;
-    document.getElementById('m_first').value      = c.first || '';
-    document.getElementById('m_last').value       = c.last || '';
-    document.getElementById('m_company').value    = c.company || '';
-    document.getElementById('m_phone').value      = c.phone || '';
-    document.getElementById('m_email').value      = c.email || '';
-    document.getElementById('m_city').value       = c.city || '';
-    document.getElementById('m_chapter').value    = c.chapter || '';
-    document.getElementById('m_status').value     = c.status || 'Identified';
-    document.getElementById('m_segment').value    = c.segment || '';
-    document.getElementById('m_notes').value      = c.notes || '';
-    document.getElementById('m_next_date').value  = d.next_date || '';
-    document.getElementById('m_meeting_time').value = d.meeting_time || '';
-    document.getElementById('m_team_select').value = c.team || teamCode || '';
+    document.getElementById('m_id').value            = id;
+    document.getElementById('m_first').value         = m.first || '';
+    document.getElementById('m_last').value          = m.last || '';
+    document.getElementById('m_company').value       = m.company || '';
+    document.getElementById('m_phone').value         = m.phone || '';
+    document.getElementById('m_email').value         = m.email || '';
+    document.getElementById('m_meeting_date').value  = m.meeting_date || '';
+    document.getElementById('m_meeting_time').value  = m.meeting_time || '';
+    document.getElementById('m_notes').value         = m.notes || '';
+    document.getElementById('m_team_select').value   = m.team || teamCode || 'A';
   }
 
   function closeModal() {
@@ -276,50 +185,32 @@
   async function saveMember(ev) {
     ev.preventDefault();
     const existingId = document.getElementById('m_id').value;
-    const id = existingId || nextId();
+    const id = existingId || ('tm_' + Date.now());
     const payload = {
       id,
-      first:    document.getElementById('m_first').value.trim() || null,
-      last:     document.getElementById('m_last').value.trim()  || null,
-      company:  document.getElementById('m_company').value.trim() || null,
-      phone:    document.getElementById('m_phone').value.trim()   || null,
-      email:    document.getElementById('m_email').value.trim()   || null,
-      city:     document.getElementById('m_city').value.trim()    || null,
-      chapter:  document.getElementById('m_chapter').value.trim() || null,
-      status:   document.getElementById('m_status').value         || 'Identified',
-      segment:  document.getElementById('m_segment').value        || null,
-      notes:    document.getElementById('m_notes').value.trim()   || null,
-      team:     document.getElementById('m_team_select').value    || null,
+      team:         document.getElementById('m_team_select').value,
+      first:        document.getElementById('m_first').value.trim(),
+      last:         document.getElementById('m_last').value.trim()    || null,
+      company:      document.getElementById('m_company').value.trim() || null,
+      phone:        document.getElementById('m_phone').value.trim()   || null,
+      email:        document.getElementById('m_email').value.trim()   || null,
+      meeting_date: document.getElementById('m_meeting_date').value   || null,
+      meeting_time: document.getElementById('m_meeting_time').value   || null,
+      notes:        document.getElementById('m_notes').value.trim()   || null,
     };
-    const { error } = await window.sb.from('bni_contacts').upsert(payload);
+    const { error } = await window.sb.from('bni_team_members').upsert(payload);
     if (error) { alert('Save failed: ' + error.message); return; }
-    const detailPayload = {
-      contact_id:   id,
-      next_date:    document.getElementById('m_next_date').value || null,
-      meeting_time: document.getElementById('m_meeting_time').value || null,
-    };
-    if (detailPayload.next_date || detailPayload.meeting_time) {
-      const { error: dErr } = await window.sb.from('bni_contact_details').upsert(detailPayload, { onConflict:'contact_id' });
-      if (dErr) console.warn('detail save', dErr);
-    }
     closeModal();
     await fetchAll();
     render();
   }
 
   async function deleteMember(id) {
-    if (!confirm('Hide this member from the team list?\n\nThis sets hidden=true on bni_contacts (reversible). It does NOT delete the row from the database.')) return;
-    const { error } = await window.sb.from('bni_contacts').update({ hidden: true }).eq('id', id);
+    if (!confirm('Remove this member from the team?\n\nThis hides them (reversible) — does not delete the row.')) return;
+    const { error } = await window.sb.from('bni_team_members').update({ hidden: true }).eq('id', id);
     if (error) { alert('Delete failed: ' + error.message); return; }
     await fetchAll();
     render();
-  }
-
-  function nextId() {
-    const ids = Object.keys(_contacts);
-    const nums = ids.map(id => parseInt(String(id).replace(/\D/g,''),10)).filter(n => !isNaN(n) && n < 100000);
-    const max = nums.length ? Math.max(...nums) : 0;
-    return 'c' + (max + 1);
   }
 
   async function init() {

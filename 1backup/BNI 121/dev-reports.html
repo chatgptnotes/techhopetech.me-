@@ -278,7 +278,7 @@
   async function saveTask(team, field, value) {
     if (!_teamConfig[team]) _teamConfig[team] = { team };
     _teamConfig[team][field] = value;
-    await window.sb.from('dev_team_config').update({ [field]: value }).eq('team', team);
+    await window.sb.from('dev_team_config').upsert({ team, [field]: value }, { onConflict: 'team' });
   }
 
   function openWhatsApp(devId) {
