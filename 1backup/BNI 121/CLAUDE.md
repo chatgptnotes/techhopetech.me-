@@ -34,7 +34,7 @@ This project uses the Ironbark learning loop with auto-sync to the community ski
 - **Background sync**: Every 30 min, `sync-cli.js` pulls new community skills and pushes local ones
 - **Opt-out**: `IRONBARK_SYNC_DISABLED=1`
 
-### Available Harvested Skills (82)
+### Available Harvested Skills (83)
 
 Loaded from `~/.claude/skills/harvested/`. Reference any skill below by name or path when the task matches.
 
@@ -112,6 +112,7 @@ Loaded from `~/.claude/skills/harvested/`. Reference any skill below by name or 
 | `SVG Sanitization with DOMPurify` | Replace regex-based SVG sanitizers with DOMPurify SVG profile — regex is trivially bypassable | `/Users/murali/.claude/skills/harvested/svg-sanitization-dompurify/SKILL.md` |
 | `svg-icons-html-pdf` |  | `/Users/murali/.claude/skills/harvested/svg-icons-html-pdf/SKILL.md` |
 | `Timezone-Aware Hourly Cron Fanout` | Run an hourly cron that uses Intl.DateTimeFormat to check each user's local hour — only deliver to users whose timezone hour matches the tar | `/Users/murali/.claude/skills/harvested/timezone-aware-cron-fanout/SKILL.md` |
+| `Token-Saving Toolkit Install` | One-stop install procedure for the 5 Claude Code tools that cut token / API spend the most — Graphify (codebase knowledge graph), Firecrawl  | `/Users/murali/.claude/skills/harvested/token-saving-toolkit-install/SKILL.md` |
 | `Vercel Prebuilt Deploy Workaround` | When Vercel remote builds fail silently (empty error message), build locally with vercel build --prod then deploy with vercel deploy --prebu | `/Users/murali/.claude/skills/harvested/vercel-prebuilt-deploy/SKILL.md` |
 | `Vite Environment URL Auto-Detection` | Frontend apps deployed to Vercel must auto-detect API/WebSocket URLs for production vs development — never default to localhost for both API | `/Users/murali/.claude/skills/harvested/vite-env-url-detection/SKILL.md` |
 | `WhatsApp Instant Acknowledgment Before Slow Processing` | Send an immediate ack message to the user before kicking off a long-running operation (AI inference, email fetch, DB query). Prevents user t | `/Users/murali/.claude/skills/harvested/whatsapp-instant-ack/SKILL.md` |
