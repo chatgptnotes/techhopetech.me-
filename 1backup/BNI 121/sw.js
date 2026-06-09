@@ -1,5 +1,5 @@
 // BNI 121 — service worker. Network-first for HTML & API; cache-first for assets.
-const VERSION = 'bni-v3';
+const VERSION = 'bni-v4';
 const CORE = [
   '/bni/dashboard.html',
   '/bni/tracker.html',
@@ -30,6 +30,8 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Only handle http/https — chrome-extension:// and others are unsupported by Cache API.
+  if (!e.request.url.startsWith('http')) return;
   const url = new URL(e.request.url);
   // Don't cache Supabase API or Anthropic — must always be live.
   if (url.host.includes('supabase.co') || url.host.includes('api.anthropic.com')) return;
