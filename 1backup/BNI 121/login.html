@@ -38,6 +38,7 @@
   // ── Admin credentials — change these to your own ───────────────────────────
   const ADMIN_ID = 'admin';
   const ADMIN_PW = 'HopeTech@2026';
+  const SESSION_MS = 12 * 60 * 60 * 1000; // sessions expire after 12 hours
   // ───────────────────────────────────────────────────────────────────────────
 
   // Only allow same-origin relative .html targets — blocks open-redirect abuse.
@@ -46,8 +47,9 @@
     return /^[A-Za-z0-9_\-]+\.html(\?.*)?$/.test(p) ? p : '';
   }
 
-  // Already signed in → skip the login screen.
-  if (localStorage.getItem('bni_crm_auth') === '1') {
+  // Already signed in with an unexpired session → skip the login screen.
+  const authExp = Number(localStorage.getItem('bni_crm_auth'));
+  if (authExp && Date.now() < authExp) {
     location.replace(safeNext() || 'dashboard.html');
   }
 
@@ -56,8 +58,9 @@
     const id = document.getElementById('loginId').value.trim();
     const pw = document.getElementById('password').value;
     if (id === ADMIN_ID && pw === ADMIN_PW) {
-      localStorage.setItem('bni_crm_auth', '1');
-      localStorage.setItem('ht_admin_session', '1'); // single sign-on: also unlocks admin.html
+      const exp = String(Date.now() + SESSION_MS);
+      localStorage.setItem('bni_crm_auth', exp);
+      localStorage.setItem('ht_admin_session', exp); // single sign-on: also unlocks admin.html
       location.replace(safeNext() || 'dashboard.html');
     } else {
       document.getElementById('loginError').classList.remove('hidden');

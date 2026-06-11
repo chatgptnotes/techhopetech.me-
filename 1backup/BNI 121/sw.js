@@ -1,6 +1,7 @@
 // BNI 121 — service worker. Network-first for HTML & API; cache-first for assets.
-const VERSION = 'bni-v6';
+const VERSION = 'bni-v7';
 const CORE = [
+  '/bni/login.html',
   '/bni/dashboard.html',
   '/bni/tracker.html',
   '/bni/contact.html',
@@ -44,7 +45,10 @@ self.addEventListener('fetch', e => {
         const copy = r.clone();
         caches.open(VERSION).then(c => c.put(e.request, copy));
         return r;
-      }).catch(() => caches.match(e.request).then(r => r || caches.match('/bni/dashboard.html')))
+      }).catch(() =>
+        // ignoreSearch so login.html?next=… hits the precached /bni/login.html.
+        caches.match(e.request, { ignoreSearch: true }).then(r => r || caches.match('/bni/dashboard.html'))
+      )
     );
     return;
   }

@@ -362,6 +362,11 @@
       font-weight:500;
     }
     #bni-sidebar-root .bs-footer-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,0.28); }
+    #bni-sidebar-root .bs-signout {
+      background:none; border:none; cursor:pointer; padding:0;
+      color:#bfdbfe; font-size:11px; font-weight:600; font-family:inherit;
+    }
+    #bni-sidebar-root .bs-signout:hover { color:#ffffff; text-decoration:underline; }
     @media (max-width: 900px) {
       /* On narrow viewports the sidebar is hidden by default and acts as a drawer. */
       body.bni-sidebar-applied:not(.bni-sidebar-open) #bni-sidebar-root { transform:translateX(-100%); }
@@ -407,6 +412,7 @@
         <nav>${groups}</nav>
         <div class="bs-footer">
           <span>v2 · Supabase</span>
+          <button id="bni-signout" class="bs-signout" title="Sign out of the CRM">Sign out</button>
           <span class="bs-footer-dot" title="Connected"></span>
         </div>
       </aside>
@@ -464,6 +470,8 @@
 
   function removeLegacyLogoutButtons() {
     document.querySelectorAll('button, a').forEach(el => {
+      // The sidebar's own Sign out button is the real one — never strip it.
+      if (el.closest('#bni-sidebar-root')) return;
       const onclick = (el.getAttribute('onclick') || '').toLowerCase();
       const text = (el.textContent || '').trim().toLowerCase();
       const href = (el.getAttribute('href') || '').toLowerCase();
@@ -530,7 +538,18 @@
     document.body.classList.add('bni-sidebar-applied');
     removeLegacyLogoutButtons();
     bindDrawer();
+    bindSignout();
     window.bniRenderIcons();
+  }
+
+  function bindSignout() {
+    const btn = document.getElementById('bni-signout');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      localStorage.removeItem('bni_crm_auth');
+      localStorage.removeItem('ht_admin_session'); // single sign-out with admin.html
+      location.replace('login.html');
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply);
