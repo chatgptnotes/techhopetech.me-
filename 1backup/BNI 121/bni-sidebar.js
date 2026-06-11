@@ -9,13 +9,13 @@
   // ─── PWA: link manifest, theme color, and register service worker ──────────
   if (!document.querySelector('link[rel="manifest"]')) {
     const m = document.createElement('link');
-    m.rel = 'manifest'; m.href = 'manifest.json';
+    m.rel = 'manifest'; m.href = '/bni/manifest.json';
     document.head.appendChild(m);
     const tc = document.createElement('meta');
     tc.name = 'theme-color'; tc.content = '#1e3a8a';
     document.head.appendChild(tc);
     const ac = document.createElement('meta');
-    ac.name = 'mobile-web-app-capable'; ac.content = 'yes';
+    ac.name = 'apple-mobile-web-app-capable'; ac.content = 'yes';
     document.head.appendChild(ac);
   }
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -45,7 +45,7 @@
       { href: '/bni/followup.html',       icon: 'repeat',         label: 'Follow-ups',      desc: 'All scheduled appointments — see who needs a nudge and log meeting results' },
     ]},
     { title: 'Pipeline',   items: [
-      { href: '/bni/pipeline.html',       icon: 'columns',        label: 'Pipeline',        desc: 'Visual kanban board — drag contacts across stages from Identified to Converted' },
+      { href: '/bni/pipeline.html',       icon: 'trello',         label: 'Pipeline',        desc: 'Visual kanban board — drag contacts across stages from Identified to Converted' },
       { href: '/bni/tracker.html',        icon: 'clipboard-list', label: 'Contact Tracker', desc: 'Full contact list — add, search, filter by status or city, manage leads' },
       { href: '/bni/proposals.html',      icon: 'file-check',     label: 'Proposals',       desc: 'Pending proposal approvals — assignees upload, Dr. Murali reviews and approves' },
     ]},
