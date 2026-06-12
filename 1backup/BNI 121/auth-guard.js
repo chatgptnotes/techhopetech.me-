@@ -9,7 +9,17 @@
 
   // Signed in with an unexpired session — allow the page to render.
   var exp = Number(localStorage.getItem(AUTH_KEY));
-  if (exp && Date.now() < exp) return;
+  if (exp && Date.now() < exp) {
+    // Some pages (dev-tree/dev-calendar/dev-retro) init on this event. Fire at
+    // DOMContentLoaded so listeners registered by body scripts are attached.
+    var fire = function () { document.dispatchEvent(new Event('bni-auth-ready')); };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fire);
+    } else {
+      fire();
+    }
+    return;
+  }
 
   // Missing, legacy ('1') or expired session — clear it (including the
   // admin.html SSO flag), hide content and bounce to the login page,

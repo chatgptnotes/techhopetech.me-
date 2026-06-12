@@ -897,10 +897,11 @@ async function uploadProposal(e) {
 
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const storagePath = `${_contact.id}/proposals/${key}_${Date.now()}_${safeName}`;
-  const { data, error } = await window.sb.storage.from('bni-files').upload(storagePath, file, { upsert: true, contentType: file.type });
-  if (error) { window.bniToast('Upload failed: ' + error.message, 'error'); return; }
-  const { data: pub } = window.sb.storage.from('bni-files').getPublicUrl(data.path);
-  _detail[key + '_proposal_url'] = pub.publicUrl;
+  let up;
+  try {
+    up = await window.bniUpload('bni-files', storagePath, file);
+  } catch (err) { window.bniToast('Upload failed: ' + err.message, 'error'); return; }
+  _detail[key + '_proposal_url'] = up.url;
   await persistDetail();
   render();
   window.bniToast(`${PROPOSAL_LABELS[key]} proposal uploaded — ready to send`, 'success');
@@ -965,10 +966,11 @@ async function uploadOneFile(file, which) {
   const contactId = _contact.id;
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const key = `${contactId}/${which === 'photo' ? 'photo' : 'files'}/${Date.now()}_${safeName}`;
-  const { data, error } = await window.sb.storage.from('bni-files').upload(key, file, { upsert: true, contentType: file.type });
-  if (error) { window.bniToast('Upload failed: ' + error.message, 'error'); return; }
-  const { data: pub } = window.sb.storage.from('bni-files').getPublicUrl(data.path);
-  const url = pub.publicUrl;
+  let up;
+  try {
+    up = await window.bniUpload('bni-files', key, file);
+  } catch (err) { window.bniToast('Upload failed: ' + err.message, 'error'); return; }
+  const url = up.url;
   if (which === 'photo') {
     _detail.photo = url;
   } else {
@@ -1018,37 +1020,20 @@ async function runAISummary() {
   }
   const transcript = (document.getElementById('ef_transcript').value || '').trim();
   if (!transcript) { window.bniToast('Paste transcript text first', 'error'); return; }
-  let key = localStorage.getItem('bni_anthropic_key');
-  if (!key) {
-    key = prompt('Enter your Anthropic API key (stored locally in this browser only):');
-    if (!key) return;
-    localStorage.setItem('bni_anthropic_key', key.trim());
-  }
   const btn = event.target.closest('button');
   const orig = btn.innerHTML;
   btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>Summarizing…';
   window.bniRenderIcons();
   try {
     const first = _contact.first || '';
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: `You are analyzing the transcript of a BNI 121 Zoom meeting between Dr. BK Murali (AI business consultant) and ${first} ${_contact.last||''} from ${_contact.company||'their company'}.\n\nReturn exactly in this format:\n\nSUMMARY:\n- <bullet>\n- <bullet>\n- <bullet>\n\nNEXT STEP: <one clear action>\n\nDRAFT WHATSAPP FOLLOW-UP:\n<3-4 sentences, warm, personal, references one specific thing from the transcript>\n\nTRANSCRIPT:\n${transcript.slice(0, 20000)}`
-        }]
-      })
+    const j = await window.bniAI({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: `You are analyzing the transcript of a BNI 121 Zoom meeting between Dr. BK Murali (AI business consultant) and ${first} ${_contact.last||''} from ${_contact.company||'their company'}.\n\nReturn exactly in this format:\n\nSUMMARY:\n- <bullet>\n- <bullet>\n- <bullet>\n\nNEXT STEP: <one clear action>\n\nDRAFT WHATSAPP FOLLOW-UP:\n<3-4 sentences, warm, personal, references one specific thing from the transcript>\n\nTRANSCRIPT:\n${transcript.slice(0, 20000)}`
+      }]
     });
-    if (!resp.ok) { const err = await resp.text(); throw new Error(err.slice(0, 200)); }
-    const j = await resp.json();
     const txt = j.content?.[0]?.text || '';
     const sumMatch = txt.match(/SUMMARY:([\s\S]*?)(?:NEXT STEP:|$)/i);
     const drftMatch = txt.match(/DRAFT WHATSAPP FOLLOW-UP:([\s\S]*)/i);

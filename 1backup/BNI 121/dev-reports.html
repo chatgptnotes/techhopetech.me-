@@ -395,6 +395,8 @@
               onchange="saveContact('${d.id}','notes',this.value)"
               class="border border-slate-200 rounded-lg px-2 py-1 text-xs flex-1 min-w-[130px]">
             ${waButton(d.id)}
+            <button onclick="assignTeam('${d.id}','')" title="Remove from team"
+              class="shrink-0 text-red-500 hover:text-red-700 text-xs font-bold px-1.5">&#10005;</button>
           </div>`;
       }).join('') : `<p class="text-slate-400 text-xs py-3 text-center">No members yet — assign from the table above.</p>`;
 

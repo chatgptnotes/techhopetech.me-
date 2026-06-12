@@ -322,13 +322,6 @@ async function runAiBrief() {
   if (!_briefContact) return;
   const c = _briefContact;
   const d = _details[c.id] || {};
-  let key = localStorage.getItem('bni_anthropic_key');
-  if (!key) {
-    key = prompt('Enter your Anthropic API key (stored locally in this browser only):');
-    if (!key) return;
-    localStorage.setItem('bni_anthropic_key', key.trim());
-  }
-
   const btn = document.getElementById('briefAiBtn');
   btn.disabled = true;
   btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>Thinking…';
@@ -343,20 +336,12 @@ Notes: ${(c.notes||'').slice(0,500)}
 Recent follow-ups: ${(d.followups||[]).slice(-3).map(f=>`${f.date} ${f.type}: ${f.note||''}`).join(' | ')}`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 600,
-        messages: [{
-          role: 'user',
-          content: `You are preparing Dr. BK Murali (BNI member, AI consulting + hospital software) for a 1-2-1 Zoom call. Below is everything we know about the contact.
+    const data = await window.bniAI({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 600,
+      messages: [{
+        role: 'user',
+        content: `You are preparing Dr. BK Murali (BNI member, AI consulting + hospital software) for a 1-2-1 Zoom call. Below is everything we know about the contact.
 
 Produce a tight pre-meeting brief in plain markdown:
 1. **Open with** — one warm 10-word hook based on what's known.
@@ -368,10 +353,8 @@ Be concrete. No filler. No "Hello [Name]". Output markdown only.
 
 CONTACT CONTEXT:
 ${ctx}`
-        }]
-      })
+      }]
     });
-    const data = await resp.json();
     const text = data?.content?.[0]?.text || data?.error?.message || 'No response';
     const html = text
       .replace(/^### (.*)$/gm, '<h4 class="font-bold text-purple-700 mt-3">$1</h4>')

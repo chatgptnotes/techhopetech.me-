@@ -87,7 +87,8 @@
   let _members = {};
 
   async function fetchAll() {
-    const { data } = await window.sb.from('bni_team_members').select('*').eq('hidden', false);
+    const { data, error } = await window.sb.from('bni_team_members').select('*').eq('hidden', false);
+    if (error) window.bniToast('Failed to load members: ' + error.message, 'error');
     _members = {};
     (data || []).forEach(m => { _members[m.id] = m; });
   }

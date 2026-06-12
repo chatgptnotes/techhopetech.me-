@@ -227,21 +227,22 @@
     status.textContent = `Uploading ${f.name}…`;
 
     if (p.prt_storage_path) {
-      await window.sb.storage.from('dev-attachments').remove([p.prt_storage_path]);
+      await window.bniDeleteUpload('dev-attachments', p.prt_storage_path);
     }
     const safe = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = `projects/${p.id}/prt-${Date.now()}-${safe}`;
-    const { error } = await window.sb.storage.from('dev-attachments').upload(path, f, { upsert: false, cacheControl: '31536000', contentType: 'application/pdf' });
-    if (error) { window.bniToast?.('Upload failed: ' + error.message, 'error'); renderPrt(); return; }
-    const { data: pub } = window.sb.storage.from('dev-attachments').getPublicUrl(path);
+    let up;
+    try {
+      up = await window.bniUpload('dev-attachments', path, f);
+    } catch (err) { window.bniToast?.('Upload failed: ' + err.message, 'error'); renderPrt(); return; }
 
     const update = {
-      prt_url: pub.publicUrl, prt_name: f.name, prt_size: f.size,
+      prt_url: up.url, prt_name: f.name, prt_size: f.size,
       prt_storage_path: path, prt_uploaded_at: new Date().toISOString(),
     };
     const { error: dbErr } = await window.sb.from('dev_projects').update(update).eq('id', p.id);
     if (dbErr) {
-      await window.sb.storage.from('dev-attachments').remove([path]);
+      await window.bniDeleteUpload('dev-attachments', path);
       window.bniToast?.('Save failed: ' + dbErr.message, 'error');
       renderPrt(); return;
     }
@@ -254,7 +255,7 @@
     if (!p?.prt_url) return;
     if (!confirm('Remove the PRT for this project?')) return;
     if (p.prt_storage_path) {
-      await window.sb.storage.from('dev-attachments').remove([p.prt_storage_path]);
+      await window.bniDeleteUpload('dev-attachments', p.prt_storage_path);
     }
     const { error } = await window.sb.from('dev_projects').update({
       prt_url: null, prt_name: null, prt_size: null, prt_storage_path: null, prt_uploaded_at: null,
@@ -400,6 +401,7 @@
   }
   function closeItem() { document.getElementById('itemModal').classList.add('hidden'); }
 
+  // TODO: collision-prone under concurrent edits (max+1 over in-memory list).
   function nextWorkId() {
     const proj = _projects.find(p => p.id === _projectId);
     const prefix = (proj?.id || 'p').replace(/^p_/, '').toUpperCase().slice(0, 4);

@@ -618,20 +618,17 @@ async function submitProposal() {
     const file = fileEl.files[0];
     file_name  = file.name;
     file_size  = file.size;
-    const path = `${_proposalContactId}/${Date.now()}_${file.name}`;
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${_proposalContactId}/${Date.now()}_${safeName}`;
 
-    const { data: uploadData, error: uploadErr } = await window.sb.storage
-      .from('proposals')
-      .upload(path, file, { cacheControl: '3600', upsert: false });
-
-    if (uploadErr) {
+    try {
+      const up = await window.bniUpload('proposals', path, file);
+      file_url = up.url;
+    } catch (err) {
       statusEl.textContent = '';
-      window.bniToast('File upload failed: ' + uploadErr.message, 'error');
+      window.bniToast('File upload failed: ' + err.message, 'error');
       return;
     }
-
-    const { data: urlData } = window.sb.storage.from('proposals').getPublicUrl(path);
-    file_url = urlData?.publicUrl || null;
   }
 
   const { error } = await window.sb.from('bni_proposals').insert({
@@ -675,11 +672,9 @@ function exportCSV() {
 }
 
 function nextContactId() {
-  const existingNums = (_contacts || [])
-    .map(c => parseInt(String(c.id || '').replace(/\D/g, ''), 10))
-    .filter(n => !isNaN(n));
-  const max = existingNums.length ? Math.max(...existingNums) : 0;
-  return 'c' + (max + 1);
+  // Timestamp-based — max+1 over the in-memory list could collide with a row
+  // created elsewhere, and the upsert would silently overwrite that contact.
+  return 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
 async function init() {
@@ -833,36 +828,19 @@ init();
     document.getElementById('scanFields').classList.add('hidden');
     document.getElementById('scanUseBtn').classList.add('hidden');
 
-    let key = localStorage.getItem('bni_anthropic_key');
-    if (!key) {
-      key = prompt('Enter your Anthropic API key (stored locally only):');
-      if (!key) { document.getElementById('scanStatus').textContent = 'Cancelled — no API key.'; return; }
-      localStorage.setItem('bni_anthropic_key', key.trim());
-    }
-
     try {
       const b64 = dataUrl.split(',')[1];
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 600,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } },
-              { type: 'text', text: 'Extract the business-card fields. Return STRICT JSON only — no prose, no markdown — with these keys (use empty string if not present): {"first":"","last":"","company":"","title":"","email":"","phone":"","website":"","city":"","chapter":""}. Phone should be the most prominent mobile number, normalized with country code if visible. Chapter is only set if a BNI chapter name is visible. Output ONLY the JSON object.' }
-            ]
-          }]
-        })
+      const data = await window.bniAI({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } },
+            { type: 'text', text: 'Extract the business-card fields. Return STRICT JSON only — no prose, no markdown — with these keys (use empty string if not present): {"first":"","last":"","company":"","title":"","email":"","phone":"","website":"","city":"","chapter":""}. Phone should be the most prominent mobile number, normalized with country code if visible. Chapter is only set if a BNI chapter name is visible. Output ONLY the JSON object.' }
+          ]
+        }]
       });
-      const data = await resp.json();
       const txt = (data?.content?.[0]?.text || '').trim();
       const m = txt.match(/\{[\s\S]*\}/);
       const json = m ? JSON.parse(m[0]) : null;

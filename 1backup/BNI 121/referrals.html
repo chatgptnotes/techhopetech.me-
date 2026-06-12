@@ -132,14 +132,18 @@
       : '<p class="text-slate-400 text-sm text-center py-4">No referral chains yet.</p>';
 
     // Cold list
-    document.getElementById('coldList').innerHTML = cold.length
-      ? cold.slice(0, 60).map(c => `<a href="contact.html?id=${c.id}" class="block px-3 py-2 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-sm">
-          <div class="font-semibold text-slate-800">${escapeHtml(nameOf(c))}</div>
-          <div class="text-xs text-slate-500">${escapeHtml(c.company || '—')}</div>
-        </a>`).join('') + (cold.length > 60 ? `<div class="text-xs text-slate-400 col-span-full text-center mt-2">… and ${cold.length - 60} more</div>` : '')
-      : '<p class="text-slate-400 text-sm text-center py-4 col-span-full">All contacts have a recorded referral source — nice!</p>';
-
-    if (window.lucide) window.lucide.createIcons();
+    window._showAllCold = false;
+    window.renderCold = function () {
+      const visible = window._showAllCold ? cold : cold.slice(0, 60);
+      document.getElementById('coldList').innerHTML = cold.length
+        ? visible.map(c => `<a href="contact.html?id=${c.id}" class="block px-3 py-2 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-sm">
+            <div class="font-semibold text-slate-800">${escapeHtml(nameOf(c))}</div>
+            <div class="text-xs text-slate-500">${escapeHtml(c.company || '—')}</div>
+          </a>`).join('') + (cold.length > visible.length ? `<button onclick="_showAllCold=true;renderCold()" class="text-xs text-blue-600 hover:underline font-semibold col-span-full text-center mt-2">… and ${cold.length - visible.length} more — show all</button>` : '')
+        : '<p class="text-slate-400 text-sm text-center py-4 col-span-full">All contacts have a recorded referral source — nice!</p>';
+      if (window.lucide) window.lucide.createIcons();
+    };
+    window.renderCold();
   }
 
   load();

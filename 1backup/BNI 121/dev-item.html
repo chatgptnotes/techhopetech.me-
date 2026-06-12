@@ -440,12 +440,13 @@
       const safe = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const path = `${_id}/${Date.now()}-${safe}`;
       status.textContent = `Uploading ${f.name}…`;
-      const { data, error } = await window.sb.storage.from('dev-attachments').upload(path, f, { upsert: false, cacheControl: '31536000' });
-      if (error) { status.textContent = `Failed: ${error.message}`; continue; }
-      const { data: pub } = window.sb.storage.from('dev-attachments').getPublicUrl(path);
+      let up;
+      try {
+        up = await window.bniUpload('dev-attachments', path, f);
+      } catch (err) { status.textContent = `Failed: ${err.message}`; continue; }
       const author = document.getElementById('timerUser').value || null;
       const { data: inserted, error: dbErr } = await window.sb.from('dev_attachments').insert({
-        item_id: _id, name: f.name, storage_path: path, url: pub.publicUrl,
+        item_id: _id, name: f.name, storage_path: path, url: up.url,
         size_bytes: f.size, mime_type: f.type, uploaded_by: author,
       }).select().single();
       if (dbErr) { status.textContent = `Saved file but DB row failed: ${dbErr.message}`; continue; }
@@ -458,7 +459,7 @@
 
   async function deleteAttachment(id, path) {
     if (!confirm('Delete this attachment?')) return;
-    await window.sb.storage.from('dev-attachments').remove([path]);
+    await window.bniDeleteUpload('dev-attachments', path);
     await window.sb.from('dev_attachments').delete().eq('id', id);
     _attachments = _attachments.filter(a => a.id !== id);
     renderAttachments();

@@ -38,6 +38,8 @@ window.uiToDbContact = (c) => {
     city:      c.city || null,
     phone:     c.phone || null,
     email:     c.email || null,
+    website:   c.website || null,
+    specialty: c.specialty || null,
     segment:   c.segment || null,
     tenure:    c.tenure || null,
     status:    c.status || 'Identified',
@@ -45,6 +47,10 @@ window.uiToDbContact = (c) => {
     hidden:    c.hidden === true,
   };
 };
+
+// Status strings are stored in the DB exactly as shown in the UI.
+window.toDbStatus = (uiStatus) =>
+  window.BNI_STATUSES.includes(uiStatus) ? uiStatus : (uiStatus || 'Identified');
 
 window.dbToUiContact = (row) => ({
   id:         row.id,
@@ -339,6 +345,46 @@ window.formatDate = (iso, style) => {
   if (style === 'short')  return `${day} ${mon}`;
   if (style === 'medium') return `${day} ${mon} ${yr}`;
   return `${DAYS[d.getDay()]}, ${day} ${mon} ${yr}`;
+};
+
+// ── VPS upload service + server-side AI proxy (/bni-upload/) ────────────────
+// Replaces sb.storage.upload (no Storage API on the self-hosted PostgREST VPS)
+// and the in-browser Anthropic key prompt. See bni_upload_service.py.
+window.bniUpload = async (bucket, path, file) => {
+  const resp = await fetch(`/bni-upload/upload?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(path)}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Content-Type': (file && file.type) || 'application/octet-stream',
+    },
+    body: file,
+  });
+  const j = await resp.json().catch(() => ({}));
+  if (!resp.ok || !j.ok) throw new Error(j.error || ('Upload failed (' + resp.status + ')'));
+  return j; // { ok, bucket, path, url }
+};
+
+window.bniDeleteUpload = async (bucket, path) => {
+  try {
+    const resp = await fetch(`/bni-upload/object?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(path)}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    return resp.ok;
+  } catch (e) { return false; }
+};
+
+// body = Anthropic /v1/messages request ({ model, max_tokens, messages }).
+// Returns the Anthropic response JSON; throws with a readable message on error.
+window.bniAI = async (body) => {
+  const resp = await fetch('/bni-upload/ai/messages', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const j = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error((j.error && j.error.message) || j.error || ('AI request failed (' + resp.status + ')'));
+  return j;
 };
 
 window.bniToast = (msg, type = 'info') => {

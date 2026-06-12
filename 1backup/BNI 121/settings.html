@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="auth-guard.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings · BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; }
+    .card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(15,23,42,0.04); }
+    .kv-label { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; display: block; }
+    input, textarea { background: white; border: 1px solid #e2e8f0; color: #0f172a; border-radius: 8px; padding: 8px 12px; outline: none; width: 100%; font-size: 14px; }
+    input:focus, textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  </style>
+</head>
+<body>
+<div id="bni-sidebar-mount"></div>
+
+<main class="p-8 max-w-3xl" style="margin-left:240px;">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#475569,#334155);color:white;"><i data-lucide="settings" style="width:20px;height:20px"></i></div>
+    <div>
+      <h1 class="text-xl font-bold text-slate-900">Settings & Integrations</h1>
+      <p class="text-xs text-slate-500">External services for CRM features. Values stored in `bni_settings` table.</p>
+    </div>
+  </div>
+
+  <!-- Personalization -->
+  <div class="card mb-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#fef3c7;color:#92400e;"><i data-lucide="user" style="width:20px;height:20px"></i></div>
+      <div>
+        <h2 class="font-bold text-slate-900">Personalization</h2>
+        <p class="text-xs text-slate-500">Fills the [Your Phone] / [Your scheduler link] / [Your Chapter] / [Your Website] placeholders in Templates and Scheduler.</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div><label class="kv-label">Your phone</label><input id="p_phone" placeholder="+91 98XXX XXXXX" /></div>
+      <div><label class="kv-label">Your scheduler link</label><input id="p_scheduler" placeholder="https://hopetech.me/bni/scheduler.html" /></div>
+      <div><label class="kv-label">Your chapter</label><input id="p_chapter" placeholder="BNI 121" /></div>
+      <div><label class="kv-label">Your website</label><input id="p_website" placeholder="https://…" /></div>
+    </div>
+    <div class="flex justify-end mt-4">
+      <button onclick="savePersonalization()" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"><i data-lucide="save"></i>Save</button>
+    </div>
+  </div>
+
+  <!-- WhatsApp Business API -->
+  <div class="card mb-5">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#dcfce7;color:#166534;"><i data-lucide="message-circle" style="width:20px;height:20px"></i></div>
+        <div>
+          <h2 class="font-bold text-slate-900">WhatsApp Business API</h2>
+          <p class="text-xs text-slate-500" id="wa-status"><span class="status-dot" style="background:#cbd5e1"></span>Not configured</p>
+        </div>
+      </div>
+      <a href="https://developers.facebook.com/docs/whatsapp/cloud-api/get-started" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1">Meta docs <i data-lucide="external-link" style="width:12px;height:12px"></i></a>
+    </div>
+    <p class="text-sm text-slate-600 mb-4">Once configured, WhatsApp buttons across the CRM will <strong>send directly</strong> via Meta Cloud API instead of opening wa.me. You need: (1) a WhatsApp Business Account on Meta, (2) an approved phone number, (3) a System User access token.</p>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="kv-label">Access token</label>
+        <input type="password" id="wa_token" placeholder="EAAx...long string..." />
+      </div>
+      <div>
+        <label class="kv-label">Phone number ID</label>
+        <input id="wa_phone_id" placeholder="123456789012345" />
+      </div>
+    </div>
+    <div class="flex items-center justify-between mt-4">
+      <button onclick="testWhatsApp()" class="text-sm text-blue-600 hover:underline inline-flex items-center gap-1.5"><i data-lucide="send"></i>Send test message to…</button>
+      <button onclick="saveWhatsApp()" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"><i data-lucide="save"></i>Save</button>
+    </div>
+  </div>
+
+  <!-- AI (server-side proxy) -->
+  <div class="card mb-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#faf5ff;color:#7c3aed;"><i data-lucide="sparkles" style="width:20px;height:20px"></i></div>
+      <div>
+        <h2 class="font-bold text-slate-900">AI — Anthropic (Claude)</h2>
+        <p class="text-xs text-slate-500" id="ai-status"><span class="status-dot" style="background:#22c55e"></span>Runs through the server — no key needed in your browser</p>
+      </div>
+    </div>
+    <p class="text-sm text-slate-600">Used by <strong>Summarize with AI</strong> (contact pages), the <strong>pre-meeting brief</strong> (dashboard) and <strong>business-card scan</strong> (tracker). All AI requests go through the site's server-side proxy, which holds the API key — nothing to configure here.</p>
+  </div>
+
+  <!-- Pipeline defaults -->
+  <div class="card mb-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#eff6ff;color:#1d4ed8;"><i data-lucide="trello" style="width:20px;height:20px"></i></div>
+      <div>
+        <h2 class="font-bold text-slate-900">Pipeline defaults</h2>
+        <p class="text-xs text-slate-500">Applies to new contacts when added via the Tracker.</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div><label class="kv-label">Default deal probability (%)</label><input type="number" min="0" max="100" id="def_prob" /></div>
+      <div><label class="kv-label">Default reminder (days out)</label><input type="number" min="0" id="def_reminder" /></div>
+    </div>
+    <div class="flex justify-end mt-4">
+      <button onclick="savePipelineDefaults()" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"><i data-lucide="save"></i>Save</button>
+    </div>
+  </div>
+
+  <!-- Toolbox info -->
+  <div class="card">
+    <h2 class="font-bold text-slate-900 mb-2">Enabled CRM capabilities</h2>
+    <ul class="text-sm text-slate-700 space-y-1.5">
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> Contact tracker with tags + filters</li>
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> Zoom meetings list with date + reminder filters</li>
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> Drag-and-drop pipeline (Kanban)</li>
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> Per-contact profile with photo + file + transcript uploads</li>
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> AI transcript summarization (Claude)</li>
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> Deal / opportunity tracking + lead scoring</li>
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> Click-to-call, wa.me, email actions</li>
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> Bulk actions (status / assignee / tag)</li>
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> Activity auto-log (every call / WA / email / status-change)</li>
+      <li><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981"></i> Google Calendar quick-add</li>
+      <li><i data-lucide="circle" style="width:14px;height:14px;color:#94a3b8"></i> WhatsApp Business API — <em>configure above</em></li>
+      <li><i data-lucide="circle" style="width:14px;height:14px;color:#94a3b8"></i> Email open/click tracking — needs pixel server endpoint</li>
+    </ul>
+  </div>
+</main>
+
+<script src="supabase-config.js"></script>
+<script src="bni-sidebar.js"></script>
+<script>
+async function load() {
+  await window.loadSettings();
+  const s = window.BNI_SETTINGS;
+  document.getElementById('p_phone').value     = s.my_phone || '';
+  document.getElementById('p_scheduler').value = s.my_scheduler_url || '';
+  document.getElementById('p_chapter').value   = s.my_chapter || '';
+  document.getElementById('p_website').value   = s.my_website || '';
+  const wa = s.whatsapp || {};
+  document.getElementById('wa_token').value    = wa.token || '';
+  document.getElementById('wa_phone_id').value = wa.phone_id || '';
+  if (wa.token && wa.phone_id) {
+    document.getElementById('wa-status').innerHTML = '<span class="status-dot" style="background:#22c55e"></span>Configured — WhatsApp buttons will send via Meta API';
+  }
+  const pd = s.pipeline_defaults || {};
+  document.getElementById('def_prob').value     = pd.probability ?? 50;
+  document.getElementById('def_reminder').value = pd.reminder_days ?? 3;
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+async function savePersonalization() {
+  const fields = [
+    ['my_phone',         'p_phone'],
+    ['my_scheduler_url', 'p_scheduler'],
+    ['my_chapter',       'p_chapter'],
+    ['my_website',       'p_website'],
+  ];
+  let allOk = true;
+  for (const [key, id] of fields) {
+    const ok = await window.saveSetting(key, document.getElementById(id).value.trim());
+    if (!ok) allOk = false;
+  }
+  window.bniToast(allOk ? 'Personalization saved' : 'Some fields failed to save', allOk ? 'success' : 'error');
+}
+
+async function saveWhatsApp() {
+  const token = document.getElementById('wa_token').value.trim();
+  const phone_id = document.getElementById('wa_phone_id').value.trim();
+  const ok = await window.saveSetting('whatsapp', { token, phone_id });
+  window.bniToast(ok ? 'Saved' : 'Save failed', ok ? 'success' : 'error');
+  if (ok && token && phone_id) {
+    document.getElementById('wa-status').innerHTML = '<span class="status-dot" style="background:#22c55e"></span>Configured';
+  }
+}
+
+async function testWhatsApp() {
+  const token = document.getElementById('wa_token').value.trim();
+  const phone_id = document.getElementById('wa_phone_id').value.trim();
+  if (!token || !phone_id) { window.bniToast('Save credentials first', 'error'); return; }
+  const to = prompt('Send a test to which phone? (include country code, digits only)');
+  if (!to) return;
+  // Ensure the in-memory setting is the just-typed value
+  window.BNI_SETTINGS.whatsapp = { token, phone_id };
+  const res = await window.sendWhatsAppAPI(to, 'Test from BNI 121 CRM.');
+  if (res.ok) window.bniToast('Sent!', 'success');
+  else if (res.error) window.bniToast('Failed: ' + res.error, 'error');
+}
+
+async function savePipelineDefaults() {
+  const pd = {
+    probability: Number(document.getElementById('def_prob').value) || 50,
+    reminder_days: Number(document.getElementById('def_reminder').value) || 3,
+  };
+  const ok = await window.saveSetting('pipeline_defaults', pd);
+  window.bniToast(ok ? 'Saved' : 'Save failed', ok ? 'success' : 'error');
+}
+
+load();
+</script>
+</body>
+</html>

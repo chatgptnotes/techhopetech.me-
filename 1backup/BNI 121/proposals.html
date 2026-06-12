@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Proposal Approvals — BNI 121</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     .status-pending  { background:#fef3c7;color:#92400e;border-color:#fde68a; }
     .status-approved { background:#dcfce7;color:#166534;border-color:#86efac; }
@@ -78,23 +79,33 @@ let _devs      = {};
 let _activeTab = 'pending';
 
 async function loadProposals() {
-  document.getElementById('proposalLoading').classList.remove('hidden');
+  const loading = document.getElementById('proposalLoading');
+  loading.classList.remove('hidden');
+  loading.textContent = 'Loading proposals...';
+  loading.classList.remove('text-red-500');
   document.getElementById('proposalList').innerHTML = '';
   document.getElementById('proposalEmpty').classList.add('hidden');
 
-  const [{ data: props }, { data: contacts }, { data: devs }] = await Promise.all([
-    window.sb.from('bni_proposals').select('*').order('submitted_at', { ascending: false }),
-    window.sb.from('bni_contacts').select('id,first,last,company,status'),
-    window.sb.from('developers').select('id,name'),
-  ]);
+  try {
+    const [{ data: props, error: e1 }, { data: contacts, error: e2 }, { data: devs, error: e3 }] = await Promise.all([
+      window.sb.from('bni_proposals').select('*').order('submitted_at', { ascending: false }),
+      window.sb.from('bni_contacts').select('id,first,last,company,status'),
+      window.sb.from('developers').select('id,name'),
+    ]);
+    const error = e1 || e2 || e3;
+    if (error) throw new Error(error.message);
 
-  _proposals = props || [];
-  _contacts  = Object.fromEntries((contacts || []).map(c => [c.id, c]));
-  _devs      = Object.fromEntries((devs     || []).map(d => [d.id, d]));
+    _proposals = props || [];
+    _contacts  = Object.fromEntries((contacts || []).map(c => [c.id, c]));
+    _devs      = Object.fromEntries((devs     || []).map(d => [d.id, d]));
 
-  document.getElementById('proposalLoading').classList.add('hidden');
-  renderStats();
-  renderList();
+    loading.classList.add('hidden');
+    renderStats();
+    renderList();
+  } catch (e) {
+    loading.classList.add('text-red-500');
+    loading.textContent = 'Failed to load proposals: ' + (e.message || e);
+  }
 }
 
 function renderStats() {
