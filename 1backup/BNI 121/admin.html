@@ -516,7 +516,9 @@ function showApp() {
 function doLogin() {
   const val = document.getElementById('passwordInput').value;
   if (val === ADMIN_PW) {
-    localStorage.setItem('ht_admin_session', String(Date.now() + SESSION_MS));
+    const exp = String(Date.now() + SESSION_MS);
+    localStorage.setItem('ht_admin_session', exp);
+    localStorage.setItem('bni_crm_auth', exp); // single sign-on: also unlocks the CRM pages (auth-guard.js)
     showApp();
   } else {
     document.getElementById('loginError').classList.remove('hidden');
