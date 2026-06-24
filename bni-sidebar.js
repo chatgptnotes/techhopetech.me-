@@ -40,6 +40,9 @@
 
   // ─── Navigation config (grouped) ───────────────────────────────────────────
   const NAV_GROUPS = [
+    { title: 'Projects',   items: [
+      { href: 'https://proposalos.in/status', icon: 'activity', label: 'ProposalOS Status', desc: 'ProposalOS — live status dashboard' },
+    ]},
     { title: 'Daily',      items: [
       { href: '/bni/dashboard.html',      icon: 'sunrise',        label: 'Today',           desc: 'Daily to-do list and follow-up queue — your morning starting point' },
       { href: '/bni/followup.html',       icon: 'repeat',         label: 'Follow-ups',      desc: 'All scheduled appointments — see who needs a nudge and log meeting results' },
@@ -377,7 +380,8 @@
     const current = (location.pathname || '').toLowerCase();
     const renderItem = (l) => {
       const active = current.endsWith(l.href.toLowerCase()) ? 'active' : '';
-      return `<a class="bs-link ${active}" href="${l.href}" title="${l.desc}"><i data-lucide="${l.icon}"></i>${l.label}</a>`;
+      const external = l.href.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : '';
+      return `<a class="bs-link ${active}" href="${l.href}"${external} title="${l.desc}"><i data-lucide="${l.icon}"></i>${l.label}</a>`;
     };
     const groups = NAV_GROUPS.map(g => `
       <div class="bs-group">
