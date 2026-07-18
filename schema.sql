@@ -23,6 +23,10 @@ create table if not exists bni_contacts (
 alter table bni_contacts add column if not exists tenure      text;
 alter table bni_contacts add column if not exists hidden      boolean not null default false;
 alter table bni_contacts add column if not exists assignee_id uuid;
+alter table bni_contacts add column if not exists source       text;
+alter table bni_contacts add column if not exists campaign     text;
+alter table bni_contacts add column if not exists landing_page text;
+alter table bni_contacts add column if not exists consent_at   timestamptz;
 
 -- ── rich per-contact detail (from System A) ───────────────────────────────────
 create table if not exists bni_contact_details (
@@ -83,6 +87,11 @@ alter table bni_appointments add column if not exists email            text;
 alter table bni_appointments add column if not exists industry         text;
 alter table bni_appointments add column if not exists bni_status       text;
 alter table bni_appointments add column if not exists goal             text;
+alter table bni_appointments add column if not exists source           text;
+alter table bni_appointments add column if not exists campaign         text;
+alter table bni_appointments add column if not exists landing_page     text;
+alter table bni_appointments add column if not exists consent_at       timestamptz;
+create unique index if not exists bni_appointments_date_time_unique on bni_appointments (date, time);
 
 -- ── FKs for assignee (idempotent) ─────────────────────────────────────────────
 do $$ begin

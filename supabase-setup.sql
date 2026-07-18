@@ -16,6 +16,11 @@ CREATE TABLE IF NOT EXISTS bni_contacts (
   updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
+ALTER TABLE bni_contacts ADD COLUMN IF NOT EXISTS source       TEXT;
+ALTER TABLE bni_contacts ADD COLUMN IF NOT EXISTS campaign     TEXT;
+ALTER TABLE bni_contacts ADD COLUMN IF NOT EXISTS landing_page TEXT;
+ALTER TABLE bni_contacts ADD COLUMN IF NOT EXISTS consent_at   TIMESTAMPTZ;
+
 CREATE TABLE IF NOT EXISTS bni_contact_details (
   contact_id   TEXT PRIMARY KEY,
   followups    JSONB NOT NULL DEFAULT '[]',

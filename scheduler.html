@@ -177,6 +177,11 @@
             <label class="block text-xs font-semibold text-gray-600 mb-1">What do you hope to get from this call?</label>
             <textarea id="b_goal" rows="3" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Tell Dr. Murali what you're looking to achieve…"></textarea>
           </div>
+          <label class="flex items-start gap-3 text-xs text-gray-500">
+            <input id="b_consent" type="checkbox" required class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <span>I agree that Dr. Murali may contact me about this consultation. *</span>
+          </label>
+          <input id="b_website" name="website" type="text" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
           <div class="flex gap-3 pt-2">
             <button type="button" onclick="goToStep1()" class="px-5 py-3 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition text-sm">← Back</button>
             <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-sm">
@@ -426,68 +431,23 @@ async function submitBooking(e) {
     bookedAt: new Date().toISOString(),
   };
 
-  const phoneKey = bookingData.phone.replace(/[^\d+]/g, '');
-  const apptId = `appt_${phoneKey || 'anon'}_${selectedDate}_${selectedTime.replace(/[^\dAP]/g,'')}`;
+  bookingData.consent = document.getElementById('b_consent').checked;
+  bookingData.website = document.getElementById('b_website').value.trim();
+  const params = new URLSearchParams(location.search);
+  const source = params.get('utm_source') || params.get('source') || document.referrer || 'direct';
+  const campaign = params.get('utm_campaign') || '';
+  const { data: result, error: intakeErr } = await window.sb.functions.invoke('marketing-lead-intake', {
+    body: { ...bookingData, source, campaign, landingPage: location.pathname },
+  });
 
-  const { data: existing } = await window.sb
-    .from('bni_contacts')
-    .select('id')
-    .eq('phone', bookingData.phone)
-    .limit(1);
-
-  let contactId;
-  if (existing && existing.length > 0) {
-    contactId = existing[0].id;
-    const { error: upErr } = await window.sb
-      .from('bni_contacts')
-      .update({
-        status: 'Meeting Scheduled',
-        email: bookingData.email || null,
-        company: bookingData.company || null,
-      })
-      .eq('id', contactId);
-    if (upErr) console.error('Contact update failed:', upErr);
-  } else if (bookingData.name) {
-    contactId = 'c' + Date.now();
-    const { first, last } = window.splitName(bookingData.name);
-    const { error: insErr } = await window.sb
-      .from('bni_contacts')
-      .insert({
-        id: contactId,
-        first: first || null,
-        last:  last || null,
-        company: bookingData.company || null,
-        phone: bookingData.phone || null,
-        email: bookingData.email || null,
-        segment: bookingData.industry || null,
-        status: 'Meeting Scheduled',
-        notes: `Booked via public scheduler. Goal: ${bookingData.goal}. BNI: ${bookingData.bni}`,
-      });
-    if (insErr) console.error('Contact insert failed:', insErr);
-  }
-
-  const { error: apptErr } = await window.sb
-    .from('bni_appointments')
-    .insert({
-      id: apptId,
-      contact_id: contactId || null,
-      contact_name: bookingData.name,
-      company: bookingData.company || null,
-      date: selectedDate,
-      time: selectedTime,
-      medium: 'Zoom',
-      phone: bookingData.phone || null,
-      email: bookingData.email || null,
-      industry: bookingData.industry || null,
-      bni_status: bookingData.bni || null,
-      goal: bookingData.goal || null,
-    });
-
-  if (apptErr) {
+  if (intakeErr || !result?.ok) {
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = ' Confirm Booking'; }
-    window.bniToast('Booking failed: ' + apptErr.message, 'error');
+    window.bniToast('Booking failed: ' + (result?.error || intakeErr?.message || 'Please try again.'), 'error');
     return;
   }
+
+  const apptId = result.appointment_id;
+  const contactId = result.contact_id;
 
   // Audit trail — writes a row Dr. Murali can see at a glance in Supabase
   // so new bookings don't go unnoticed when there's no email/Slack automation.
