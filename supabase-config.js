@@ -31,17 +31,19 @@ window.uiToDbContact = (c) => {
     : splitName(c.name);
   return {
     id:        c.id,
-    first:     first || null,
-    last:      last || null,
-    company:   c.company || null,
-    chapter:   c.chapter || null,
-    city:      c.city || null,
-    phone:     c.phone || null,
-    email:     c.email || null,
-    segment:   c.segment || null,
+    // These columns are NOT NULL in bni_contacts. Sending null explicitly
+    // bypasses the database defaults for blank form fields.
+    first:     first || '',
+    last:      last || '',
+    company:   c.company || '',
+    chapter:   c.chapter || '',
+    city:      c.city || '',
+    phone:     c.phone || '',
+    email:     c.email || '',
+    segment:   c.segment || 'Other',
     tenure:    c.tenure || null,
     status:    c.status || 'Identified',
-    notes:     c.notes || null,
+    notes:     c.notes || '',
     hidden:    c.hidden === true,
   };
 };
