@@ -1,5 +1,5 @@
 -- BNI 121 — Supabase schema
--- Run this in: supabase.com → bvaefzcsgtgqwftczixb → SQL Editor
+-- Run this in: supabase.com → ssmdztkqfvgqajzggwjp → SQL Editor
 
 CREATE TABLE IF NOT EXISTS bni_contacts (
   id          TEXT PRIMARY KEY,

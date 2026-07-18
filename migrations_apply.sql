@@ -1,4 +1,4 @@
--- Run this once in the Supabase SQL editor (Project: bvaefzcsgtgqwftczixb)
+-- Run this once in the Supabase SQL editor (Project: ssmdztkqfvgqajzggwjp)
 -- to fix the "Detail save failed: Could not find the column …" error,
 -- and to support the new profile status bar.
 

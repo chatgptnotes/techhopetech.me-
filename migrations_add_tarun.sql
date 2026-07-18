@@ -1,4 +1,4 @@
--- Run once in the Supabase SQL editor (Project: bvaefzcsgtgqwftczixb).
+-- Run once in the Supabase SQL editor (Project: ssmdztkqfvgqajzggwjp).
 -- Adds Tarun to the developers table so he appears in the assignee dropdown
 -- across dev-boards, dev-backlog, dev-sprints, dev-reports, and any other
 -- page that reads window.BNI_DEVS (loaded from supabase-config.js).

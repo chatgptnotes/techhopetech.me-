@@ -1,5 +1,5 @@
 -- DevOps stage 5 — leaves calendar + retrospective.
--- Run once in the Supabase SQL editor (Project: bvaefzcsgtgqwftczixb).
+-- Run once in the Supabase SQL editor (Project: ssmdztkqfvgqajzggwjp).
 --
 -- Adds two new tables:
 --   1. dev_resource_leaves — per-developer time off (vacation, sick, public-holiday)

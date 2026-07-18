@@ -1,5 +1,5 @@
 -- BNI 121 Outreach — Unified Supabase Schema
--- Project: bvaefzcsgtgqwftczixb
+-- Project: ssmdztkqfvgqajzggwjp
 -- Merges System A (supabase-setup.sql) and System B (this project). Re-runnable.
 
 -- ── contacts table (System A schema, canonical) ───────────────────────────────
