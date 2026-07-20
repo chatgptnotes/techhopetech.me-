@@ -92,7 +92,9 @@ async function loadProposals() {
       window.sb.from('bni_contacts').select('id,first,last,company,status'),
       window.sb.from('developers').select('id,name'),
     ]);
-    const error = e1 || e2 || e3;
+    // Developer names are optional on proposals. Do not hide valid proposals
+    // just because the optional developer lookup is unavailable.
+    const error = e1 || e2;
     if (error) throw new Error(error.message);
 
     _proposals = props || [];
