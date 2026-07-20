@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Profile — HopeTech</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; }
+    .glass { background: white; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    input, textarea, select { background: white; border: 1px solid #e2e8f0; color: #0f172a; border-radius: 8px; padding: 8px 12px; width: 100%; outline: none; transition: border-color 0.15s; }
+    input:focus, textarea:focus, select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    input::placeholder, textarea::placeholder { color: #94a3b8; }
+    select option { background: white; color: #0f172a; }
+    .btn-primary   { background:#3b82f6; color:white; border-radius:8px; padding:8px 16px; font-size:0.875rem; font-weight:500; cursor:pointer; border:none; transition:background 0.15s; }
+    .btn-primary:hover { background:#2563eb; }
+    .btn-secondary { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; padding:8px 16px; font-size:0.875rem; cursor:pointer; transition:all 0.15s; }
+    .btn-secondary:hover { background:#e2e8f0; color:#1e293b; }
+    .btn-danger    { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; padding:5px 10px; font-size:0.78rem; cursor:pointer; }
+    .btn-danger:hover { background:#fee2e2; }
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; }
+    .timeline-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+    .toast { position:fixed; bottom:24px; right:24px; z-index:9999; padding:12px 20px; border-radius:10px; font-size:0.875rem; font-weight:500; animation:slideUp 0.2s ease; }
+    .toast-success { background:#f0fdf4; border:1px solid #bbf7d0; color:#16a34a; }
+    .toast-error   { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
+    @keyframes slideUp { from { transform:translateY(12px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+    .section-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; font-weight:600; margin-bottom:8px; display:block; }
+    .photo-ring { cursor:pointer; border-radius:50%; overflow:hidden; border:3px solid #e2e8f0; transition:border-color 0.15s; }
+    .photo-ring:hover { border-color:#3b82f6; }
+  </style>
+</head>
+<body class="min-h-screen">
+<!-- BNI_UNIFIED_NAV_V2 -->
+<div style="position:sticky;top:0;z-index:100;background:#0f172a;color:#cbd5e1;padding:10px 20px;display:flex;gap:8px;align-items:center;font-family:Inter,system-ui,-apple-system,sans-serif;font-size:13px;border-bottom:1px solid #334155;flex-wrap:wrap;">
+  <span style="font-weight:700;color:#fff;margin-right:8px;">BNI 121</span>
+  <a href="/bni/tracker.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">🗂️ Tracker</a>
+  <a href="/bni/followup.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">🔁 Meetings &amp; Follow-ups</a>
+  <a href="/bni/templates.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">📧 Templates</a>
+  <a href="/bni/scheduler.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">📅 Scheduler</a>
+  <a href="/bni/members.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">👥 Members</a>
+  <a href="/bni/admin.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">🛠️ Admin</a>
+  <a href="/bni/book.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">📖 Book</a>
+  <span style="flex:1;"></span>
+  <a href="/bni/tracker.html?add=1" style="background:#2563eb;color:#fff;text-decoration:none;padding:6px 14px;border-radius:8px;font-weight:600;">+ Add Contact</a>
+</div>
+<!-- Nav -->
+  <header class="sticky top-0 z-50 border-b border-slate-200" style="background:rgba(248,250,252,0.97);backdrop-filter:blur(20px);">
+    <div class="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2 text-sm">
+        <a href="/bni/members.html" class="text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          All Members
+        </a>
+        <span class="text-slate-300">/</span>
+        <span id="nav-name" class="text-slate-900 font-medium">—</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="prev-btn" onclick="navigateMember(-1)" class="btn-secondary" style="padding:5px 10px;font-size:0.75rem;">← Prev</button>
+        <button id="next-btn" onclick="navigateMember(1)"  class="btn-secondary" style="padding:5px 10px;font-size:0.75rem;">Next →</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-5xl mx-auto px-6 py-8">
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <!-- LEFT: Profile card -->
+      <div class="md:col-span-1 space-y-4">
+
+        <!-- Avatar + name -->
+        <div class="glass rounded-3xl p-6 text-center">
+          <!-- Photo upload area -->
+          <div class="relative w-24 h-24 mx-auto mb-4">
+            <div id="profile-avatar" onclick="document.getElementById('photo-input').click()"
+              class="photo-ring w-24 h-24 flex items-center justify-center text-2xl font-bold"
+              title="Click to upload photo"></div>
+            <div onclick="document.getElementById('photo-input').click()"
+              class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer shadow"
+              title="Upload photo">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="uploadPhoto()" />
+          </div>
+          <h1 id="profile-name" class="text-xl font-bold text-slate-900 mb-0.5"></h1>
+          <p id="profile-company" class="text-slate-500 text-sm mb-0.5 font-medium"></p>
+          <p id="profile-city" class="text-blue-500 text-xs font-semibold mb-4 flex items-center justify-center gap-1">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 21s-8-7.5-8-12a8 8 0 0 1 16 0c0 4.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            <span id="profile-city-text"></span>
+          </p>
+          <div id="profile-badges" class="flex flex-wrap gap-2 justify-center mb-4"></div>
+
+          <!-- Status selector -->
+          <div class="text-left">
+            <label class="section-label">Status</label>
+            <select id="statusSelect" onchange="updateStatus()">
+              <option value="Identified">Identified</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Met">Met</option>
+              <option value="Referred">Referred</option>
+              <option value="Cold">Cold</option>
+            </select>
+          </div>
+
+          <!-- Priority -->
+          <div class="text-left mt-3">
+            <label class="section-label">Priority</label>
+            <select id="prioritySelect" onchange="saveDetail()">
+              <option value="Normal">Normal</option>
+              <option value="High">High</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <!-- BNI_ASSIGNEE_V1 -->
+          <div class="text-left mt-3">
+            <label class="section-label">Assignee (Developer)</label>
+            <select id="assigneeSelect" onchange="saveAssignee()">
+              <option value="">— Unassigned —</option>
+            </select>
+          </div>
+
+
+          <!-- Hide / Unhide -->
+          <div class="text-left mt-4">
+            <button id="hide-btn" onclick="toggleHide()"
+              class="w-full btn-secondary" style="font-size:0.8rem;">
+              Hide Contact
+            </button>
+          </div>
+        </div>
+
+        <!-- Contact info -->
+        <div class="glass rounded-2xl p-5">
+          <label class="section-label">Contact Details</label>
+          <div class="space-y-2">
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">BNI Chapter</label>
+              <input type="text" id="field-chapter" placeholder="e.g. BNI Dioite, Impetus, FALCON…" oninput="saveContact()" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Phone</label>
+              <input type="tel" id="field-phone" placeholder="+91 98765 43210" oninput="saveContact()" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Email</label>
+              <input type="email" id="field-email" placeholder="name@company.com" oninput="saveContact()" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">LinkedIn</label>
+              <input type="url" id="field-linkedin" placeholder="linkedin.com/in/…" oninput="saveDetail()" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Website</label>
+              <input type="url" id="field-website" placeholder="company.com" oninput="saveDetail()" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 mb-1 block">Address / Location</label>
+              <input type="text" id="field-address" placeholder="Office address or area" oninput="saveDetail(); updateMapsLink()" />
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="mt-4 space-y-1.5" id="quick-actions"></div>
+        </div>
+
+        <!-- How to Meet -->
+        <div class="glass rounded-2xl p-5">
+          <label class="section-label">How to Meet</label>
+          <select id="field-meetmode" onchange="saveDetail()" class="mb-2">
+            <option value="">Select meeting mode…</option>
+            <option value="Video Call (Zoom/Meet)">Video Call (Zoom/Meet)</option>
+            <option value="In-person at their office">In-person at their office</option>
+            <option value="BNI Chapter Meeting">BNI Chapter Meeting</option>
+            <option value="WhatsApp Call">WhatsApp Call</option>
+            <option value="Coffee / Café">Coffee / Café</option>
+            <option value="Hospital / Clinic visit">Hospital / Clinic visit</option>
+            <option value="Conference / Event">Conference / Event</option>
+          </select>
+          <div id="maps-link-row" class="hidden mt-1">
+            <a id="maps-link" href="#" target="_blank"
+              class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 21s-8-7.5-8-12a8 8 0 0 1 16 0c0 4.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              Open in Google Maps
+            </a>
+          </div>
+        </div>
+
+        <!-- Next follow-up -->
+        <div class="glass rounded-2xl p-5">
+          <label class="section-label">Next Follow-up</label>
+          <input type="date" id="nextDate" onchange="saveDetail()" />
+          <div id="due-indicator" class="mt-2 text-xs"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Detail content -->
+      <div class="md:col-span-2 space-y-4">
+
+        <!-- About / Bio -->
+        <div class="glass rounded-2xl p-6">
+          <label class="section-label">About / Profile Notes</label>
+          <textarea id="field-about" rows="4" placeholder="What do they do? Their specialty, business focus, pain points, AI readiness…" oninput="saveDetail()"></textarea>
+        </div>
+
+        <!-- Add follow-up -->
+        <div class="glass rounded-2xl p-6">
+          <label class="section-label">Add Follow-up Entry</label>
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="text-xs text-slate-600 mb-1 block">Date</label>
+              <input type="date" id="fu-date" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-600 mb-1 block">Type</label>
+              <select id="fu-type">
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Call">Call</option>
+                <option value="Meeting">Meeting (121)</option>
+                <option value="BNI Meeting">BNI Meeting</option>
+                <option value="Email">Email</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="Referral">Referral Sent</option>
+                <option value="Proposal">Proposal Sent</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <textarea id="fu-note" rows="3" placeholder="What was discussed? Outcome, next steps, anything they said about AI needs…" class="mb-3"></textarea>
+          <div class="flex gap-2">
+            <button class="btn-primary" onclick="addFollowup()">+ Add Entry</button>
+            <button class="btn-secondary" onclick="quickLog('WhatsApp')">Quick: WhatsApp</button>
+            <button class="btn-secondary" onclick="quickLog('Call')">Quick: Call</button>
+          </div>
+        </div>
+
+        <!-- Follow-up timeline -->
+        <div class="glass rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <label class="section-label mb-0">Follow-up History</label>
+            <span id="followup-count" class="text-slate-400 text-xs"></span>
+          </div>
+          <div id="timeline" class="space-y-4"></div>
+        </div>
+
+        <!-- Internal notes -->
+        <div class="glass rounded-2xl p-6">
+          <label class="section-label">Internal Notes</label>
+          <textarea id="field-notes" rows="3" placeholder="BNI referral potential, AI consulting angle, their pain points, deals in progress…" oninput="saveContact()"></textarea>
+        </div>
+
+        <!-- Proposal Highlights -->
+        <div class="glass rounded-2xl p-6">
+          <label class="section-label" style="color:#f97316;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;margin-right:4px;vertical-align:middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Proposal / Pitch Highlights
+          </label>
+          <textarea id="field-proposal" rows="4" placeholder="What did we propose? Key modules, pricing discussed, USPs we highlighted, their reaction…" oninput="saveDetail()"></textarea>
+        </div>
+
+        <!-- Proposal PDFs -->
+        <div class="glass rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-3">
+            <label class="section-label mb-0" style="color:#f97316;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;margin-right:4px;vertical-align:middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Proposal PDFs
+            </label>
+            <button onclick="document.getElementById('pdf-input').click()"
+              class="btn-secondary flex items-center gap-1.5" style="font-size:0.78rem;padding:5px 12px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload PDF
+            </button>
+            <input type="file" id="pdf-input" accept=".pdf,application/pdf" style="display:none" onchange="uploadPDF()" />
+          </div>
+          <div id="pdf-list"></div>
+        </div>
+
+        <!-- Conversation Highlights -->
+        <div class="glass rounded-2xl p-6">
+          <label class="section-label" style="color:#8b5cf6;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;margin-right:4px;vertical-align:middle;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Conversation Highlights
+          </label>
+          <textarea id="field-conversation" rows="4" placeholder="Interesting things they said, pain points expressed, business goals, personal interests, topics that resonated…" oninput="saveDetail()"></textarea>
+        </div>
+
+        <!-- Action items -->
+        <div class="glass rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-3">
+            <label class="section-label mb-0">Action Items</label>
+            <button onclick="addAction()" class="text-blue-600 text-xs hover:text-blue-800 font-semibold">+ Add</button>
+          </div>
+          <div id="actions-list" class="space-y-2 mb-3"></div>
+          <div id="add-action-form" class="hidden">
+            <input type="text" id="action-input" placeholder="e.g. Send proposal for AI chatbot…" class="mb-2" />
+            <div class="flex gap-2">
+              <button class="btn-primary" style="font-size:0.8rem;padding:6px 12px;" onclick="saveAction()">Add</button>
+              <button class="btn-secondary" style="font-size:0.8rem;padding:6px 12px;" onclick="cancelAction()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+<script>
+// ── SUPABASE ───────────────────────────────────────────────────────────────
+const SB_URL = 'https://ssmdztkqfvgqajzggwjp.supabase.co';
+const SB_KEY = 'sb_publishable_Gg3CIclgaUbYLagmW-RpLw_2BodgrK3';
+const _sb = supabase.createClient(SB_URL, SB_KEY);
+
+// ── SEED / DATA ────────────────────────────────────────────────────────────
+const SEED_VERSION = 6;
+const SEED = [
+  {id:'c1', first:'Kamlesh',       last:'Shewani',       company:'Savit Interactive',               city:'Pune',        phone:'+91 7823852090', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c2', first:'Diwakar',       last:'Reddy',          company:'Solvode',                         city:'Hyderabad',   phone:'+91 9652691508', email:'', segment:'AI / Tech',            status:'Identified', notes:'HIGH PRIORITY'},
+  {id:'c3', first:'Gunjan',        last:'Bhatia',         company:'Shivohini TechAI',                city:'Udaipur',     phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c4', first:'Pranjal',       last:'Srivastava',     company:'Smoketrees Digital',               city:'Bangalore',   phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c5', first:'Ramasundaram',  last:'.S',             company:'Actionpackd',                     city:'Chennai',     phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c6', first:'Raghavendra',   last:'Chandregowda',   company:'THEEKSHNA',                       city:'Mysore',      phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c7', first:'Mihir',         last:'Mehta',          company:'Royal Technosoft',                city:'Ahmedabad',   phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c8', first:'Sameer',        last:'Wadhwa',         company:'Excelerate Technologies',         city:'Bengaluru',   phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c9', first:'Harmeet',       last:'Singh',          company:'Air Masters',                     city:'Mohali',      phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c10',first:'Valthan',       last:'Industries',     company:'Valthan Industries',              city:'Sangli',      phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c11',first:'Pradeep',       last:'Easwarmoorthy',  company:'Nexus Automations',               city:'Coimbatore',  phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c12',first:'Sathish Kumar', last:'K',              company:'Innovative Automation Solutions', city:'Bangalore',   phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c13',first:'Jamen',         last:'Shah',           company:'Neca Automation',                 city:'Mumbai',      phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c14',first:'Praktat',       last:'Dhamu',          company:'DPhitech LLP',                    city:'Navi Mumbai', phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c15',first:'Rajkumar',      last:'Shanmugavel',    company:'KVPM Automation',                 city:'Chennai',     phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c16',first:'Dhruv',         last:'Pandya',         company:'Intuitive Research & Development',city:'Hubli',       phone:'', email:'', segment:'Industrial Automation', status:'Identified',  notes:''},
+  {id:'c17',first:'Aishray',       last:'Srinivasa',      company:'SatiShiva Healthcare',            city:'Bangalore',   phone:'', email:'', segment:'Healthcare',           status:'Met',         notes:'Meeting confirmed 22/04/26 1 PM. Bangalore\'s leading provider of long-term home care management for chronic ailments and elderly support.'},
+  {id:'c18',first:'Varlaxman',     last:'',               company:'APEX Electricals & Networks',     city:'',            phone:'', email:'', segment:'Industrial Automation', status:'Met',         notes:'Meeting confirmed 22/04/26 4 PM. 4K Grade Electrical Contractor with 20+ years experience in Commercial Buildings, IT Parks, Transformer, Generators, Cabling, UPS. CEIG Approved, ISO Licensed.'},
+  {id:'c19',first:'Prabha',        last:'Sathuraman',     company:'Architecture & Engineering',      city:'',            phone:'', email:'', segment:'Industrial Automation', status:'Met',         notes:'Meeting confirmed 22/04/26 2 PM. Architecture & Engineering, Industrial Automation.'},
+  {id:'c20',first:'Roma',          last:'',               company:'Physiotherapy Practice',          city:'Delhi',       phone:'', email:'', segment:'Healthcare',           status:'Contacted',   notes:'Meeting confirmed tomorrow 9:30 AM daily zoom. With Dr. A Santosh Kumar. BNI Physiotherapist 2023.'},
+  {id:'c21',first:'Yousuf',        last:'Najmuddin',      company:'',                                city:'',            phone:'', email:'', segment:'Other',                status:'Contacted',   notes:'Meeting confirmed 12:00–12:30 PM.'},
+  {id:'c22',first:'Prakriti',      last:'Verma',          company:'Vardaan IVF Centre & Care N Cure Multi-speciality Hospital', city:'Bilaspur',  phone:'9575731059',  email:'prakrati_verma@gmail.com', segment:'Healthcare', status:'Contacted',  notes:'Doctor / Physician. BNI Chapter: BNI Collaborators. Proposal sent 21/04/26 (HMS + NABH AI Toolkit, Ref: BTR-2026-VRD-01).'},
+  {id:'c23',first:'Reshma',        last:'Dave',           company:'',                                                           city:'',          phone:'',            email:'ndivid_lab@gmail.com',    segment:'Healthcare', status:'Contacted',  notes:'Meeting confirmed 6:30 PM.'},
+  {id:'c24',first:'Rajani',        last:'TS',             company:'Thealth Solutions',                                          city:'',          phone:'9597415636',  email:'gajc.contact@gmail.com',  segment:'Healthcare', status:'Contacted',  notes:'Meeting confirmed 4:00 PM – 6:00 PM. Software product: thealth.solutions'},
+  // --- BNI Outreach Report — Pharma/Pathology/Diagnostics (msgs sent 16/04/26 by Reha Kharwade) ---
+  {id:'c25',first:'Neha',        last:'Bedi',          company:'Pathocity Path Lab',           city:'Delhi',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Impetus. Lab Director, diagnostics, 31 testimonials. Outreach msg sent 16/04/26.'},
+  {id:'c26',first:'Bhaskar',     last:'Thakkar',        company:'Life Care Pathology Lab',      city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Helenus. Pathology, 3 branches. Outreach msg sent 16/04/26.'},
+  {id:'c27',first:'Abhijit',     last:'Ahire',          company:'DVA Pathology Lab',            city:'Mumbai',      phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Aura. Comprehensive diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c28',first:'Kaushal',     last:'Patel',          company:'EA Labs',                      city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Roxanne. Allergy Testing, India leader. Outreach msg sent 16/04/26.'},
+  {id:'c29',first:'Swapnil',     last:'Bhosale',        company:'PathCure Labs',                city:'Kolhapur',    phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Vaayu. Fastest-growing diagnostic chain. Outreach msg sent 16/04/26.'},
+  {id:'c30',first:'Mosey',       last:'Mohan P',        company:'Health Assure Clinical Lab',   city:'Sivakasi',    phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Pyros. Home services, genetic testing. Outreach msg sent 16/04/26.'},
+  {id:'c31',first:'Vipul',       last:'Rajput',         company:'Unipath Specialty Lab',        city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Nikolaus. Precision diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c32',first:'Mayank',      last:'Joshi',          company:'Sun Pathology Lab & Research', city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Raphael. Since 1997, 5 locations. Outreach msg sent 16/04/26.'},
+  {id:'c33',first:'Reshma',      last:'Dave',           company:'Thyrocare Krishnamil Ind Lab', city:'Surat',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BAHUBALI. Biopsy, FNAC, Ambassador. Outreach msg sent 16/04/26. (Different from c23 Reshma/NDIVID Lab)'},
+  {id:'c34',first:'Boskey',      last:'Gandhi',         company:'Mehkey Pathology Lab',         city:'Surat',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: FALCON. Biopsy, FNAC specialist. Outreach msg sent 16/04/26.'},
+  {id:'c35',first:'Asan',        last:'Akbar B',        company:'Fully Auto Medical Lab',       city:'Erode',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI VISION. X-ray, ECG, Chapter President. Outreach msg sent 16/04/26.'},
+  {id:'c36',first:'Rajani',      last:'T R',            company:'ILABZ Diagnostic Lab',         city:'Pondicherry', phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Gold. Full-service, home collection. Outreach msg sent 16/04/26. (Different from c24 Rajani TS/Thealth Solutions)'},
+  {id:'c37',first:'Kiran',       last:'B',              company:'Dr Remedies Labs',             city:'Trivandrum',  phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Mystics. Franchise, cutting-edge tech. Outreach msg sent 16/04/26.'},
+  {id:'c38',first:'Vaibhav',     last:'Girotra',        company:'Pathocity Path Lab & Imaging', city:'New Delhi',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Excellence. Automated lab, MBBS MD DNB. Outreach msg sent 16/04/26.'},
+  {id:'c39',first:'Narasimman',  last:'B',              company:'Puduvai Labs',                 city:'Pondicherry', phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI KURAL. 15 years trusted diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c40',first:'Venkata',     last:'Lakshman',       company:'Global Diagnostics India',     city:'Guntur',      phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI ATOMS. Medical diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c41',first:'Seema',       last:'Satpute',        company:'DiagnoSpectra Pathology Lab',  city:'Pune',        phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Benevolent. Blood & urine diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c42',first:'Dipin',       last:'Abraham',        company:'Lab Equipment Stores',         city:'Cochin',      phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: TITANS. Lab equipment since 1966. Outreach msg sent 16/04/26.'},
+  {id:'c43',first:'Kavita',      last:'Chaukimath',     company:'Pathology Lab Services',       city:'Pune',        phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Nitya. Ex-Manipal, Quality Manager. Outreach msg sent 16/04/26.'},
+  {id:'c44',first:'Gautham',    last:'Goswami',        company:'',                             city:'',            phone:'', email:'', segment:'Other',      status:'Identified', notes:''},
+];
+
+function loadAllContacts() {
+  const raw = localStorage.getItem('bni_contacts');
+  const ver = parseInt(localStorage.getItem('bni_contacts_ver') || '0');
+  if (!raw) { localStorage.setItem('bni_contacts', JSON.stringify(SEED)); localStorage.setItem('bni_contacts_ver', String(SEED_VERSION)); return JSON.parse(JSON.stringify(SEED)); }
+  let data = JSON.parse(raw);
+  if (ver < SEED_VERSION) { const ids = new Set(data.map(c => c.id)); SEED.forEach(s => { if (!ids.has(s.id)) data.push(s); }); localStorage.setItem('bni_contacts', JSON.stringify(data)); localStorage.setItem('bni_contacts_ver', String(SEED_VERSION)); }
+  return data;
+}
+
+function saveAllContacts(data) {
+  localStorage.setItem('bni_contacts', JSON.stringify(data));
+  const sbData = data.map(c => ({
+    id: c.id, first: c.first || '', last: c.last || '',
+    company: c.company || '', city: c.city || '',
+    phone: c.phone || '', email: c.email || '',
+    segment: c.segment || 'Other', status: c.status || 'Identified',
+    notes: c.notes || '', chapter: c.chapter || '',
+    hidden: c.hidden || false
+  }));
+  _sb.from('bni_contacts').upsert(sbData).then(({error}) => {
+    if (error) console.error('SB contacts save:', error.message);
+  });
+}
+
+function loadDetail(id) {
+  const defaults = '{"followups":[],"nextDate":"","linkedin":"","website":"","about":"","priority":"Normal","actions":[],"photo":"","address":"","meetmode":"","proposal":"","conversation":""}';
+  return JSON.parse(localStorage.getItem('bni_detail_' + id) || defaults);
+}
+function saveDetailData(id, data) {
+  localStorage.setItem('bni_detail_' + id, JSON.stringify(data));
+  const row = {
+    contact_id:  id,
+    followups:   data.followups   || [],
+    next_date:   data.nextDate    || null,
+    linkedin:    data.linkedin    || '',
+    website:     data.website     || '',
+    about:       data.about       || '',
+    priority:    data.priority    || 'Normal',
+    actions:     data.actions     || [],
+    photo:       data.photo       || '',
+    address:     data.address     || '',
+    meetmode:    data.meetmode    || '',
+    proposal:    data.proposal    || '',
+    conversation:data.conversation|| '',
+    pdfs:        data.pdfs        || [],
+    updated_at:  new Date().toISOString()
+  };
+  _sb.from('bni_contact_details').upsert(row, { onConflict: 'contact_id' }).then(({error}) => {
+    if (error) console.error('SB detail save:', error.message);
+  });
+}
+
+// ── ROUTING ────────────────────────────────────────────────────────────────
+const params  = new URLSearchParams(location.search);
+let currentId = params.get('id') || 'c1';
+let allContacts = [];
+
+function navigateMember(dir) {
+  const ids = allContacts.map(c => c.id);
+  const idx = ids.indexOf(currentId);
+  const next = ids[idx + dir];
+  if (next) { currentId = next; location.search = '?id=' + next; }
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+const STATUS_COLOR   = { Identified:'#3b82f6', Contacted:'#f59e0b', Met:'#8b5cf6', Referred:'#10b981', Cold:'#64748b' };
+const TYPE_COLOR     = { WhatsApp:'#25d366', Call:'#3b82f6', 'Meeting':'#8b5cf6', 'BNI Meeting':'#f59e0b', Email:'#ec4899', LinkedIn:'#0077b5', Referral:'#10b981', Proposal:'#f97316', Other:'#64748b' };
+const AVATAR_COLORS  = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#f97316'];
+
+function avatarColor(id) { return AVATAR_COLORS[parseInt(id.replace(/\D/g,'')) % AVATAR_COLORS.length]; }
+
+function init() {
+  allContacts = loadAllContacts();
+  const c = allContacts.find(x => x.id === currentId);
+  if (!c) { document.body.innerHTML = '<p class="text-center text-slate-500 pt-20">Contact not found. <a href="/bni/members.html" class="text-blue-600">Back to list</a></p>'; return; }
+
+  const detail   = loadDetail(c.id);
+  const color    = avatarColor(c.id);
+  const initials = ((c.first?.[0] || '') + (c.last && c.last !== '.S' ? (c.last[0] || '') : '')).toUpperCase() || '?';
+
+  // Nav
+  document.title = c.first + ' ' + c.last + ' — HopeTech';
+  document.getElementById('nav-name').textContent = c.first + ' ' + c.last;
+
+  // Prev/Next
+  const ids = allContacts.map(x => x.id);
+  const idx = ids.indexOf(currentId);
+  document.getElementById('prev-btn').disabled = idx === 0;
+  document.getElementById('next-btn').disabled = idx === ids.length - 1;
+
+  // Avatar / photo
+  renderPhoto(detail.photo || '', initials, color);
+
+  // Name / company / city
+  document.getElementById('profile-name').textContent    = c.first + ' ' + c.last;
+  document.getElementById('profile-company').textContent = c.company || '';
+  const cityEl = document.getElementById('profile-city-text');
+  if (c.city) { cityEl.textContent = c.city; document.getElementById('profile-city').style.display = 'flex'; }
+  else         { document.getElementById('profile-city').style.display = 'none'; }
+
+  // Badges
+  const sc = STATUS_COLOR[c.status] || '#64748b';
+  document.getElementById('profile-badges').innerHTML = `
+    <span class="badge" style="background:${sc}18;color:${sc};border:1px solid ${sc}55;">${c.status}</span>
+    <span class="badge" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">${c.segment}</span>
+    ${detail.priority === 'High' ? '<span class="badge" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">High Priority</span>' : ''}
+  `;
+
+  // Status / priority selects
+  document.getElementById('statusSelect').value   = c.status;
+  document.getElementById('prioritySelect').value = detail.priority || 'Normal';
+
+  // Hide button state
+  const hideBtn = document.getElementById('hide-btn');
+  if (c.hidden) {
+    hideBtn.textContent = 'Unhide Contact';
+    hideBtn.style.background = '#fef2f2';
+    hideBtn.style.color = '#dc2626';
+    hideBtn.style.borderColor = '#fecaca';
+  } else {
+    hideBtn.textContent = 'Hide Contact';
+    hideBtn.style.background = '';
+    hideBtn.style.color = '';
+    hideBtn.style.borderColor = '';
+  }
+
+  // Contact fields
+  document.getElementById('field-chapter').value = c.chapter || '';
+  document.getElementById('field-phone').value   = c.phone || '';
+  document.getElementById('field-email').value   = c.email || '';
+  document.getElementById('field-linkedin').value = detail.linkedin || '';
+  document.getElementById('field-website').value  = detail.website || '';
+
+  // Quick actions
+  const qa = [];
+  if (c.phone) {
+    const wa = 'https://wa.me/91' + c.phone.replace(/\D/g,'');
+    qa.push(`<a href="tel:${c.phone}" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors py-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>${c.phone}</a>`);
+    qa.push(`<a href="${wa}" target="_blank" class="flex items-center gap-2 text-sm text-green-600 hover:text-green-800 transition-colors py-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>WhatsApp</a>`);
+  }
+  if (c.email) qa.push(`<a href="mailto:${c.email}" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors py-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>${c.email}</a>`);
+  if (detail.linkedin) qa.push(`<a href="${detail.linkedin.startsWith('http')?detail.linkedin:'https://'+detail.linkedin}" target="_blank" class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors py-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>LinkedIn</a>`);
+  if (detail.website) qa.push(`<a href="${detail.website.startsWith('http')?detail.website:'https://'+detail.website}" target="_blank" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors py-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Website</a>`);
+  document.getElementById('quick-actions').innerHTML = qa.join('') || '<p class="text-slate-400 text-xs">Add phone or email to enable quick actions.</p>';
+
+  // Next follow-up
+  document.getElementById('nextDate').value = detail.nextDate || '';
+  renderDueIndicator(detail.nextDate);
+
+  // About
+  document.getElementById('field-about').value = detail.about || '';
+
+  // Notes
+  document.getElementById('field-notes').value = c.notes || '';
+
+  // New fields
+  document.getElementById('field-address').value  = detail.address || '';
+  document.getElementById('field-meetmode').value  = detail.meetmode || '';
+  document.getElementById('field-proposal').value  = detail.proposal || '';
+  document.getElementById('field-conversation').value = detail.conversation || '';
+  updateMapsLink();
+
+  // Set today as default follow-up date
+  document.getElementById('fu-date').valueAsDate = new Date();
+
+  // Timeline
+  renderTimeline(detail);
+
+  // Actions
+  renderActions(detail);
+
+  // PDFs
+  renderPDFs(detail);
+
+  // Sync fresh data from Supabase (once, not recursively)
+  if (!_sbSyncing) syncDetailFromSupabase(currentId);
+}
+
+function renderDueIndicator(date) {
+  const el = document.getElementById('due-indicator');
+  if (!date) { el.textContent = ''; return; }
+  const today = new Date().toISOString().split('T')[0];
+  if (date < today) el.innerHTML = '<span style="color:#dc2626;font-weight:600;">⚠ Overdue</span>';
+  else if (date === today) el.innerHTML = '<span style="color:#d97706;font-weight:600;">Due today</span>';
+  else el.innerHTML = `<span style="color:#16a34a;font-weight:600;">Scheduled: ${date}</span>`;
+}
+
+function renderTimeline(detail) {
+  const fus = [...(detail.followups || [])].reverse();
+  document.getElementById('followup-count').textContent = fus.length + ' entr' + (fus.length === 1 ? 'y' : 'ies');
+
+  if (!fus.length) {
+    document.getElementById('timeline').innerHTML = '<p class="text-slate-400 text-sm text-center py-6">No follow-ups logged yet. Add your first entry above.</p>';
+    return;
+  }
+
+  document.getElementById('timeline').innerHTML = fus.map((f, ri) => {
+    const realIdx = (detail.followups.length - 1) - ri;
+    const tc = TYPE_COLOR[f.type] || '#64748b';
+    return `
+      <div class="flex gap-3">
+        <div class="flex flex-col items-center">
+          <div class="timeline-dot" style="background:${tc};"></div>
+          ${ri < fus.length - 1 ? '<div class="w-px flex-1 mt-1" style="background:#e2e8f0;min-height:20px;"></div>' : ''}
+        </div>
+        <div class="flex-1 pb-4">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="text-xs font-semibold" style="color:${tc};">${f.type}</span>
+            <span class="text-slate-400 text-xs">${f.date}</span>
+            <button onclick="deleteFollowup(${realIdx})" class="btn-danger ml-auto" style="padding:2px 8px;font-size:0.7rem;">Delete</button>
+          </div>
+          ${f.note ? `<p class="text-slate-700 text-sm leading-relaxed">${f.note.replace(/\n/g,'<br>')}</p>` : '<p class="text-slate-400 text-xs italic">No notes added.</p>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderActions(detail) {
+  const actions = detail.actions || [];
+  if (!actions.length) {
+    document.getElementById('actions-list').innerHTML = '<p class="text-slate-400 text-xs">No action items yet.</p>';
+    return;
+  }
+  document.getElementById('actions-list').innerHTML = actions.map((a, i) => `
+    <div class="flex items-center gap-3 py-1">
+      <input type="checkbox" ${a.done ? 'checked' : ''} onchange="toggleAction(${i})"
+        class="w-4 h-4 rounded cursor-pointer" style="width:16px;height:16px;flex-shrink:0;accent-color:#3b82f6;" />
+      <span class="text-sm flex-1 ${a.done ? 'line-through text-slate-400' : 'text-slate-700'}">${a.text}</span>
+      <button onclick="deleteAction(${i})" class="btn-danger" style="padding:2px 8px;font-size:0.7rem;">✕</button>
+    </div>
+  `).join('');
+}
+
+// ── PHOTO ──────────────────────────────────────────────────────────────────
+let _currentInitials = '', _currentColor = '#3b82f6';
+
+function renderPhoto(photo, initials, color) {
+  _currentInitials = initials; _currentColor = color;
+  const av = document.getElementById('profile-avatar');
+  if (photo) {
+    av.style.backgroundImage = `url(${photo})`;
+    av.style.backgroundSize = 'cover';
+    av.style.backgroundPosition = 'center';
+    av.style.background = '';
+    av.textContent = '';
+    av.style.color = '';
+    av.style.border = '3px solid #e2e8f0';
+  } else {
+    av.style.backgroundImage = '';
+    av.style.background = color + '18';
+    av.style.color = color;
+    av.style.border = '2px solid ' + color + '44';
+    av.textContent = initials;
+  }
+}
+
+function uploadPhoto() {
+  const file = document.getElementById('photo-input').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const detail = loadDetail(currentId);
+    detail.photo = e.target.result;
+    saveDetailData(currentId, detail);
+    renderPhoto(detail.photo, _currentInitials, _currentColor);
+    toast('Photo saved');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── PROPOSAL PDFs ──────────────────────────────────────────────────────────
+function uploadPDF() {
+  const file = document.getElementById('pdf-input').files[0];
+  if (!file) return;
+  if (file.size > 4 * 1024 * 1024) return toast('PDF too large (max 4 MB)', 'error');
+  const reader = new FileReader();
+  reader.onload = e => {
+    const detail = loadDetail(currentId);
+    if (!detail.pdfs) detail.pdfs = [];
+    detail.pdfs.push({
+      name: file.name,
+      data: e.target.result,
+      date: new Date().toISOString().split('T')[0],
+      size: (file.size / 1024).toFixed(0) + ' KB'
+    });
+    try {
+      saveDetailData(currentId, detail);
+      renderPDFs(detail);
+      toast('PDF uploaded: ' + file.name);
+    } catch (ex) {
+      toast('Storage full — try a smaller PDF', 'error');
+      detail.pdfs.pop();
+    }
+    document.getElementById('pdf-input').value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderPDFs(detail) {
+  const pdfs = detail.pdfs || [];
+  const el = document.getElementById('pdf-list');
+  if (!pdfs.length) {
+    el.innerHTML = '<p class="text-slate-400 text-xs text-center py-2">No PDFs uploaded yet.</p>';
+    return;
+  }
+  el.innerHTML = pdfs.map((p, i) => `
+    <div class="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#fff7ed;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-slate-800 truncate">${p.name}</p>
+        <p class="text-xs text-slate-400">${p.date} · ${p.size}</p>
+      </div>
+      <a href="${p.data}" download="${p.name}"
+        class="btn-secondary flex items-center gap-1" style="font-size:0.72rem;padding:4px 10px;flex-shrink:0;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Open
+      </a>
+      <button onclick="deletePDF(${i})" class="btn-danger" style="padding:4px 8px;font-size:0.7rem;flex-shrink:0;">✕</button>
+    </div>
+  `).join('');
+}
+
+function deletePDF(idx) {
+  if (!confirm('Remove this PDF?')) return;
+  const detail = loadDetail(currentId);
+  detail.pdfs.splice(idx, 1);
+  saveDetailData(currentId, detail);
+  renderPDFs(detail);
+  toast('PDF removed');
+}
+
+// ── MAPS ───────────────────────────────────────────────────────────────────
+function updateMapsLink() {
+  const addr = document.getElementById('field-address').value.trim();
+  const all  = loadAllContacts();
+  const c    = all.find(x => x.id === currentId);
+  const q    = addr || (c ? (c.company + ' ' + (c.city || '')).trim() : '');
+  const row  = document.getElementById('maps-link-row');
+  const lnk  = document.getElementById('maps-link');
+  if (q) {
+    lnk.href = 'https://www.google.com/maps/search/' + encodeURIComponent(q) + '?hl=en';
+    row.classList.remove('hidden');
+  } else {
+    row.classList.add('hidden');
+  }
+}
+
+// ── SAVES ──────────────────────────────────────────────────────────────────
+function saveContact() {
+  const all = loadAllContacts();
+  const idx = all.findIndex(c => c.id === currentId);
+  if (idx === -1) return;
+  all[idx].chapter = document.getElementById('field-chapter').value.trim();
+  all[idx].phone   = document.getElementById('field-phone').value.trim();
+  all[idx].email   = document.getElementById('field-email').value.trim();
+  all[idx].notes   = document.getElementById('field-notes').value.trim();
+  saveAllContacts(all);
+}
+
+function saveDetail() {
+  const detail = loadDetail(currentId);
+  detail.linkedin     = document.getElementById('field-linkedin').value.trim();
+  detail.website      = document.getElementById('field-website').value.trim();
+  detail.about        = document.getElementById('field-about').value.trim();
+  detail.nextDate     = document.getElementById('nextDate').value;
+  detail.priority     = document.getElementById('prioritySelect').value;
+  detail.address      = document.getElementById('field-address').value.trim();
+  detail.meetmode     = document.getElementById('field-meetmode').value;
+  detail.proposal     = document.getElementById('field-proposal').value.trim();
+  detail.conversation = document.getElementById('field-conversation').value.trim();
+  if (!detail.actions) detail.actions = [];
+  saveDetailData(currentId, detail);
+  renderDueIndicator(detail.nextDate);
+}
+
+function updateStatus() {
+  const all = loadAllContacts();
+  const idx = all.findIndex(c => c.id === currentId);
+  if (idx === -1) return;
+  all[idx].status = document.getElementById('statusSelect').value;
+  saveAllContacts(all);
+  toast('Status updated to ' + all[idx].status);
+  // Refresh badges
+  const sc = STATUS_COLOR[all[idx].status] || '#64748b';
+  const badgeEl = document.getElementById('profile-badges').querySelector('.badge');
+  badgeEl.style.background = sc + '18';
+  badgeEl.style.color = sc;
+  badgeEl.style.borderColor = sc + '55';
+  badgeEl.textContent = all[idx].status;
+}
+
+function toggleHide() {
+  const all = loadAllContacts();
+  const c = all.find(x => x.id === currentId);
+  if (!c) return;
+  c.hidden = !c.hidden;
+  saveAllContacts(all);
+  const btn = document.getElementById('hide-btn');
+  if (c.hidden) {
+    btn.textContent = 'Unhide Contact';
+    btn.style.background = '#fef2f2';
+    btn.style.color = '#dc2626';
+    btn.style.borderColor = '#fecaca';
+    toast('Contact hidden — won\'t appear in the list');
+  } else {
+    btn.textContent = 'Hide Contact';
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+    toast('Contact is now visible again');
+  }
+}
+
+// ── FOLLOW-UPS ─────────────────────────────────────────────────────────────
+function addFollowup() {
+  const date = document.getElementById('fu-date').value;
+  const type = document.getElementById('fu-type').value;
+  const note = document.getElementById('fu-note').value.trim();
+  if (!date) return toast('Select a date', 'error');
+
+  const detail = loadDetail(currentId);
+  detail.followups.push({ date, type, note, ts: Date.now() });
+  saveDetailData(currentId, detail);
+  document.getElementById('fu-note').value = '';
+  renderTimeline(detail);
+  toast('Follow-up logged');
+
+  // Auto-advance status
+  const all = loadAllContacts();
+  const c = all.find(x => x.id === currentId);
+  if (c && c.status === 'Identified') {
+    c.status = 'Contacted';
+    saveAllContacts(all);
+    document.getElementById('statusSelect').value = 'Contacted';
+    toast('Status auto-updated to Contacted');
+  }
+}
+
+function quickLog(type) {
+  const today = new Date().toISOString().split('T')[0];
+  const detail = loadDetail(currentId);
+  detail.followups.push({ date: today, type, note: '', ts: Date.now() });
+  saveDetailData(currentId, detail);
+  renderTimeline(detail);
+  toast(type + ' logged for today');
+}
+
+function deleteFollowup(idx) {
+  if (!confirm('Delete this follow-up entry?')) return;
+  const detail = loadDetail(currentId);
+  detail.followups.splice(idx, 1);
+  saveDetailData(currentId, detail);
+  renderTimeline(detail);
+  toast('Entry deleted');
+}
+
+// ── ACTIONS ────────────────────────────────────────────────────────────────
+function addAction() {
+  document.getElementById('add-action-form').classList.remove('hidden');
+  document.getElementById('action-input').focus();
+}
+function cancelAction() { document.getElementById('add-action-form').classList.add('hidden'); document.getElementById('action-input').value = ''; }
+function saveAction() {
+  const text = document.getElementById('action-input').value.trim();
+  if (!text) return;
+  const detail = loadDetail(currentId);
+  if (!detail.actions) detail.actions = [];
+  detail.actions.push({ text, done: false });
+  saveDetailData(currentId, detail);
+  cancelAction();
+  renderActions(detail);
+  toast('Action item added');
+}
+function toggleAction(idx) {
+  const detail = loadDetail(currentId);
+  detail.actions[idx].done = !detail.actions[idx].done;
+  saveDetailData(currentId, detail);
+  renderActions(detail);
+}
+function deleteAction(idx) {
+  const detail = loadDetail(currentId);
+  detail.actions.splice(idx, 1);
+  saveDetailData(currentId, detail);
+  renderActions(detail);
+}
+
+// ── SUPABASE SYNC ──────────────────────────────────────────────────────────
+let _sbSyncing = false;
+
+async function syncDetailFromSupabase(id) {
+  if (_sbSyncing) return;
+  try {
+    // Sync contact record
+    const { data: c } = await _sb.from('bni_contacts').select('*').eq('id', id).maybeSingle();
+    if (c) {
+      const all = loadAllContacts();
+      const idx = all.findIndex(x => x.id === id);
+      if (idx >= 0) Object.assign(all[idx], c);
+      else all.push(c);
+      localStorage.setItem('bni_contacts', JSON.stringify(all));
+    }
+    // Sync detail record
+    const { data: d } = await _sb.from('bni_contact_details').select('*').eq('contact_id', id).maybeSingle();
+    if (d) {
+      const detail = {
+        followups:    d.followups    || [],
+        nextDate:     d.next_date    || '',
+        linkedin:     d.linkedin     || '',
+        website:      d.website      || '',
+        about:        d.about        || '',
+        priority:     d.priority     || 'Normal',
+        actions:      d.actions      || [],
+        photo:        d.photo        || '',
+        address:      d.address      || '',
+        meetmode:     d.meetmode     || '',
+        proposal:     d.proposal     || '',
+        conversation: d.conversation || '',
+        pdfs:         d.pdfs         || []
+      };
+      localStorage.setItem('bni_detail_' + id, JSON.stringify(detail));
+      _sbSyncing = true;
+      init(); // re-populate all fields with fresh data
+      _sbSyncing = false;
+    }
+  } catch(e) { console.error('SB detail sync:', e); }
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (type === 'error' ? 'toast-error' : 'toast-success');
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 2200);
+}
+
+// Fields save via individual oninput/onchange handlers on each element — no blanket listener needed
+
+init();
+</script>
+<script>
+// BNI_ASSIGNEE_V1
+async function loadAndPopulateAssignees(currentAssigneeId) {
+  const sel = document.getElementById('assigneeSelect');
+  if (!sel) return;
+  try {
+    const { data, error } = await _sb.from('developers').select('id,name').order('name');
+    if (error) { console.error('devs load:', error.message); return; }
+    const opts = ['<option value="">— Unassigned —</option>'].concat(
+      (data || []).map(d =>
+        '<option value="' + d.id + '"' + (d.id === currentAssigneeId ? ' selected' : '') + '>' + d.name + '</option>'
+      )
+    );
+    sel.innerHTML = opts.join('');
+  } catch (e) { console.error(e); }
+}
+
+async function saveAssignee() {
+  const sel = document.getElementById('assigneeSelect');
+  if (!sel) return;
+  const val = sel.value || null;
+  const { error } = await _sb.from('bni_contacts').update({ assignee_id: val }).eq('id', currentId);
+  if (error) {
+    console.error('assignee save:', error.message);
+    alert('Could not save assignee: ' + error.message);
+    return;
+  }
+  try {
+    const all = loadAllContacts();
+    const idx = all.findIndex(function(c){ return c.id === currentId; });
+    if (idx !== -1) { all[idx].assignee_id = val; saveAllContacts(all); }
+  } catch(_) {}
+}
+
+async function loadAssigneeForCurrentContact() {
+  try {
+    const { data, error } = await _sb.from('bni_contacts').select('assignee_id').eq('id', currentId).maybeSingle();
+    if (error) { console.error('assignee fetch:', error.message); return null; }
+    return data ? data.assignee_id : null;
+  } catch (e) { return null; }
+}
+
+(async () => {
+  if (typeof currentId === 'undefined') return;
+  const aid = await loadAssigneeForCurrentContact();
+  await loadAndPopulateAssignees(aid);
+})();
+</script>
+</body>
+</html>
