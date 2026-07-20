@@ -202,8 +202,20 @@ const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov
 let _contacts = [];
 let _details  = {};
 let _completedScope = 'active';
-const todayISO = () => new Date().toISOString().slice(0, 10);
-const isoAddDays = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); };
+// Use the user's local calendar (the app is used in India); UTC dates can
+// make the Tomorrow tab point to the wrong day around midnight.
+const localISO = (date = new Date()) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+const todayISO = () => localISO();
+const isoAddDays = (iso, n) => {
+  const d = new Date(`${iso}T00:00:00`);
+  d.setDate(d.getDate() + n);
+  return localISO(d);
+};
 
 function avatarColor(id) { return AVATAR_COLORS[parseInt(String(id).replace(/\D/g,'')) % AVATAR_COLORS.length]; }
 
@@ -768,8 +780,24 @@ async function fetchTodos() {
   emptyEl.classList.add('hidden');
   listEl.innerHTML = '';
 
-  const { data } = await window.sb.from('bni_todos').select('*').eq('due_date', _todoDateISO).order('created_at');
+  // At the start of a new day, carry only unfinished overdue tasks forward.
+  // Completed tasks remain on their original date and never reappear.
+  const today = todayISO();
+  const { error: rolloverError } = await window.sb
+    .from('bni_todos')
+    .update({ due_date: today })
+    .lt('due_date', today)
+    .eq('done', false);
+  if (rolloverError) console.warn('To-do rollover failed:', rolloverError.message);
+
+  const { data, error } = await window.sb.from('bni_todos').select('*').eq('due_date', _todoDateISO).order('created_at');
   loadEl.classList.add('hidden');
+
+  if (error) {
+    window.bniToast('Could not load tasks: ' + error.message, 'error');
+    emptyEl.classList.remove('hidden');
+    return;
+  }
 
   const todos = data || [];
   const pending = todos.filter(t => !t.done).length;
@@ -830,13 +858,14 @@ async function addTodo() {
   input.disabled = true;
   const { error } = await window.sb.from('bni_todos').insert({ title, due_date: _todoDateISO });
   input.disabled = false;
-  if (error) { window.bniToast('Could not save task', 'error'); return; }
+  if (error) { window.bniToast('Could not save task: ' + error.message, 'error'); return; }
   input.value = '';
   fetchTodos();
 }
 
 async function toggleTodo(id, done) {
-  await window.sb.from('bni_todos').update({ done }).eq('id', id);
+  const { error } = await window.sb.from('bni_todos').update({ done }).eq('id', id);
+  if (error) { window.bniToast('Could not update task: ' + error.message, 'error'); return; }
   fetchTodos();
 }
 

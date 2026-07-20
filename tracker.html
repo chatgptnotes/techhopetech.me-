@@ -81,7 +81,7 @@
 
   <!-- FILTERS -->
   <div class="px-6 py-4 flex flex-wrap gap-3 items-center">
-    <input id="searchInput" onkeyup="renderTable()" placeholder=" Search name, company, city…" class="border border-gray-200 rounded-lg px-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+    <input id="searchInput" oninput="renderTable()" placeholder=" Search name, company, city…" class="border border-gray-200 rounded-lg px-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-300" />
     <select id="statusFilter" onchange="renderTable()" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
       <option value="">All Statuses</option>
       <option value="Identified">Identified</option>
@@ -283,7 +283,7 @@ const STATUS_DOT = {
 
 function renderTable() {
   const contacts = _contacts;
-  const search   = document.getElementById('searchInput').value.toLowerCase();
+  const search   = (document.getElementById('searchInput').value || '').trim().toLowerCase();
   const status   = document.getElementById('statusFilter').value;
   const city     = document.getElementById('cityFilter').value;
   const segment  = document.getElementById('segmentFilter').value;
@@ -298,7 +298,7 @@ function renderTable() {
   let filtered = contacts.filter(c => {
     if (c.hidden) return false;
     const matchSearch = !search ||
-      c.name.toLowerCase().includes(search) ||
+      (c.name || '').toLowerCase().includes(search) ||
       (c.company||'').toLowerCase().includes(search) ||
       (c.city||'').toLowerCase().includes(search) ||
       (c.specialty||'').toLowerCase().includes(search);
@@ -316,8 +316,10 @@ function renderTable() {
     return matchSearch && matchStatus && matchCity && matchSegment && matchAssignee;
   });
 
-  document.getElementById('resultCount').textContent =
-    `${filtered.length} of ${contacts.length} contacts`;
+  const resultCount = document.getElementById('resultCount');
+  if (resultCount) {
+    resultCount.textContent = `${filtered.length} of ${contacts.length} contacts`;
+  }
 
   const tbody = document.getElementById('contactTableBody');
   const empty = document.getElementById('emptyState');

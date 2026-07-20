@@ -17,6 +17,12 @@ create table if not exists bni_contacts (
   chapter     text not null default '',
   tenure      text,
   hidden      boolean not null default false,
+  phones      jsonb not null default '[]'::jsonb,
+  assignee_ids jsonb not null default '[]'::jsonb,
+  tags        jsonb not null default '[]'::jsonb,
+  website     text not null default '',
+  specialty   text not null default '',
+  meeting_date text not null default '',
   updated_at  timestamptz default now()
 );
 
@@ -46,6 +52,20 @@ create table if not exists bni_contact_details (
   pdfs         jsonb not null default '[]',
   updated_at   timestamptz default now()
 );
+
+alter table bni_contact_details add column if not exists meeting_time text;
+alter table bni_contact_details add column if not exists zoom_recording_url text not null default '';
+alter table bni_contact_details add column if not exists zoom_transcript_url text not null default '';
+alter table bni_contact_details add column if not exists financial_proposal_sent_at timestamptz;
+alter table bni_contact_details add column if not exists technical_proposal_sent_at timestamptz;
+alter table bni_contact_details add column if not exists commercial_proposal_sent_at timestamptz;
+alter table bni_contact_details add column if not exists financial_proposal_url text not null default '';
+alter table bni_contact_details add column if not exists technical_proposal_url text not null default '';
+alter table bni_contact_details add column if not exists commercial_proposal_url text not null default '';
+alter table bni_contact_details add column if not exists meeting_outcome text;
+alter table bni_contact_details add column if not exists proposal_reply_received_at timestamptz;
+alter table bni_contact_details add column if not exists sentiment text;
+alter table bni_contact_details add column if not exists sentiment_note text not null default '';
 
 -- ── proposal review queue ───────────────────────────────────────────────────
 create table if not exists bni_proposals (
@@ -97,6 +117,21 @@ create table if not exists bni_appointments (
   assignee_id      uuid,
   created_at       timestamptz default now()
 );
+
+-- Dashboard daily To-Do list.
+create table if not exists bni_todos (
+  id         uuid primary key default gen_random_uuid(),
+  title      text not null,
+  due_date   date not null,
+  done       boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists bni_todos_due_date_idx on bni_todos (due_date, created_at);
+alter table bni_todos enable row level security;
+drop policy if exists "bni_todos_anon_all" on bni_todos;
+create policy "bni_todos_anon_all" on bni_todos
+  for all to anon using (true) with check (true);
 
 alter table bni_appointments add column if not exists meeting_held     text;
 alter table bni_appointments add column if not exists followup_sent_at timestamptz;

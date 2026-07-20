@@ -71,8 +71,16 @@ let _contacts = [];
 let _details  = {};
 
 async function refresh() {
-  const { data: cs } = await window.sb.from('bni_contacts').select('*');
-  const { data: ds } = await window.sb.from('bni_contact_details').select('contact_id,priority,next_date');
+  const { data: cs, error: contactsError } = await window.sb.from('bni_contacts').select('*');
+  const { data: ds, error: detailsError } = await window.sb.from('bni_contact_details').select('contact_id,priority,next_date');
+  if (contactsError) {
+    _contacts = [];
+    _details = {};
+    render();
+    window.bniToast('Could not load contacts: ' + contactsError.message, 'error');
+    return;
+  }
+  if (detailsError) console.warn('Could not load contact details:', detailsError.message);
   _contacts = cs || [];
   _details  = Object.fromEntries((ds || []).map(d => [d.contact_id, d]));
   populateAssigneeFilter();
@@ -95,15 +103,26 @@ function formatMoney(n) {
   return '₹' + v;
 }
 
+function contactSearchText(c) {
+  return [
+    c.first, c.last, c.name, c.full_name,
+    c.company, c.company_name, c.organization,
+    c.city, c.email, c.phone,
+  ].filter(Boolean).join(' ')
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
 function render() {
-  const search = (document.getElementById('searchBox').value || '').toLowerCase();
+  const search = contactSearchText({ name: document.getElementById('searchBox').value || '' });
+  const searchTerms = search ? search.split(' ') : [];
   const assignee = document.getElementById('assigneeFilter').value;
   const list = _contacts.filter(c => {
     if (c.hidden) return false;
     if (assignee && !window.contactAssigneeIds(c).includes(assignee)) return false;
     if (search) {
-      const t = ((c.first||'')+' '+(c.last||'')+' '+(c.company||'')+' '+(c.city||'')).toLowerCase();
-      if (!t.includes(search)) return false;
+      const t = contactSearchText(c);
+      if (!searchTerms.every(term => t.includes(term))) return false;
     }
     return true;
   });

@@ -53,6 +53,7 @@
     <div id="proposalEmpty" class="hidden py-20 text-center text-gray-400">
       <i data-lucide="file-text" style="width:44px;height:44px;margin:0 auto 12px;display:block;opacity:0.3;"></i>
       <p class="font-medium text-base">No proposals in this category</p>
+      <a href="tracker.html" class="inline-block mt-3 text-sm text-blue-600 hover:underline">Upload a proposal from Contact Tracker</a>
     </div>
     <div id="proposalLoading" class="py-20 text-center text-gray-400 text-sm">Loading proposals...</div>
   </div>
@@ -82,19 +83,28 @@ async function loadProposals() {
   document.getElementById('proposalList').innerHTML = '';
   document.getElementById('proposalEmpty').classList.add('hidden');
 
-  const [{ data: props }, { data: contacts }, { data: devs }] = await Promise.all([
-    window.sb.from('bni_proposals').select('*').order('submitted_at', { ascending: false }),
-    window.sb.from('bni_contacts').select('id,first,last,company,status'),
-    window.sb.from('developers').select('id,name'),
-  ]);
+  try {
+    const [proposalRes, contactRes, devRes] = await Promise.all([
+      window.sb.from('bni_proposals').select('*').order('submitted_at', { ascending: false }),
+      window.sb.from('bni_contacts').select('id,first,last,company,status'),
+      window.sb.from('developers').select('id,name'),
+    ]);
+    const error = proposalRes.error || contactRes.error || devRes.error;
+    if (error) throw new Error(error.message || 'Unable to load proposal data');
 
-  _proposals = props || [];
-  _contacts  = Object.fromEntries((contacts || []).map(c => [c.id, c]));
-  _devs      = Object.fromEntries((devs     || []).map(d => [d.id, d]));
+    _proposals = proposalRes.data || [];
+    _contacts  = Object.fromEntries((contactRes.data || []).map(c => [c.id, c]));
+    _devs      = Object.fromEntries((devRes.data || []).map(d => [d.id, d]));
 
-  document.getElementById('proposalLoading').classList.add('hidden');
-  renderStats();
-  renderList();
+    document.getElementById('proposalLoading').classList.add('hidden');
+    renderStats();
+    renderList();
+  } catch (error) {
+    const loading = document.getElementById('proposalLoading');
+    loading.classList.remove('hidden');
+    loading.classList.add('text-red-500');
+    loading.textContent = 'Failed to load proposals: ' + (error.message || error);
+  }
 }
 
 function renderStats() {
