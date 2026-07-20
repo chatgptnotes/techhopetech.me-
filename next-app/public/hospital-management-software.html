@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/jpeg" href="/bni/bni-logo.jpg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospital Management Software India | IHMS, HMS+, CliniVoice | HopePhoenix</title>
+  <meta name="description" content="HopePhoenix offers hospital management software for Indian hospitals: IHMS (integrated HMS), HMS+ with AI diagnostics, CliniVoice voice-to-EMR, and Adamrit referral intelligence. Get a demo." />
+  <meta name="keywords" content="hospital management software India, HMS software Nagpur, integrated hospital management system, clinic management software India, EMR software India, ABDM compliant HMS, Ayushman Bharat HMS, ESIC hospital software, HopePhoenix, CliniVoice, IHMS" />
+  <meta property="og:title" content="Hospital Management Software India | IHMS, HMS+, CliniVoice | HopePhoenix" />
+  <meta property="og:description" content="HopePhoenix hospital management software for Indian hospitals. IHMS, HMS+, CliniVoice, Adamrit. ABDM compliant. Get a demo from Dr. BK Murali, Nagpur." />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://hopetech.me/bni/hospital-management-software.html" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; overflow-x: hidden; }
+    .font-display { font-family: 'Playfair Display', serif; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+    .grid-lines {
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; animation: orb-float 10s ease-in-out infinite; }
+    @keyframes orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.06); } }
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 100ms; }
+    .reveal-delay-2 { transition-delay: 200ms; }
+    .reveal-delay-3 { transition-delay: 300ms; }
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
+    .glass-hover { transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    .glass-hover:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.15); transform: translateY(-4px); }
+    .text-gradient-blue { background: linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .text-gradient-gold { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .navbar { transition: background 0.3s ease, border-color 0.3s ease; }
+    .navbar.scrolled { background: rgba(2,8,23,0.92); border-color: rgba(255,255,255,0.08) !important; backdrop-filter: blur(20px); }
+    .cta-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(59,130,246,0.3); }
+    .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.45); }
+    .tag-pill { font-size: 0.7rem; letter-spacing: 0.06em; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; }
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #020817; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .wa-btn { background: linear-gradient(135deg, #25d366, #128c7e); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(37,211,102,0.3); }
+    .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(37,211,102,0.45); }
+    .faq-item { border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .faq-answer { display: none; }
+    .faq-item.open .faq-answer { display: block; }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-chevron { transition: transform 0.3s ease; }
+    .breadcrumb a { color: #64748b; text-decoration: none; }
+    .breadcrumb a:hover { color: #94a3b8; }
+    .product-card { transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    .product-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.06); }
+    .feature-check { color: #10b981; flex-shrink: 0; }
+    .compare-row:hover { background: rgba(255,255,255,0.03); }
+    /* Tier badge */
+    .tier-badge { font-size: 0.65rem; letter-spacing: 0.08em; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- NAVBAR -->
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/bni/index.html" class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="font-bold text-white text-lg tracking-tight">HopeTech</span>
+        </a>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-medium">
+        <a href="/bni/index.html#founders" class="hover:text-white transition-colors">Founders</a>
+        <a href="/bni/bettroi.html" class="hover:text-white transition-colors">Bettroi</a>
+        <a href="/bni/hopephoenix.html" class="hover:text-white transition-colors">HopePhoenix</a>
+        <a href="/bni/betser.html" class="hover:text-white transition-colors">Betser</a>
+        <a href="/bni/drmhope.html" class="hover:text-white transition-colors">DrM Hope</a>
+      </div>
+      <a href="https://wa.me/919373111709?text=Hi%20Dr.%20Murali%2C%20I%20want%20to%20book%20a%20hospital%20management%20software%20demo." target="_blank" rel="noopener" class="cta-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Book Demo</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative grid-lines pt-32 pb-20 overflow-hidden">
+    <div class="orb" style="width:500px;height:500px;background:rgba(16,185,129,0.10);top:-120px;right:-100px;animation-delay:0s;"></div>
+    <div class="orb" style="width:350px;height:350px;background:rgba(59,130,246,0.08);bottom:0;left:-80px;animation-delay:-5s;"></div>
+
+    <div class="max-w-5xl mx-auto px-6 relative z-10">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb flex items-center gap-2 text-sm mb-8 reveal" aria-label="Breadcrumb">
+        <a href="/bni/index.html">Home</a>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+        <a href="/bni/hopephoenix.html">HopePhoenix</a>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+        <span class="text-slate-400">Hospital Management Software</span>
+      </nav>
+
+      <div class="flex flex-wrap gap-2 mb-6 reveal">
+        <span class="tag-pill" style="background:rgba(16,185,129,0.15);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">ABDM Compliant</span>
+        <span class="tag-pill" style="background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.25);">India</span>
+        <span class="tag-pill" style="background:rgba(245,158,11,0.15);color:#fcd34d;border:1px solid rgba(245,158,11,0.25);">Ayushman Bharat</span>
+        <span class="tag-pill" style="background:rgba(99,102,241,0.15);color:#c4b5fd;border:1px solid rgba(99,102,241,0.25);">AI-Powered</span>
+      </div>
+
+      <h1 class="font-display text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight reveal reveal-delay-1">
+        Hospital Management<br><span class="text-gradient-blue">Software for India</span>
+      </h1>
+      <p class="text-xl text-slate-300 max-w-3xl leading-relaxed mb-8 reveal reveal-delay-2">
+        HopePhoenix delivers integrated hospital management systems built for India's healthcare reality: government scheme compliance, voice-first documentation, AI diagnostics, and real-time bed management. From small clinics to 500-bed hospitals.
+      </p>
+
+      <div class="flex flex-wrap gap-4 reveal reveal-delay-3">
+        <a href="https://wa.me/919373111709?text=Hi%20Dr.%20Murali%2C%20I%20want%20to%20book%20a%20hospital%20management%20software%20demo." target="_blank" rel="noopener" class="cta-primary text-white font-semibold px-6 py-3 rounded-xl flex items-center gap-2 text-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Book a Demo
+        </a>
+        <a href="https://wa.me/919373111709?text=Hi%20Dr.%20Murali%2C%20I%20want%20to%20discuss%20HMS%20pricing%20for%20my%20hospital." target="_blank" rel="noopener" class="wa-btn text-white font-semibold px-6 py-3 rounded-xl flex items-center gap-2 text-sm">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.015 22l4.932-1.409A9.953 9.953 0 0011.999 22c5.523 0 10-4.477 10-10S17.522 2 11.999 2z" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+          Discuss Pricing
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- MARKET CONTEXT -->
+  <section class="py-16 relative z-10">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="glass rounded-3xl p-8 lg:p-10 reveal">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-1" style="background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(99,102,241,0.1));border:1px solid rgba(59,130,246,0.3);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div>
+            <h2 class="font-display text-2xl font-bold text-white mb-3">India's Healthcare Digitization Opportunity</h2>
+            <p class="text-slate-300 leading-relaxed mb-3">
+              The National Health Authority's Ayushman Bharat Digital Mission (ABDM) is India's most ambitious healthcare digitization program. It mandates digital health records, interoperable systems, and unique Health IDs for every citizen. Hospitals not using ABDM-compliant software will be excluded from government scheme empanelment.
+            </p>
+            <p class="text-slate-400 leading-relaxed">
+              HopePhoenix products (IHMS, HMS+, CliniVoice) are built with ABDM compliance as a core requirement, not an afterthought. They support HL7 FHIR data exchange, ABHA health ID integration, and full electronic health record (EHR) interoperability from day one.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- PRODUCT SUITE -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-14 reveal">
+        <span class="tag-pill mb-4 inline-block" style="background:rgba(16,185,129,0.15);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Products</span>
+        <h2 class="font-display text-4xl font-bold text-white mt-3">The Complete HMS Suite</h2>
+        <p class="text-slate-400 mt-3 max-w-2xl mx-auto">Seven products covering every dimension of hospital operations, from OPD scheduling to AI-powered diagnostics to government scheme management.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- IHMS -->
+        <div class="product-card glass rounded-3xl p-7 reveal">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(52,211,153,0.1));border:1px solid rgba(16,185,129,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <span class="tier-badge" style="background:rgba(16,185,129,0.15);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Core</span>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">IHMS</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">Integrated Hospital Management System. The foundation platform for any hospital going digital. Covers all core operations in one system.</p>
+          <ul class="space-y-2">
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              OPD registration and scheduling
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              IPD admission, ward, and discharge
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Pharmacy and drug dispensing
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Laboratory information system
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Billing and insurance management
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              ABDM compliant
+            </li>
+          </ul>
+        </div>
+
+        <!-- HMS+ -->
+        <div class="product-card glass rounded-3xl p-7 reveal reveal-delay-1" style="border-color:rgba(59,130,246,0.2);">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(99,102,241,0.1));border:1px solid rgba(59,130,246,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+            </div>
+            <span class="tier-badge" style="background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.25);">Premium</span>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">HMS+</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">Everything in IHMS, plus AI-assisted diagnostics, radiology AI, and automated discharge summaries. For hospitals ready to move beyond basic digitization.</p>
+          <ul class="space-y-2">
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Everything in IHMS
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              AI-assisted diagnostic suggestions
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Radiology AI integration
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              AI discharge summary generation
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Predictive readmission alerts
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              FHIR data export
+            </li>
+          </ul>
+        </div>
+
+        <!-- CliniVoice -->
+        <div class="product-card glass rounded-3xl p-7 reveal reveal-delay-2">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(251,191,36,0.1));border:1px solid rgba(245,158,11,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </div>
+            <span class="tier-badge" style="background:rgba(245,158,11,0.15);color:#fde68a;border:1px solid rgba(245,158,11,0.25);">Add-on</span>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">CliniVoice</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">Voice dictation to structured EMR. Reduces doctor documentation time by up to 70%. Supports Hindi, Marathi, and English dictation.</p>
+          <ul class="space-y-2">
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Real-time voice transcription
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Structured EMR field mapping
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Hindi, Marathi, English support
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              70% documentation time reduction
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Works with IHMS and HMS+
+            </li>
+          </ul>
+        </div>
+
+        <!-- Adamrit -->
+        <div class="product-card glass rounded-3xl p-7 reveal">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.1));border:1px solid rgba(99,102,241,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <span class="tier-badge" style="background:rgba(99,102,241,0.15);color:#c4b5fd;border:1px solid rgba(99,102,241,0.25);">Gov. Schemes</span>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">Adamrit</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">AI referral routing for government scheme patients. Automates ESIC, CGHS, and Ayushman Bharat eligibility checks and referral generation.</p>
+          <ul class="space-y-2">
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              ESIC eligibility verification
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Ayushman Bharat (PMJAY) mapping
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Digital referral letter generation
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              CGHS claim documentation
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Real-time claim tracking
+            </li>
+          </ul>
+        </div>
+
+        <!-- RSeva Health -->
+        <div class="product-card glass rounded-3xl p-7 reveal reveal-delay-1">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(236,72,153,0.2),rgba(244,114,182,0.1));border:1px solid rgba(236,72,153,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </div>
+            <span class="tier-badge" style="background:rgba(236,72,153,0.15);color:#fbcfe8;border:1px solid rgba(236,72,153,0.25);">Community</span>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">RSeva Health</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">Connects ASHAs and ANMs to telemedicine services and medical supply chains. Bridges India's last-mile healthcare delivery gap.</p>
+          <ul class="space-y-2">
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              ASHA / ANM mobile app
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Telemedicine consultation booking
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Supply chain for medicines and diagnostics
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Works offline in low-connectivity areas
+            </li>
+          </ul>
+        </div>
+
+        <!-- HospiView -->
+        <div class="product-card glass rounded-3xl p-7 reveal reveal-delay-2">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(20,184,166,0.2),rgba(45,212,191,0.1));border:1px solid rgba(20,184,166,0.3);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+            </div>
+            <span class="tier-badge" style="background:rgba(20,184,166,0.15);color:#99f6e4;border:1px solid rgba(20,184,166,0.25);">Operations</span>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">HospiView</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">Live bed management, ward census, and real-time OT scheduling on a visual dashboard. For hospital administrators who need instant operational visibility.</p>
+          <ul class="space-y-2">
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Real-time bed availability display
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              OT scheduling and utilization tracking
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Ward census and census reports
+            </li>
+            <li class="flex items-center gap-2 text-sm text-slate-300">
+              <svg class="feature-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              Mobile app for on-the-go management
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- COMPARISON TABLE -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="text-center mb-12 reveal">
+        <span class="tag-pill mb-4 inline-block" style="background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.25);">Compare</span>
+        <h2 class="font-display text-4xl font-bold text-white mt-3">IHMS vs HMS+ at a Glance</h2>
+      </div>
+
+      <div class="glass rounded-3xl overflow-hidden reveal">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                <th class="px-6 py-5 text-left text-sm font-semibold text-slate-400">Feature</th>
+                <th class="px-6 py-5 text-center text-sm font-semibold text-white">IHMS <span class="text-slate-400 font-normal text-xs">(Core)</span></th>
+                <th class="px-6 py-5 text-center text-sm font-semibold text-white" style="background:rgba(59,130,246,0.06);">HMS+ <span class="text-blue-400 font-normal text-xs">(Premium)</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="compare-row" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td class="px-6 py-4 text-sm text-slate-300">OPD / IPD / Pharmacy / Lab</td>
+                <td class="px-6 py-4 text-center"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+                <td class="px-6 py-4 text-center" style="background:rgba(59,130,246,0.04);"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+              </tr>
+              <tr class="compare-row" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td class="px-6 py-4 text-sm text-slate-300">Billing and Insurance</td>
+                <td class="px-6 py-4 text-center"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+                <td class="px-6 py-4 text-center" style="background:rgba(59,130,246,0.04);"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+              </tr>
+              <tr class="compare-row" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td class="px-6 py-4 text-sm text-slate-300">ABDM Compliant</td>
+                <td class="px-6 py-4 text-center"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+                <td class="px-6 py-4 text-center" style="background:rgba(59,130,246,0.04);"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+              </tr>
+              <tr class="compare-row" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td class="px-6 py-4 text-sm text-slate-300">AI Diagnostic Suggestions</td>
+                <td class="px-6 py-4 text-center text-slate-600 text-sm font-medium">No</td>
+                <td class="px-6 py-4 text-center" style="background:rgba(59,130,246,0.04);"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+              </tr>
+              <tr class="compare-row" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td class="px-6 py-4 text-sm text-slate-300">Radiology AI</td>
+                <td class="px-6 py-4 text-center text-slate-600 text-sm font-medium">No</td>
+                <td class="px-6 py-4 text-center" style="background:rgba(59,130,246,0.04);"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+              </tr>
+              <tr class="compare-row" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td class="px-6 py-4 text-sm text-slate-300">AI Discharge Summaries</td>
+                <td class="px-6 py-4 text-center text-slate-600 text-sm font-medium">No</td>
+                <td class="px-6 py-4 text-center" style="background:rgba(59,130,246,0.04);"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+              </tr>
+              <tr class="compare-row" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td class="px-6 py-4 text-sm text-slate-300">FHIR Data Export</td>
+                <td class="px-6 py-4 text-center text-slate-600 text-sm font-medium">No</td>
+                <td class="px-6 py-4 text-center" style="background:rgba(59,130,246,0.04);"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+              </tr>
+              <tr class="compare-row">
+                <td class="px-6 py-4 text-sm text-slate-300">Predictive Readmission Alerts</td>
+                <td class="px-6 py-4 text-center text-slate-600 text-sm font-medium">No</td>
+                <td class="px-6 py-4 text-center" style="background:rgba(59,130,246,0.04);"><svg class="inline feature-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- PRICING + WHO USES IT -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Pricing -->
+        <div class="glass rounded-3xl p-8 reveal" style="border-color:rgba(16,185,129,0.15);">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(52,211,153,0.1));border:1px solid rgba(16,185,129,0.3);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-white">Transparent Pricing</h3>
+          </div>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">
+            All HopePhoenix HMS products use a transparent SaaS model. No upfront license fees. No hidden charges. Per-bed pricing scales with your hospital size.
+          </p>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3">
+              <svg class="feature-check mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              <span class="text-slate-300 text-sm">Monthly subscription, per-bed pricing</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="feature-check mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              <span class="text-slate-300 text-sm">Implementation and training included</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="feature-check mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              <span class="text-slate-300 text-sm">On-site support (Nagpur) or remote for other cities</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="feature-check mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              <span class="text-slate-300 text-sm">Free 30-day pilot for qualifying hospitals</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="feature-check mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+              <span class="text-slate-300 text-sm">Data migration from legacy systems</span>
+            </li>
+          </ul>
+          <div class="mt-6 pt-5" style="border-top:1px solid rgba(255,255,255,0.07);">
+            <p class="text-slate-500 text-xs">Contact Dr. Murali for a custom quote based on your bed count and module requirements.</p>
+          </div>
+        </div>
+
+        <!-- Who uses it -->
+        <div class="glass rounded-3xl p-8 reveal reveal-delay-1">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.1));border:1px solid rgba(99,102,241,0.3);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-white">Who Uses HopePhoenix HMS?</h3>
+          </div>
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.2);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </div>
+              <div>
+                <div class="text-white text-sm font-semibold">Government Hospitals</div>
+                <div class="text-slate-400 text-xs mt-0.5">District and sub-district hospitals needing ESIC, CGHS, and PMJAY empanelment</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.2);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+              </div>
+              <div>
+                <div class="text-white text-sm font-semibold">Private Clinics</div>
+                <div class="text-slate-400 text-xs mt-0.5">Single-doctor and multi-doctor clinics replacing paper-based OPD records</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div>
+              <div>
+                <div class="text-white text-sm font-semibold">Nursing Homes</div>
+                <div class="text-slate-400 text-xs mt-0.5">20-100 bed facilities needing full HMS without enterprise pricing</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.2);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div>
+                <div class="text-white text-sm font-semibold">Specialty Centers</div>
+                <div class="text-slate-400 text-xs mt-0.5">Diagnostic labs, radiology centers, physiotherapy, and dental chains</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- COMPLIANCE TRUST SIGNALS -->
+  <section class="py-16 relative z-10">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="text-center mb-10 reveal">
+        <h2 class="font-display text-3xl font-bold text-white">Compliance and Standards</h2>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 reveal">
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-2xl font-bold text-gradient-blue mb-1">HL7</div>
+          <div class="text-slate-400 text-xs">Health Level Seven</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-2xl font-bold text-gradient-blue mb-1">FHIR</div>
+          <div class="text-slate-400 text-xs">Fast Healthcare Interoperability</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-2xl font-bold text-gradient-blue mb-1">ABDM</div>
+          <div class="text-slate-400 text-xs">Ayushman Bharat Digital Mission</div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-center">
+          <div class="text-2xl font-bold text-gradient-blue mb-1">HIPAA</div>
+          <div class="text-slate-400 text-xs">Privacy Aware Design</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- FAQ -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-3xl mx-auto px-6">
+      <div class="text-center mb-12 reveal">
+        <span class="tag-pill mb-4 inline-block" style="background:rgba(245,158,11,0.15);color:#fcd34d;border:1px solid rgba(245,158,11,0.25);">FAQ</span>
+        <h2 class="font-display text-4xl font-bold text-white mt-3">Common Questions</h2>
+      </div>
+
+      <div class="space-y-1 reveal">
+        <!-- FAQ 1 -->
+        <div class="faq-item py-5 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-white font-medium text-base">What should I look for when selecting an HMS for an Indian hospital?</h3>
+            <svg class="faq-chevron flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+          <div class="faq-answer mt-3 text-slate-400 text-sm leading-relaxed">
+            The five non-negotiables are: ABDM compliance (for ABHA health ID integration and government empanelment), support for Indian government schemes (ESIC, CGHS, Ayushman Bharat), local language support (Hindi, Marathi, regional), a vendor with on-site support capability, and a pricing model that doesn't require a large upfront investment. HopePhoenix products satisfy all five.
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item py-5 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-white font-medium text-base">How long does HMS implementation take?</h3>
+            <svg class="faq-chevron flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+          <div class="faq-answer mt-3 text-slate-400 text-sm leading-relaxed">
+            For clinics and small nursing homes (under 30 beds), implementation is typically 1 to 2 weeks including staff training. For medium hospitals (30 to 150 beds), 3 to 5 weeks. For large hospitals above 150 beds with complex workflows and data migration from a legacy system, 6 to 10 weeks. All timelines include parallel running with your existing system until staff are confident.
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item py-5 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-white font-medium text-base">Can my existing patient data be migrated into IHMS?</h3>
+            <svg class="faq-chevron flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+          <div class="faq-answer mt-3 text-slate-400 text-sm leading-relaxed">
+            Yes. HopePhoenix has a dedicated data migration toolkit that handles imports from common HMS formats (Excel exports, CSV, and major legacy HMS systems used in India). Patient demographics, billing history, and clinical records can be imported. The migration is done in a test environment first, verified, and then cut over to production with zero data loss.
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item py-5 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-white font-medium text-base">What is the pricing structure for IHMS and HMS+?</h3>
+            <svg class="faq-chevron flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+          <div class="faq-answer mt-3 text-slate-400 text-sm leading-relaxed">
+            Pricing is a monthly SaaS subscription based on bed count. There are no per-user fees, no per-transaction fees, and no upfront license costs. Implementation and initial training are included. Contact Dr. Murali at +91 9373111709 for a custom quote: the price depends on your bed count, the modules you need (IHMS vs HMS+), and whether you need add-ons like CliniVoice or Adamrit.
+          </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        <div class="faq-item py-5 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-white font-medium text-base">Does HopePhoenix support hospitals outside Nagpur?</h3>
+            <svg class="faq-chevron flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+          <div class="faq-answer mt-3 text-slate-400 text-sm leading-relaxed">
+            Yes. While on-site visits are naturally easier for Nagpur and Vidarbha-region hospitals, HopePhoenix software is deployed across India. Remote implementation, training via video call, and cloud-based support are available nationwide. For hospitals in Maharashtra outside Nagpur, on-site visits can be arranged.
+          </div>
+        </div>
+
+        <!-- FAQ 6 -->
+        <div class="faq-item py-5 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-white font-medium text-base">Is CliniVoice sold separately or only with IHMS?</h3>
+            <svg class="faq-chevron flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+          <div class="faq-answer mt-3 text-slate-400 text-sm leading-relaxed">
+            CliniVoice works best as an add-on to IHMS or HMS+, since it maps dictated content directly into the HMS patient record fields. However, for hospitals that already have an HMS and just want voice documentation, CliniVoice can be integrated via API. Contact us to discuss integration with your existing system.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- CTA -->
+  <section class="py-20 relative z-10">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+      <div class="glass rounded-3xl p-12 reveal" style="border-color:rgba(16,185,129,0.2);">
+        <div class="orb" style="width:300px;height:300px;background:rgba(16,185,129,0.08);top:-80px;left:50%;transform:translateX(-50%);animation-delay:-2s;"></div>
+        <div class="glass rounded-2xl px-4 py-3 inline-flex items-center gap-3 mb-6 relative z-10" style="border-color:rgba(255,255,255,0.1);">
+          <div class="w-9 h-9 rounded-lg overflow-hidden">
+            <img src="/bni/dr-murali.jpg" alt="Dr. BK Murali" class="w-full h-full object-cover" onerror="this.parentElement.style.background='linear-gradient(135deg,#065f46,#10b981)';this.remove();" />
+          </div>
+          <div class="text-left">
+            <div class="text-white text-xs font-semibold">Dr. BK Murali</div>
+            <div class="text-slate-400 text-xs">Founder, HopePhoenix</div>
+          </div>
+        </div>
+        <h2 class="font-display text-4xl font-bold text-white mb-4 relative z-10">Book a Live Demo</h2>
+        <p class="text-slate-400 mb-8 relative z-10 max-w-md mx-auto">See IHMS or HMS+ running with real hospital data in 30 minutes. Dr. Murali will walk you through every module relevant to your facility.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
+          <a href="https://wa.me/919373111709?text=Hi%20Dr.%20Murali%2C%20I%20want%20to%20book%20a%20hospital%20management%20software%20demo." target="_blank" rel="noopener" class="wa-btn text-white font-bold px-8 py-4 rounded-2xl inline-flex items-center justify-center gap-3 text-base">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.015 22l4.932-1.409A9.953 9.953 0 0011.999 22c5.523 0 10-4.477 10-10S17.522 2 11.999 2z" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+            Book Demo on WhatsApp
+          </a>
+          <a href="mailto:cmd@hopehospital.com?subject=HMS Demo Request" class="glass text-slate-200 font-semibold px-8 py-4 rounded-2xl inline-flex items-center justify-center gap-2 text-base hover:bg-white/8 transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            Email Us
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 py-12 mt-8">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <span class="text-white font-semibold">HopeTech Ventures</span>
+      </div>
+      <p class="text-slate-500 text-sm">&copy; 2025 HopeTech Ventures. Dr. BK Murali &amp; Biji Thomas. All rights reserved.</p>
+      <div class="flex items-center gap-6 text-sm text-slate-500">
+        <a href="/bni/index.html" class="hover:text-white transition-colors">Home</a>
+        <a href="/bni/dr-murali.html" class="hover:text-white transition-colors">Dr. Murali</a>
+        <a href="/bni/biji-thomas.html" class="hover:text-white transition-colors">Biji Thomas</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+    document.querySelectorAll('.reveal').forEach(el => {
+      new IntersectionObserver(([e]) => e.isIntersecting && e.target.classList.add('visible'), { threshold: 0.1 }).observe(el);
+    });
+
+    function toggleFaq(el) {
+      el.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

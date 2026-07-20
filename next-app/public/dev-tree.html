@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hierarchy — DevOps · BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family:'Inter',sans-serif; background:#f8fafc; color:#0f172a; }
+    .glass { background:white; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+    .type-pill { display:inline-block; padding:1px 7px; border-radius:4px; font-size:10px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; }
+    .type-Epic    { background:#f5f3ff; color:#6d28d9; }
+    .type-Feature { background:#ecfeff; color:#0e7490; }
+    .type-Story   { background:#ecfdf5; color:#047857; }
+    .type-Task    { background:#eff6ff; color:#1d4ed8; }
+    .type-Bug     { background:#fef2f2; color:#b91c1c; }
+    .type-Sub-task { background:#f1f5f9; color:#334155; }
+    .state-pill { display:inline-block; padding:1px 7px; border-radius:4px; font-size:10px; font-weight:700; }
+    .state-To-Do        { background:#f1f5f9; color:#475569; }
+    .state-In-Progress  { background:#dbeafe; color:#1e40af; }
+    .state-Review       { background:#fef3c7; color:#92400e; }
+    .state-Done         { background:#dcfce7; color:#15803d; }
+    details > summary { list-style: none; cursor: pointer; }
+    details > summary::-webkit-details-marker { display: none; }
+    .chev { display:inline-block; width:14px; transition:transform 0.15s; }
+    details[open] > summary .chev { transform: rotate(90deg); }
+  </style>
+</head>
+<body>
+  <main class="px-4 sm:px-8 py-6 max-w-[1400px] mx-auto">
+    <header class="mb-5 flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-900" style="letter-spacing:-0.02em">Project Hierarchy</h1>
+        <p class="text-slate-500 text-sm mt-0.5">Tree view of every work item by parent. Epic &gt; Feature &gt; Story &gt; Task &gt; Sub-task. Click any item to open it.</p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <select id="projectSel" onchange="onProjectChange()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold bg-white"></select>
+        <input id="searchBox" oninput="render()" placeholder="Filter by title…" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white w-64" />
+        <button onclick="expandAll(true)"  class="text-xs px-2.5 py-1.5 bg-slate-50 text-slate-700 border border-slate-200 rounded font-bold hover:bg-slate-100">Expand all</button>
+        <button onclick="expandAll(false)" class="text-xs px-2.5 py-1.5 bg-slate-50 text-slate-700 border border-slate-200 rounded font-bold hover:bg-slate-100">Collapse all</button>
+      </div>
+    </header>
+
+    <div id="summary" class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-5"></div>
+
+    <div class="glass rounded-2xl p-5">
+      <div id="tree" class="text-sm leading-relaxed"></div>
+      <p id="empty" class="text-slate-400 text-sm py-10 text-center hidden">No work items in this project yet. Add Epics first in <a href="/bni/dev-backlog.html" class="text-blue-600 hover:underline">Backlog</a>.</p>
+    </div>
+
+    <p class="mt-4 text-[11px] text-slate-400">
+      <strong>Hierarchy convention:</strong> Epic (large business goal) &rsaquo; Feature (deliverable chunk) &rsaquo; Story (user-facing slice) &rsaquo; Task (developer work) &rsaquo; Sub-task. Bugs can sit at any level. See the <a href="/bni/dev-glossary.html" class="text-blue-600 hover:underline">DevOps Glossary</a> for full definitions.
+    </p>
+  </main>
+
+  <script src="supabase-config.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="bni-sidebar.js"></script>
+  <script>
+  let _projects=[], _items=[], _projectId=null, _devs=[];
+  function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+  const TYPE_ORDER = { Epic:0, Feature:1, Story:2, Task:3, 'Sub-task':4, Bug:5 };
+
+  async function loadAll() {
+    const [{data: ps}, {data: items}] = await Promise.all([
+      window.sb.from('dev_projects').select('*').eq('hidden', false).order('name'),
+      window.sb.from('dev_work_items').select('id,project_id,parent_id,type,title,state,priority,points,assignee_id'),
+    ]);
+    _projects = ps || []; _items = items || []; _devs = window.BNI_DEVS || [];
+    _projectId = localStorage.getItem('dev_project') || (_projects[0] && _projects[0].id) || null;
+    document.getElementById('projectSel').innerHTML =
+      _projects.map(p => `<option value="${p.id}"${p.id===_projectId?' selected':''}>${escapeHtml(p.name)}</option>`).join('');
+    render();
+  }
+
+  function onProjectChange() {
+    _projectId = document.getElementById('projectSel').value;
+    localStorage.setItem('dev_project', _projectId);
+    render();
+  }
+
+  function devName(id) { const d = _devs.find(x => x.id === id); return d ? d.name : ''; }
+
+  function buildTree(items) {
+    const byId = new Map(items.map(i => [i.id, { ...i, children: [] }]));
+    const roots = [];
+    for (const node of byId.values()) {
+      if (node.parent_id && byId.has(node.parent_id)) byId.get(node.parent_id).children.push(node);
+      else roots.push(node);
+    }
+    const sortFn = (a,b) => (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9) || a.title.localeCompare(b.title);
+    function sortRec(node) { node.children.sort(sortFn); node.children.forEach(sortRec); }
+    roots.sort(sortFn); roots.forEach(sortRec);
+    return roots;
+  }
+
+  function nodeHtml(node, depth) {
+    const pad = depth * 18;
+    const a = node.assignee_id ? devName(node.assignee_id) : '';
+    const state = (node.state||'').replace(/\s+/g,'-');
+    const meta = `
+      <span class="type-pill type-${node.type||'Task'}">${escapeHtml(node.type||'Task')}</span>
+      <span class="state-pill state-${state}">${escapeHtml(node.state||'To Do')}</span>
+      ${node.points!=null ? `<span class="text-xs text-slate-500 font-mono">${node.points}pt</span>` : ''}
+      ${a ? `<span class="text-xs text-slate-500">· ${escapeHtml(a)}</span>` : ''}
+    `;
+    const link = `<a href="/bni/dev-item.html?id=${encodeURIComponent(node.id)}" class="text-slate-900 hover:text-blue-700 font-medium">${escapeHtml(node.title)}</a>`;
+    if (!node.children.length) {
+      return `<div style="padding-left:${pad+18}px" class="py-1.5 flex items-center gap-2 border-l border-transparent hover:bg-slate-50 rounded">
+        <span class="text-slate-300 font-mono">└</span>${meta} ${link}
+      </div>`;
+    }
+    const inner = node.children.map(c => nodeHtml(c, depth+1)).join('');
+    const childCount = countDescendants(node);
+    return `<details open style="padding-left:${pad}px" class="py-0.5">
+      <summary class="py-1.5 flex items-center gap-2 hover:bg-slate-50 rounded">
+        <span class="chev text-slate-400">▶</span>${meta} ${link}
+        <span class="text-[10px] text-slate-400 ml-auto">${childCount} below</span>
+      </summary>
+      ${inner}
+    </details>`;
+  }
+
+  function countDescendants(node) {
+    let n = node.children.length;
+    for (const c of node.children) n += countDescendants(c);
+    return n;
+  }
+
+  function summaryTiles(items) {
+    const byType = {};
+    items.forEach(i => byType[i.type||'Task'] = (byType[i.type||'Task']||0) + 1);
+    const colors = { Epic:'bg-violet-50 text-violet-700', Feature:'bg-cyan-50 text-cyan-700', Story:'bg-emerald-50 text-emerald-700', Task:'bg-blue-50 text-blue-700', Bug:'bg-red-50 text-red-700', 'Sub-task':'bg-slate-50 text-slate-700' };
+    const order = ['Epic','Feature','Story','Task','Sub-task','Bug'];
+    return order.map(t => `
+      <div class="glass rounded-xl p-3">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">${t}</div>
+        <div class="text-2xl font-extrabold mt-1 ${colors[t]||''} inline-block px-2 rounded">${byType[t]||0}</div>
+      </div>`).join('');
+  }
+
+  function render() {
+    const search = (document.getElementById('searchBox').value || '').toLowerCase();
+    let items = _items.filter(i => i.project_id === _projectId);
+    if (search) {
+      const matchIds = new Set(items.filter(i => (i.title||'').toLowerCase().includes(search)).map(i => i.id));
+      // Include ancestors of any match so the tree stays connected.
+      const idMap = new Map(items.map(i => [i.id, i]));
+      const keep = new Set(matchIds);
+      for (const id of matchIds) {
+        let cur = idMap.get(id);
+        while (cur && cur.parent_id) { keep.add(cur.parent_id); cur = idMap.get(cur.parent_id); }
+      }
+      items = items.filter(i => keep.has(i.id));
+    }
+    document.getElementById('summary').innerHTML = summaryTiles(items);
+    const roots = buildTree(items);
+    const tree = document.getElementById('tree');
+    const empty = document.getElementById('empty');
+    if (!roots.length) { tree.innerHTML=''; empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+    tree.innerHTML = roots.map(r => nodeHtml(r, 0)).join('');
+  }
+
+  function expandAll(open) {
+    document.querySelectorAll('#tree details').forEach(d => d.open = open);
+  }
+
+  document.addEventListener('bni-auth-ready', async () => {
+    await window.loadDevelopers();
+    loadAll();
+  });
+  </script>
+</body>
+</html>

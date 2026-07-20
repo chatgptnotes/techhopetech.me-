@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Outreach Templates — Dr. BK Murali</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .template-card { border-left: 4px solid; }
+    .copied { background: #16a34a !important; }
+    pre { white-space: pre-wrap; word-wrap: break-word; font-family: 'Inter', sans-serif; font-size: 0.875rem; }
+    .sidebar-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:0.875rem;font-weight:500;color:#cbd5e1;transition:background 0.15s,color 0.15s;text-decoration:none; }
+    .sidebar-link:hover { background:rgba(255,255,255,0.1);color:#fff; }
+    .sidebar-link.active { background:#2563eb;color:#fff; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="hidden md:flex flex-col w-56 min-h-screen bg-slate-900 fixed top-0 left-0 z-40 border-r border-slate-800">
+    <div class="px-4 py-5 border-b border-slate-800">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-base flex-shrink-0">M</div>
+        <div>
+          <div class="text-white font-bold text-sm leading-tight">Dr. BK Murali</div>
+          <div class="text-blue-400 text-xs">BNI AI Tools</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="/bni/tracker.html" class="sidebar-link">Tracker</a>
+      <a href="/bni/zoom-completed.html" class="sidebar-link">Zoom Meetings Done</a>
+      <a href="/bni/followup.html" class="sidebar-link">Meetings & Follow-ups</a>
+      <a href="/bni/templates.html" class="sidebar-link active">Templates</a>
+      <a href="/bni/scheduler.html" class="sidebar-link">Book Zoom Call</a>
+      <div class="pt-3 mt-3 border-t border-slate-800">
+        <a href="https://hopetech.me" class="sidebar-link">Public Site</a>
+      </div>
+    </nav>
+    <div class="px-4 py-4 border-t border-slate-800 text-xs text-slate-500">BNI 121 · Private Tool</div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="flex-1 md:ml-56 flex flex-col min-h-screen">
+
+  <!-- TOP BAR -->
+  <nav class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-30">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="md:hidden text-gray-400 hover:text-gray-600 text-sm">← Home</a>
+        <div>
+          <div class="font-bold text-gray-900">Outreach Templates</div>
+          <div class="text-xs text-slate-500">Ready-to-send WhatsApp & email messages — personalise the name once, then copy for any contact</div>
+        </div>
+      </div>
+      <a href="tracker.html" class="text-sm text-blue-600 hover:underline font-medium">View Tracker →</a>
+    </div>
+  </nav>
+
+  <!-- PERSONALISE BAR -->
+  <div class="bg-blue-600 text-white px-6 py-4">
+    <div>
+      <p class="text-sm font-semibold mb-3"> Personalise all templates below:</p>
+      <div class="flex flex-wrap gap-3">
+        <div>
+          <label class="text-xs text-blue-200 block mb-1">Recipient Name</label>
+          <input id="p_name" oninput="personalise()" placeholder="e.g. Diwakar" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 w-44" />
+        </div>
+        <div>
+          <label class="text-xs text-blue-200 block mb-1">Their Company</label>
+          <input id="p_company" oninput="personalise()" placeholder="e.g. Solvode" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 w-44" />
+        </div>
+        <div>
+          <label class="text-xs text-blue-200 block mb-1">Their City</label>
+          <input id="p_city" oninput="personalise()" placeholder="e.g. Hyderabad" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 w-36" />
+        </div>
+        <div>
+          <label class="text-xs text-blue-200 block mb-1">Their Chapter</label>
+          <input id="p_chapter" oninput="personalise()" placeholder="e.g. Wealth" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 w-36" />
+        </div>
+      </div>
+      <p class="text-xs font-semibold mt-4 mb-2 text-blue-100">Per-send details (for Meeting Confirmation etc.):</p>
+      <div class="flex flex-wrap gap-3">
+        <div>
+          <label class="text-xs text-blue-200 block mb-1">Date</label>
+          <input id="p_date" oninput="personalise()" placeholder="e.g. 25 Apr 2026" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 w-40" />
+        </div>
+        <div>
+          <label class="text-xs text-blue-200 block mb-1">Time</label>
+          <input id="p_time" oninput="personalise()" placeholder="e.g. 4:30 PM" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 w-32" />
+        </div>
+        <div>
+          <label class="text-xs text-blue-200 block mb-1">Zoom Link</label>
+          <input id="p_zoom" oninput="personalise()" placeholder="https://zoom.us/j/…" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 w-60" />
+        </div>
+        <div>
+          <label class="text-xs text-blue-200 block mb-1">Meeting ID</label>
+          <input id="p_mid" oninput="personalise()" placeholder="123 456 7890" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 w-36" />
+        </div>
+        <div>
+          <label class="text-xs text-blue-200 block mb-1">Passcode</label>
+          <input id="p_code" oninput="personalise()" placeholder="e.g. 228811" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/40 w-32" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-6 py-10 space-y-8">
+
+    <!-- TEMPLATE TABS -->
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <span class="text-sm text-gray-500 mr-2 self-center font-medium">Filter:</span>
+      <button data-filter="all" onclick="filterType('all')" class="filter-btn active px-4 py-2 rounded-full text-sm font-medium border border-blue-200 bg-blue-600 text-white transition">All Templates</button>
+      <button data-filter="initial" onclick="filterType('initial')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600 hover:border-blue-300 transition">Initial Outreach</button>
+      <button data-filter="followup" onclick="filterType('followup')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600 hover:border-blue-300 transition">Follow-Up</button>
+      <button data-filter="meeting" onclick="filterType('meeting')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600 hover:border-blue-300 transition">Meeting Related</button>
+      <button data-filter="chapter" onclick="filterType('chapter')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600 hover:border-blue-300 transition">Chapter President</button>
+      <button data-filter="proposal" onclick="filterType('proposal')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600 hover:border-blue-300 transition">Proposal</button>
+      <button data-filter="telephonic" onclick="filterType('telephonic')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600 hover:border-blue-300 transition">Telephonic</button>
+      <button data-filter="other" onclick="filterType('other')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600 hover:border-blue-300 transition">Other</button>
+      <span class="flex-1"></span>
+      <label class="inline-flex items-center gap-2 text-sm text-gray-600 mr-2 cursor-pointer select-none">
+        <input id="showHidden" type="checkbox" onchange="renderTemplates()" class="rounded border-gray-300" />
+        <span>Show hidden (<span id="hiddenCount">0</span>)</span>
+      </label>
+      <button onclick="openEditor()" class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition shadow-sm">+ New Template</button>
+    </div>
+
+    <div id="templateList"></div>
+  </div>
+
+  <!-- EDITOR MODAL -->
+  <div id="editorModal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto py-8 px-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 my-4">
+      <div class="flex items-start justify-between mb-4">
+        <h3 id="editorTitle" class="text-lg font-bold text-gray-900">New Template</h3>
+        <button onclick="closeEditor()" class="text-gray-400 hover:text-gray-700 text-xl leading-none">&times;</button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-medium text-gray-600 block mb-1">Title</label>
+          <input id="ed_title" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="e.g. Follow-up after 7 days" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-medium text-gray-600 block mb-1">Type</label>
+            <select id="ed_type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="initial">Initial Outreach</option>
+              <option value="followup">Follow-Up</option>
+              <option value="meeting">Meeting</option>
+              <option value="chapter">Chapter President</option>
+              <option value="proposal">Proposal</option>
+              <option value="telephonic">Telephonic</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-medium text-gray-600 block mb-1">Channel</label>
+            <select id="ed_channel" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Email">Email</option>
+              <option value="Phone">Phone</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="SMS">SMS</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 block mb-1">Accent colour</label>
+          <input id="ed_color" type="color" value="#2563eb" class="h-10 w-20 border border-gray-300 rounded-lg" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 block mb-1">Body</label>
+          <textarea id="ed_body" rows="14" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono" placeholder="Use {{NAME}}, {{COMPANY}}, {{CITY}}, {{CHAPTER}} and [Your Phone], [Your scheduler link], [DATE], [TIME], [ZOOM LINK]…"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-5">
+        <button onclick="closeEditor()" class="px-4 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50">Cancel</button>
+        <button onclick="saveTemplate()" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg">Save</button>
+      </div>
+    </div>
+  </div>
+
+<script src="supabase-config.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+// Pull URL params for auto-personalisation
+const urlP = new URLSearchParams(location.search);
+
+// ── Seed definitions (used only when bni_templates table is empty) ───────────
+const SEED_TEMPLATES = [
+  {
+    id: 't1',
+    type: 'initial',
+    channel: 'WhatsApp',
+    title: '1 — First WhatsApp Message to AI-Interested BNI Member',
+    color: '#16a34a',
+    bg: 'bg-green-50',
+    border: 'border-green-400',
+    badge: 'bg-green-100 text-green-700',
+    body: (n,co,ci,ch) => `Hi {{NAME}},
+
+I'm Dr. BK Murali — a fellow BNI member and AI Business Consultant. I came across your profile on BNI Connect and was genuinely impressed by the work you're doing at {{COMPANY}} in the AI space.
+
+As someone who helps businesses grow using AI tools — automation, lead generation, analytics, and more — I think there could be strong synergy between what we do.
+
+Would you be open to a quick 30-min Zoom call to explore how we might collaborate or refer each other within the BNI network?
+
+Here's a direct booking link if it's convenient:
+ https://yourdomain.com/scheduler.html
+
+Looking forward to connecting!
+
+Dr. BK Murali
+AI Business Consultant · BNI Member
+ [Your Phone]`
+  },
+  {
+    id: 't2',
+    type: 'initial',
+    channel: 'Email',
+    title: '2 — Initial Email to BNI Member (AI Professional)',
+    color: '#2563eb',
+    bg: 'bg-blue-50',
+    border: 'border-blue-400',
+    badge: 'bg-blue-100 text-blue-700',
+    body: (n,co,ci,ch) => `Subject: BNI Member → BNI Member | AI Collaboration Opportunity
+
+Hi {{NAME}},
+
+I hope this message finds you well!
+
+I'm Dr. BK Murali, an AI Business Consultant and fellow BNI member. I discovered your profile on BNI Connect and noticed your outstanding work at {{COMPANY}} — your focus on AI-driven solutions for businesses immediately caught my attention.
+
+I believe we may have a strong opportunity to:
+• Refer each other within our respective BNI chapters
+• Collaborate on joint AI projects for mutual clients
+• Share insights and industry contacts
+
+I'd love to schedule a brief 30-minute Zoom call (no obligation) to explore whether there's a natural fit.
+
+ You can book a time directly here:
+[Your scheduler link]
+
+If you'd prefer, feel free to reply and we can coordinate a time that suits you.
+
+Looking forward to connecting within the BNI network!
+
+Warm regards,
+Dr. BK Murali
+AI Business Consultant
+BNI Member — [Your Chapter]
+ [Your Phone]
+ [Your Website]`
+  },
+  {
+    id: 't3',
+    type: 'chapter',
+    channel: 'Email',
+    title: '3 — Email to BNI Chapter President (Intro + Referral Request)',
+    color: '#7c3aed',
+    bg: 'bg-purple-50',
+    border: 'border-purple-400',
+    badge: 'bg-purple-100 text-purple-700',
+    body: (n,co,ci,ch) => `Subject: BNI Member Seeking AI Professionals in Your {{CHAPTER}} Chapter
+
+Dear Chapter President,
+
+Warm BNI greetings!
+
+My name is Dr. BK Murali and I am an active BNI member specialising in Artificial Intelligence solutions for businesses. I help companies automate workflows, generate leads, and grow revenues using AI tools.
+
+I am reaching out to enquire whether your {{CHAPTER}} chapter has any members working in the AI, Machine Learning, or Technology space, or members who are looking to adopt AI in their businesses.
+
+I believe there is a strong opportunity to:
+ Create mutually beneficial referral partnerships
+ Offer BNI member-exclusive AI consultations and workshops
+ Collaborate on joint projects that benefit both our chapters
+
+I would be honoured to be introduced to relevant members, or even invited as a guest to your next chapter meeting to share a brief overview of how AI can benefit BNI businesses.
+
+Please let me know if this resonates with you. I am happy to schedule a quick call at your convenience.
+
+Thank you for building such a strong chapter!
+
+With appreciation,
+Dr. BK Murali
+AI Business Consultant · BNI Member — [Your Chapter]
+ [Your Phone] |  [Your Website]`
+  },
+  {
+    id: 't4',
+    type: 'followup',
+    channel: 'WhatsApp',
+    title: '4 — Follow-Up WhatsApp (3 Days After Initial Contact)',
+    color: '#d97706',
+    bg: 'bg-amber-50',
+    border: 'border-amber-400',
+    badge: 'bg-amber-100 text-amber-700',
+    body: (n,co,ci,ch) => `Hi {{NAME}}, hope you're having a great week! 
+
+Just following up on my earlier message about a potential BNI collaboration on the AI front.
+
+I understand you're busy — so I'll keep this brief:
+
+I help BNI members at companies like {{COMPANY}} use AI to:
+ Automate follow-ups & lead nurturing
+ Build AI chatbots for WhatsApp & websites
+ Get business insights from your data
+
+Would a 20-minute Zoom chat this week work? I'm flexible — just reply with a time that suits you, or use this link:
+ [Your scheduler link]
+
+No pressure at all. Happy to connect whenever works best for you!
+
+Dr. BK Murali `
+  },
+  {
+    id: 't5',
+    type: 'meeting',
+    channel: 'WhatsApp',
+    title: '5 — Meeting Confirmation (After Zoom is Booked)',
+    color: '#0891b2',
+    bg: 'bg-cyan-50',
+    border: 'border-cyan-400',
+    badge: 'bg-cyan-100 text-cyan-700',
+    body: (n,co,ci,ch) => `Hi {{NAME}}! 
+
+Your Zoom call with Dr. BK Murali is confirmed.
+
+ Date: [DATE]
+⏰ Time: [TIME] IST
+⏱ Duration: 30 minutes
+ Zoom Link: [ZOOM LINK]
+Meeting ID: [ID] | Passcode: [CODE]
+
+To make the most of our time together, it would help to briefly think about:
+• Your biggest business challenge right now
+• Any repetitive tasks your team does manually
+• Goals you'd like to hit in the next 3 months
+
+See you soon! Feel free to WhatsApp me if you have any questions before then.
+
+Dr. BK Murali
+ [Your Phone]`
+  },
+  {
+    id: 't6',
+    type: 'meeting',
+    channel: 'Email',
+    title: '6 — Post-Meeting Follow-Up (Within 24 Hours)',
+    color: '#059669',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-400',
+    badge: 'bg-emerald-100 text-emerald-700',
+    body: (n,co,ci,ch) => `Subject: Great connecting, {{NAME}} — Your AI Roadmap Summary
+
+Hi {{NAME}},
+
+It was a genuine pleasure speaking with you today! I thoroughly enjoyed learning about {{COMPANY}} and the exciting work you're doing.
+
+As promised, here's a quick summary of what we discussed:
+
+ Top 3 AI Opportunities for {{COMPANY}}:
+1. [Opportunity 1 — e.g., WhatsApp AI chatbot for lead capture]
+2. [Opportunity 2 — e.g., Automated follow-up email sequences]
+3. [Opportunity 3 — e.g., Sales analytics dashboard]
+
+ Suggested Next Step:
+[e.g., A focused 90-minute workshop to define your AI roadmap — I'll send a proposal by Friday]
+
+ BNI Referral Opportunity:
+I'll keep an eye out for referrals that suit your services at {{COMPANY}} within the BNI network. Please feel free to do the same for AI-related opportunities!
+
+Please don't hesitate to reach out if any questions come up. Looking forward to our next conversation!
+
+Warm regards,
+Dr. BK Murali
+AI Business Consultant · BNI Member
+ [Your Phone] |  [Your Website]
+
+P.S. If you know any other BNI members who could benefit from AI solutions, I'd love an introduction — I offer a referral fee for converted clients. `
+  },
+  {
+    id: 't7',
+    type: 'initial',
+    channel: 'LinkedIn',
+    title: '7 — LinkedIn Connection Request Note',
+    color: '#1d4ed8',
+    bg: 'bg-blue-50',
+    border: 'border-blue-500',
+    badge: 'bg-blue-100 text-blue-700',
+    body: (n,co,ci,ch) => `Hi {{NAME}}, fellow BNI member here! I noticed your impressive AI work at {{COMPANY}} on BNI Connect — would love to connect and explore potential collaboration or referral synergies within our network. Looking forward to connecting! — Dr. BK Murali`
+  },
+  {
+    id: 't9',
+    type: 'telephonic',
+    channel: 'Phone',
+    title: '9 — First Call to New Medical BNI Member',
+    color: '#0891b2',
+    bg: 'bg-cyan-50',
+    border: 'border-cyan-400',
+    badge: 'bg-cyan-100 text-cyan-700',
+    body: (n,co,ci,ch) => `Hi Dr. {{NAME}},
+
+This is Dr. BK Murali calling from BNI 121. I got your number through BNI Connect — hope it's a good time for a quick two minutes.
+
+I'm an AI Business Consultant and fellow BNI member. I work closely with hospitals, clinics, and healthcare professionals to use AI in ways that actually save time — automating patient follow-up reminders, reducing administrative load, managing appointment no-shows, and building healthcare chatbots for common queries.
+
+I saw your profile on BNI Connect and thought there's a genuine referral angle here. Doctors often come to me when a patient or client needs AI implementation, and I pass referrals to medical professionals regularly within our network.
+
+Would you be open to a 15-minute Zoom this week — no agenda, just a quick intro to see if there's a referral fit?
+
+I'll send a WhatsApp right after this call with my contact details and booking link.
+
+Looking forward to connecting, Dr. {{NAME}}!`
+  },
+  {
+    id: 't10',
+    type: 'telephonic',
+    channel: 'Phone',
+    title: '10 — First Call to New Engineer BNI Member',
+    color: '#d97706',
+    bg: 'bg-amber-50',
+    border: 'border-amber-400',
+    badge: 'bg-amber-100 text-amber-700',
+    body: (n,co,ci,ch) => `Hi {{NAME}},
+
+This is Dr. BK Murali calling from BNI 121. I got your number through BNI Connect — hope I'm not catching you at a bad time.
+
+I'm an AI Business Consultant — I help engineering companies and manufacturers use AI in practical ways: predictive maintenance to cut unplanned downtime, machine vision for quality inspection, process automation to remove repetitive manual steps, and operational dashboards that pull live data from the floor.
+
+I came across {{COMPANY}} on BNI Connect and it stood out immediately. I have clients who regularly need solid engineering expertise, and there's a good chance we could be referring each other within the BNI network.
+
+Can we do a 15-minute Zoom this week? Just a quick intro — no pitch, just exploring if there's a referral fit between us.
+
+I'll WhatsApp you my details and a booking link right after this call.
+
+Good to connect, {{NAME}}!`
+  },
+  {
+    id: 't8',
+    type: 'followup',
+    channel: 'WhatsApp',
+    title: '8 — Re-Engagement (After 2 Weeks of Silence)',
+    color: '#dc2626',
+    bg: 'bg-red-50',
+    border: 'border-red-400',
+    badge: 'bg-red-100 text-red-700',
+    body: (n,co,ci,ch) => `Hi {{NAME}}, Dr. Murali here 
+
+I know life gets busy — no worries at all! I just wanted to reach out one more time because I genuinely believe AI could create some exciting opportunities for {{COMPANY}}.
+
+I recently helped a business similar to yours:
+ Save 12 hours/week using AI automation
+ Increase qualified leads by 40% with an AI chatbot
+ Cut customer response time from hours to seconds
+
+If you're ever curious about what's possible for your business — even just a 15-minute informal chat — I'm here. 
+
+No hard sell, just an honest conversation between BNI members.
+
+Dr. BK Murali
+ [Your Phone]`
+  },
+];
+
+// ── Channel → Tailwind badge/bg colour helpers ──────────────────────────────
+function channelBadge(channel) {
+  const map = {
+    'WhatsApp': 'bg-green-100 text-green-700',
+    'Email':    'bg-blue-100 text-blue-700',
+    'LinkedIn': 'bg-indigo-100 text-indigo-700',
+    'SMS':      'bg-amber-100 text-amber-700',
+    'Phone':    'bg-cyan-100 text-cyan-700',
+  };
+  return map[channel] || 'bg-gray-100 text-gray-700';
+}
+function typeLabel(t) {
+  return ({
+    initial:    'Initial Outreach',
+    followup:   'Follow-Up',
+    meeting:    'Meeting',
+    chapter:    'Chapter President',
+    proposal:   'Proposal',
+    telephonic: 'Telephonic',
+    other:      'Other',
+  })[t] || t;
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+let TEMPLATES = [];         // rows from bni_templates
+let activeFilter = 'all';
+let editingId = null;       // id currently in the modal, null = new
+
+// ── Seed missing templates in background (never blocks template rendering) ────
+function seedMissingTemplates() {
+  window.sb.from('bni_templates').select('id').then(({ data: existing }) => {
+    const existingIds = new Set((existing || []).map(r => r.id));
+    const missing = SEED_TEMPLATES.filter(t => !existingIds.has(t.id));
+    if (!missing.length) return;
+    const rows = missing.map((t, idx) => ({
+      id: t.id, title: t.title, type: t.type, channel: t.channel,
+      body: t.body('', '', '', ''), color: t.color, hidden: false,
+      sort_order: (existingIds.size + idx + 1) * 10,
+    }));
+    window.sb.from('bni_templates').insert(rows).then(({ error }) => {
+      if (error) console.warn('template seed failed', error);
+    });
+  }).catch(e => console.warn('template seed check failed', e));
+}
+
+function seedsAsRows() {
+  return SEED_TEMPLATES.map((t, idx) => ({
+    id: t.id, title: t.title, type: t.type, channel: t.channel,
+    body: t.body('', '', '', ''), color: t.color, hidden: false,
+    sort_order: (idx + 1) * 10, created_at: new Date().toISOString(),
+  }));
+}
+
+async function loadTemplates() {
+  const { data, error } = await window.sb
+    .from('bni_templates')
+    .select('*')
+    .order('sort_order')
+    .order('created_at');
+  if (error) {
+    console.warn('loadTemplates failed (table may not exist), using built-in seeds:', error.message);
+    TEMPLATES = seedsAsRows();
+    return;
+  }
+  TEMPLATES = (data && data.length) ? data : seedsAsRows();
+}
+
+// ── Personalisation ──────────────────────────────────────────────────────────
+// Returns { body, missingSettings: [] } — substitutes bracket tokens from
+// bni_settings and per-send fields from the personalise bar. Any unresolved
+// bracket token is listed in missingSettings so the card can show a warning.
+function personaliseBody(raw) {
+  const val = (id) => document.getElementById(id).value.trim();
+  const name    = val('p_name')    || '[NAME]';
+  const company = val('p_company') || '[COMPANY]';
+  const city    = val('p_city')    || '[CITY]';
+  const chapter = val('p_chapter') || '[CHAPTER]';
+
+  const s = window.BNI_SETTINGS || {};
+  const missing = [];
+
+  // Bracket-token substitution map. Settings-backed tokens warn when missing;
+  // per-send tokens silently leave the placeholder if the input is empty.
+  const settingsMap = {
+    '[Your Phone]':           { v: s.my_phone,         key: 'my_phone' },
+    '[Your scheduler link]':  { v: s.my_scheduler_url, key: 'my_scheduler_url' },
+    '[Your Chapter]':         { v: s.my_chapter || chapter, key: 'my_chapter' },
+    '[Your Website]':         { v: s.my_website,       key: 'my_website' },
+  };
+  const perSendMap = {
+    '[DATE]':      val('p_date'),
+    '[TIME]':      val('p_time'),
+    '[ZOOM LINK]': val('p_zoom'),
+    '[ID]':        val('p_mid'),
+    '[CODE]':      val('p_code'),
+  };
+
+  let body = String(raw || '')
+    .replace(/\{\{NAME\}\}/g, name)
+    .replace(/\{\{COMPANY\}\}/g, company)
+    .replace(/\{\{CITY\}\}/g, city)
+    .replace(/\{\{CHAPTER\}\}/g, chapter);
+
+  Object.entries(settingsMap).forEach(([token, { v, key }]) => {
+    if (body.includes(token)) {
+      if (v) body = body.split(token).join(v);
+      else if (!missing.includes(token)) missing.push(token);
+    }
+  });
+  Object.entries(perSendMap).forEach(([token, v]) => {
+    if (v && body.includes(token)) body = body.split(token).join(v);
+  });
+
+  return { body, missing };
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function personalise() { renderTemplates(); }
+function filterType(type) {
+  activeFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    const match = b.getAttribute('data-filter') === type;
+    b.classList.toggle('bg-blue-600', match);
+    b.classList.toggle('text-white', match);
+    b.classList.toggle('border-blue-200', match);
+    b.classList.toggle('border-gray-200', !match);
+    b.classList.toggle('text-gray-600', !match);
+  });
+  renderTemplates();
+}
+
+function renderTemplates() {
+  const showHidden = document.getElementById('showHidden').checked;
+  const hiddenCount = TEMPLATES.filter(t => t.hidden).length;
+  document.getElementById('hiddenCount').textContent = String(hiddenCount);
+
+  let rows = TEMPLATES.filter(t => showHidden ? true : !t.hidden);
+  if (activeFilter !== 'all') rows = rows.filter(t => t.type === activeFilter);
+
+  document.getElementById('templateList').innerHTML = rows.map(t => {
+    const { body, missing } = personaliseBody(t.body || '');
+    const warning = missing.length
+      ? `<div class="mb-3 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium">⚠ Fill in settings.html: ${missing.map(escHtml).join(', ')}</div>`
+      : '';
+    const dimmed = t.hidden ? 'opacity-60' : '';
+    const hiddenBadge = t.hidden
+      ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-500 uppercase">Hidden</span>`
+      : '';
+    return `
+      <div class="template-card bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 ${dimmed}" style="border-left-color:${t.color || '#2563eb'}">
+        <div class="flex items-start justify-between mb-4 gap-3">
+          <div class="min-w-0">
+            <h3 class="font-bold text-gray-900 text-base">${escHtml(t.title || '')}</h3>
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${channelBadge(t.channel)}">${escHtml(t.channel || '')}</span>
+              <span class="text-xs text-gray-400">${escHtml(typeLabel(t.type))}</span>
+              ${hiddenBadge}
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button onclick="openEditor('${t.id}')" title="Edit" class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">
+              <i data-lucide="pencil" style="width:16px;height:16px"></i>
+            </button>
+            <button onclick="toggleHidden('${t.id}')" title="${t.hidden ? 'Un-hide' : 'Hide'}" class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">
+              <i data-lucide="${t.hidden ? 'eye' : 'archive'}" style="width:16px;height:16px"></i>
+            </button>
+            <button onclick="copyTemplate('${t.id}')" id="btn_${t.id}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
+               Copy
+            </button>
+          </div>
+        </div>
+        ${warning}
+        <pre id="tpl_${t.id}" class="bg-gray-50 rounded-xl p-4 text-gray-700 leading-relaxed border border-gray-100 max-h-96 overflow-y-auto">${escHtml(body)}</pre>
+      </div>
+    `;
+  }).join('') || '<div class="text-center text-gray-400 py-16">No templates match this filter.</div>';
+
+  if (window.bniRenderIcons) window.bniRenderIcons();
+}
+
+function escHtml(t) {
+  return String(t == null ? '' : t)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function copyTemplate(id) {
+  const pre = document.getElementById('tpl_' + id);
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    const btn = document.getElementById('btn_' + id);
+    if (btn) {
+      const orig = btn.innerHTML;
+      btn.innerHTML = ' Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+    }
+  });
+}
+
+// ── Hide / un-hide ───────────────────────────────────────────────────────────
+async function toggleHidden(id) {
+  const row = TEMPLATES.find(t => t.id === id);
+  if (!row) return;
+  const nextHidden = !row.hidden;
+  const { error } = await window.sb
+    .from('bni_templates')
+    .update({ hidden: nextHidden, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) { window.bniToast && window.bniToast('Save failed: ' + error.message, 'error'); return; }
+  row.hidden = nextHidden;
+  window.bniToast && window.bniToast(nextHidden ? 'Template hidden' : 'Template restored', 'success');
+  renderTemplates();
+}
+
+// ── Editor modal (create + edit) ─────────────────────────────────────────────
+function openEditor(id) {
+  editingId = id || null;
+  const row = id ? TEMPLATES.find(t => t.id === id) : null;
+  document.getElementById('editorTitle').textContent = row ? 'Edit Template' : 'New Template';
+  document.getElementById('ed_title').value   = row ? (row.title || '')   : '';
+  document.getElementById('ed_type').value    = row ? (row.type || 'initial') : 'initial';
+  document.getElementById('ed_channel').value = row ? (row.channel || 'WhatsApp') : 'WhatsApp';
+  document.getElementById('ed_color').value   = row ? (row.color || '#2563eb') : '#2563eb';
+  document.getElementById('ed_body').value    = row ? (row.body || '')    : '';
+  document.getElementById('editorModal').classList.remove('hidden');
+}
+function closeEditor() {
+  editingId = null;
+  document.getElementById('editorModal').classList.add('hidden');
+}
+async function saveTemplate() {
+  const title   = document.getElementById('ed_title').value.trim();
+  const type    = document.getElementById('ed_type').value;
+  const channel = document.getElementById('ed_channel').value;
+  const color   = document.getElementById('ed_color').value;
+  const body    = document.getElementById('ed_body').value;
+  if (!title) { window.bniToast && window.bniToast('Title is required', 'error'); return; }
+  if (!body.trim()) { window.bniToast && window.bniToast('Body is required', 'error'); return; }
+
+  const existing = editingId ? TEMPLATES.find(t => t.id === editingId) : null;
+  const id = editingId || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : 'tpl_' + Date.now());
+  const maxOrder = TEMPLATES.reduce((m, t) => Math.max(m, t.sort_order || 0), 0);
+
+  const payload = {
+    id,
+    title,
+    type,
+    channel,
+    body,
+    color,
+    hidden: existing ? existing.hidden : false,
+    sort_order: existing ? existing.sort_order : maxOrder + 10,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = await window.sb
+    .from('bni_templates')
+    .upsert(payload, { onConflict: 'id' });
+  if (error) { window.bniToast && window.bniToast('Save failed: ' + error.message, 'error'); return; }
+
+  window.bniToast && window.bniToast(existing ? 'Template updated' : 'Template created', 'success');
+  closeEditor();
+  await loadTemplates();
+  renderTemplates();
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.getElementById('p_name').value    = urlP.get('name')    || '';
+document.getElementById('p_company').value = urlP.get('company') || '';
+document.getElementById('p_city').value    = urlP.get('city')    || '';
+
+(async () => {
+  seedMissingTemplates(); // fire-and-forget, never blocks rendering
+  await Promise.all([loadTemplates(), window.loadSettings && window.loadSettings()]);
+  renderTemplates();
+})();
+</script>
+
+  </div><!-- end main content -->
+  <script src="bni-sidebar.js"></script>
+</body>
+</html>

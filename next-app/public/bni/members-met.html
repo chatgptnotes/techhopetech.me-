@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="auth-guard.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Members Met on Zoom · BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background:#f8fafc; color:#0f172a; }
+    .glass { background:white; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+    input, select { background:white; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; outline:none; font-size:14px; }
+    input:focus, select:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.15); }
+    table { border-collapse:separate; border-spacing:0; width:100%; }
+    th { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#64748b; font-weight:700; text-align:left; padding:10px 14px; border-bottom:1px solid #e2e8f0; background:#f8fafc; position:sticky; top:0; z-index:1; }
+    th.num { text-align:right; }
+    td { padding:12px 14px; border-bottom:1px solid #f1f5f9; font-size:14px; vertical-align:middle; }
+    tr.row { cursor:pointer; transition:background 0.12s; }
+    tr.row:hover { background:#f8fafc; }
+    .avatar-sm { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0; }
+    .badge { display:inline-block; padding:2px 9px; border-radius:999px; font-size:0.65rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; }
+    .pill { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; }
+    .mono { font-feature-settings:'tnum'; font-variant-numeric:tabular-nums; }
+    .empty { padding:60px 20px; text-align:center; color:#94a3b8; }
+    @media print {
+      .no-print { display:none !important; }
+      body { background:white; }
+      th { background:white; }
+      tr.row { cursor:default; }
+    }
+  </style>
+</head>
+<body>
+<div id="bni-sidebar-mount"></div>
+
+<main class="p-8 max-w-6xl mx-auto">
+  <header class="flex items-end justify-between flex-wrap gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Members Met on Zoom</h1>
+      <p class="text-sm text-slate-500 mt-1">All BNI members you have completed a 121 Zoom meeting with.</p>
+    </div>
+    <div class="flex items-center gap-2 no-print">
+      <input id="searchInput" type="text" placeholder="Search name, company, chapter, city…" class="w-72" />
+      <select id="segmentFilter" class="w-40"><option value="">All categories</option></select>
+      <label class="inline-flex items-center gap-2 px-3 py-2 text-sm border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
+        <input type="checkbox" id="showHidden" /> <span class="text-slate-700">Show hidden duplicates</span>
+      </label>
+      <button onclick="exportCSV()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 font-medium"><i data-lucide="file-spreadsheet"></i>CSV</button>
+      <button onclick="exportPDF()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"><i data-lucide="file-down"></i>Download PDF</button>
+    </div>
+  </header>
+
+  <div class="glass rounded-2xl overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500">
+      <span id="countLabel">Loading…</span>
+      <span class="no-print">Click any row to open the full contact profile</span>
+    </div>
+    <div style="max-height:calc(100vh - 240px); overflow:auto;">
+      <table id="memberTable">
+        <thead>
+          <tr>
+            <th style="min-width:220px;">Name</th>
+            <th>Category</th>
+            <th>Chapter</th>
+            <th>City</th>
+            <th>Mobile</th>
+            <th class="mono">Date Met</th>
+          </tr>
+        </thead>
+        <tbody id="memberBody">
+          <tr><td colspan="6" class="empty">Loading members…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="supabase-config.js"></script>
+<script src="bni-sidebar.js"></script>
+<script>
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const AVATAR_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#f97316'];
+const MET_STATUSES = new Set(['Met','Follow-up','Converted']);
+
+let _contacts = [];
+let _details  = {};
+
+function avatarColor(id) { return AVATAR_COLORS[parseInt(String(id).replace(/\D/g,'')) % AVATAR_COLORS.length]; }
+
+function meetingDate(c) {
+  const re = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/g;
+  const matches = [...(c.notes || '').matchAll(re)];
+  if (matches.length) {
+    const m = matches[matches.length - 1];
+    const dd = m[1].padStart(2,'0'), mm = m[2].padStart(2,'0');
+    let yy = m[3].length === 2 ? '20' + m[3] : m[3];
+    return `${yy}-${mm}-${dd}`;
+  }
+  if (c.updated_at) return c.updated_at.slice(0,10);
+  return null;
+}
+
+function extractChapter(c) {
+  if (c.chapter) return c.chapter;
+  const m = (c.notes || '').match(/BNI Chapter:\s*([^.,(]+)/i);
+  return m ? m[1].trim() : '';
+}
+
+// Use window.formatDate from supabase-config.js. Local wrapper renamed to avoid
+// shadowing the window-scoped helper (function declarations bind to window in browsers).
+const fmtDate = (iso) => {
+  if (!iso) return '—';
+  return (window.formatDate && window.formatDate(iso)) || iso;
+};
+const fmtPhone = (p) => (window.formatPhone && window.formatPhone(p)) || p;
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function isMet(c) {
+  if (MET_STATUSES.has(c.status)) return true;
+  const d = _details[c.id];
+  if (d && (d.zoom_recording_url || d.zoom_transcript_url)) return true;
+  return false;
+}
+
+async function loadAll() {
+  const [{ data: contacts, error: cErr }, { data: details }] = await Promise.all([
+    window.sb.from('bni_contacts').select('*').order('updated_at', { ascending: false }),
+    window.sb.from('bni_contact_details').select('contact_id,zoom_recording_url,zoom_transcript_url')
+  ]);
+  if (cErr) { window.bniToast('Failed to load: ' + cErr.message, 'error'); return; }
+  _contacts = contacts || [];
+  (details || []).forEach(d => { _details[d.contact_id] = d; });
+  populateSegmentFilter();
+  render();
+}
+
+function populateSegmentFilter() {
+  const sel = document.getElementById('segmentFilter');
+  const segs = [...new Set(_contacts.filter(isMet).map(c => c.segment).filter(Boolean))].sort();
+  segs.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    sel.appendChild(opt);
+  });
+}
+
+function getFiltered() {
+  const search     = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  const seg        = document.getElementById('segmentFilter').value || '';
+  const showHidden = !!document.getElementById('showHidden')?.checked;
+  return _contacts.filter(isMet).filter(c => {
+    if (!showHidden && c.hidden) return false;
+    if (seg && c.segment !== seg) return false;
+    if (search) {
+      const blob = [c.first, c.last, c.company, c.city, c.chapter, extractChapter(c), c.segment, ...(window.contactPhones?.(c) || [])]
+        .filter(Boolean).join(' ').toLowerCase();
+      if (!blob.includes(search)) return false;
+    }
+    return true;
+  }).sort((a,b) => (meetingDate(b) || '').localeCompare(meetingDate(a) || ''));
+}
+
+function rowHTML(c) {
+  const name     = ((c.first || '') + ' ' + (c.last || '')).trim() || '(no name)';
+  const initials = ((c.first?.[0] || '') + (c.last?.[0] || '')).toUpperCase() || '?';
+  const phones   = window.contactPhones ? window.contactPhones(c) : (c.phone ? [c.phone] : []);
+  const primary  = phones[0] || '';
+  const extra    = phones.length > 1 ? ` <span class="text-slate-400">(+${phones.length - 1})</span>` : '';
+  const chapter  = extractChapter(c) || '—';
+  const segment  = c.segment || '—';
+  const city     = c.city || '—';
+  const iso      = meetingDate(c);
+  const color    = avatarColor(c.id);
+  return `
+    <tr class="row" onclick="location.href='/bni/contact.html?id=${encodeURIComponent(c.id)}'">
+      <td>
+        <div class="flex items-center gap-3">
+          <div class="avatar-sm" style="background:${color}18;color:${color};">${initials}</div>
+          <div class="min-w-0">
+            <div class="font-semibold text-slate-900 truncate">${escapeHtml(name)}</div>
+            <div class="text-xs text-slate-500 truncate">${escapeHtml(c.company || '')}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="pill">${escapeHtml(segment)}</span></td>
+      <td class="text-slate-700">${escapeHtml(chapter)}</td>
+      <td class="text-slate-700">${escapeHtml(city)}</td>
+      <td class="mono">
+        ${primary
+          ? `<a href="tel:${escapeHtml(window.telHref ? window.telHref(primary) : primary)}" onclick="event.stopPropagation()" class="text-blue-600 hover:underline">${escapeHtml(fmtPhone(primary))}</a>${extra}`
+          : '<span class="text-slate-400">—</span>'}
+      </td>
+      <td class="mono text-slate-700">${fmtDate(iso)}</td>
+    </tr>`;
+}
+
+function render() {
+  const list = getFiltered();
+  document.getElementById('countLabel').textContent =
+    `${list.length} member${list.length !== 1 ? 's' : ''} met` +
+    (list.length < _contacts.filter(isMet).length ? ` · filtered from ${_contacts.filter(isMet).length}` : '');
+  const body = document.getElementById('memberBody');
+  if (!list.length) {
+    const total = _contacts.filter(isMet).length;
+    const filtered = total > 0;
+    body.innerHTML = `<tr><td colspan="6" class="empty">
+      <div class="flex justify-center mb-3" style="color:#cbd5e1;"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/><line x1="1" y1="1" x2="23" y2="23"/></svg></div>
+      <p class="font-semibold text-slate-700 text-base">${filtered ? 'No matches for this filter' : 'No members met yet'}</p>
+      <p class="text-xs mt-1.5 max-w-md mx-auto">${filtered ? 'Try clearing the search or category filter.' : 'Mark a contact\'s status as <strong>Met</strong>, <strong>Follow-up</strong> or <strong>Converted</strong> — or attach a Zoom recording on their profile — and they\'ll appear here.'}</p>
+      <div class="mt-5 flex justify-center gap-2">
+        ${filtered
+          ? '<button onclick="document.getElementById(\'searchInput\').value=\'\';document.getElementById(\'segmentFilter\').value=\'\';render();" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-700">Clear filters</button>'
+          : '<a href="/bni/zoom-completed.html" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"><i data-lucide="video"></i> Open Zoom Meetings</a><a href="/bni/tracker.html" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-50">Add a contact</a>'}
+      </div>
+    </td></tr>`;
+  } else {
+    body.innerHTML = list.map(rowHTML).join('');
+  }
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function exportPDF() {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    window.bniToast && window.bniToast('PDF library not loaded yet — try again in a moment', 'error');
+    return;
+  }
+  const list = getFiltered();
+  if (!list.length) { window.bniToast && window.bniToast('Nothing to export', 'error'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text('BNI 121 — Members Met on Zoom', 40, 44);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  const today = new Date();
+  const dateLabel = `${DAYS[today.getDay()]}, ${today.getDate()} ${MONTHS[today.getMonth()]} ${today.getFullYear()}`;
+  doc.text(`${list.length} member${list.length !== 1 ? 's' : ''}  ·  Generated ${dateLabel}`, 40, 62);
+
+  const rows = list.map(c => {
+    const name   = ((c.first || '') + ' ' + (c.last || '')).trim() || '(no name)';
+    const phones = window.contactPhones ? window.contactPhones(c) : (c.phone ? [c.phone] : []);
+    return [
+      name,
+      c.segment || '—',
+      extractChapter(c) || '—',
+      c.city || '—',
+      phones.map(fmtPhone).join(' / ') || '—',
+      fmtDate(meetingDate(c))
+    ];
+  });
+
+  doc.autoTable({
+    head: [['Name', 'Category', 'Chapter', 'City', 'Mobile', 'Date Met']],
+    body: rows,
+    startY: 78,
+    margin: { left: 40, right: 40, bottom: 40 },
+    styles: { font: 'helvetica', fontSize: 9, cellPadding: 6, overflow: 'linebreak', textColor: [15, 23, 42] },
+    headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: {
+      0: { cellWidth: 165, fontStyle: 'bold' },
+      1: { cellWidth: 110 },
+      2: { cellWidth: 145 },
+      3: { cellWidth: 90 },
+      4: { cellWidth: 130 },
+      5: { cellWidth: 'auto' }
+    },
+    didDrawPage: (data) => {
+      const pageNum = doc.internal.getCurrentPageInfo().pageNumber;
+      const pageH = doc.internal.pageSize.getHeight();
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Page ${pageNum}`, pageW - 40, pageH - 20, { align: 'right' });
+    }
+  });
+
+  doc.save(`bni-members-met-${today.toISOString().slice(0,10)}.pdf`);
+}
+
+function exportCSV() {
+  const list = getFiltered();
+  const rows = [['Name','Category','Chapter','City','Mobile','Date Met']];
+  list.forEach(c => {
+    const name = ((c.first || '') + ' ' + (c.last || '')).trim();
+    const phones = window.contactPhones ? window.contactPhones(c) : (c.phone ? [c.phone] : []);
+    rows.push([
+      name,
+      c.segment || '',
+      extractChapter(c),
+      c.city || '',
+      phones.map(fmtPhone).join(' / '),
+      fmtDate(meetingDate(c))
+    ]);
+  });
+  const csv = rows.map(r => r.map(v => {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+  }).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `bni-members-met-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('searchInput').addEventListener('input', render);
+document.getElementById('segmentFilter').addEventListener('change', render);
+document.getElementById('showHidden').addEventListener('change', render);
+
+loadAll();
+</script>
+<!-- v1.2 — formatted phones/dates, smart empty state CTA -->
+</body>
+</html>

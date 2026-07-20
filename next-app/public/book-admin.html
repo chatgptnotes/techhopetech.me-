@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slot Manager — HopeTech Book</title>
+  <link rel="icon" type="image/jpeg" href="/bni/bni-logo.jpg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; }
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .slot-btn { transition: all 0.15s; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer; color: #94a3b8; background: transparent; }
+    .slot-btn.blocked { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #fca5a5; text-decoration: line-through; }
+    .slot-btn:not(.blocked):hover { background: rgba(255,255,255,0.07); color: #f1f5f9; }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+<!-- BNI_UNIFIED_NAV_V2 -->
+<div style="position:sticky;top:0;z-index:100;background:#0f172a;color:#cbd5e1;padding:10px 20px;display:flex;gap:8px;align-items:center;font-family:Inter,system-ui,-apple-system,sans-serif;font-size:13px;border-bottom:1px solid #334155;flex-wrap:wrap;">
+  <span style="font-weight:700;color:#fff;margin-right:8px;">BNI 121</span>
+  <a href="/bni/tracker.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">🗂️ Tracker</a>
+  <a href="/bni/followup.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">🔁 Meetings &amp; Follow-ups</a>
+  <a href="/bni/templates.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">📧 Templates</a>
+  <a href="/bni/scheduler.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">📅 Scheduler</a>
+  <a href="/bni/members.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">👥 Members</a>
+  <a href="/bni/admin.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">🛠️ Admin</a>
+  <a href="/bni/book.html" style="color:#cbd5e1;text-decoration:none;padding:5px 10px;border-radius:6px;">📖 Book</a>
+  <span style="flex:1;"></span>
+  <a href="/bni/tracker.html?add=1" style="background:#2563eb;color:#fff;text-decoration:none;padding:6px 14px;border-radius:8px;font-weight:600;">+ Add Contact</a>
+</div>
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-white">Slot Manager</h1>
+        <p class="text-slate-500 text-sm mt-1">Block slots that are already booked offline. Changes save instantly in your browser.</p>
+      </div>
+      <a href="/bni/book.html" class="text-slate-400 text-sm hover:text-white transition-colors">← Booking page</a>
+    </div>
+
+    <!-- Date picker -->
+    <div class="glass rounded-2xl p-6 mb-6">
+      <label class="block text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">Select Date</label>
+      <input type="date" id="date-picker"
+        class="bg-slate-800 border border-white/10 text-white rounded-xl px-4 py-2.5 text-sm w-full focus:outline-none focus:border-blue-500"
+        min="" />
+    </div>
+
+    <!-- Person tabs -->
+    <div class="flex gap-3 mb-4">
+      <button onclick="setPersonTab('murali')" id="tab-murali"
+        class="px-5 py-2 rounded-xl text-sm font-semibold transition-all"
+        style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34d399;">
+        Dr. BK Murali
+      </button>
+      <button onclick="setPersonTab('biji')" id="tab-biji"
+        class="px-5 py-2 rounded-xl text-sm font-semibold transition-all"
+        style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;">
+        Biji Thomas
+      </button>
+    </div>
+
+    <!-- Slots grid -->
+    <div class="glass rounded-2xl p-6 mb-6">
+      <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-4">Click a slot to toggle it as blocked</p>
+      <div id="slots-grid" class="flex flex-wrap gap-2"></div>
+      <p id="no-date-msg" class="text-slate-600 text-sm">Pick a date above to manage its slots.</p>
+    </div>
+
+    <!-- Upcoming blocked -->
+    <div class="glass rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-white font-semibold">All Blocked Slots</h2>
+        <button onclick="clearAll()" class="text-red-400 text-xs hover:text-red-300 transition-colors">Clear All</button>
+      </div>
+      <div id="blocked-list" class="space-y-2 text-sm text-slate-400">Loading...</div>
+    </div>
+  </div>
+
+<script>
+  const MURALI_SLOTS = ['7:00 AM','7:30 AM','8:00 AM','1:00 PM','1:30 PM','7:00 PM','7:30 PM','8:00 PM'];
+  const BIJI_SLOTS   = ['9:00 AM','9:30 AM','10:00 AM','2:00 PM','2:30 PM','6:00 PM','6:30 PM'];
+  const PERSON_SLOTS = { murali: MURALI_SLOTS, biji: BIJI_SLOTS };
+
+  let currentPerson = 'murali';
+  let currentDate = '';
+
+  // Set min date to today
+  const today = new Date();
+  document.getElementById('date-picker').min =
+    `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  function getStored() {
+    try { return JSON.parse(localStorage.getItem('blockedSlots') || '{}'); }
+    catch(e) { return {}; }
+  }
+  function saveStored(obj) { localStorage.setItem('blockedSlots', JSON.stringify(obj)); }
+
+  function storageKey(date, person) { return `${person}::${date}`; }
+
+  // Rebuild storage to use person-scoped keys: { 'murali::2026-04-21': ['7:00 AM'] }
+  function getBlockedForDate(date, person) {
+    const s = getStored();
+    return s[storageKey(date, person)] || [];
+  }
+  function toggleSlot(date, person, slot) {
+    const s = getStored();
+    const key = storageKey(date, person);
+    let arr = s[key] || [];
+    const idx = arr.indexOf(slot);
+    if (idx === -1) arr.push(slot); else arr.splice(idx, 1);
+    if (arr.length === 0) delete s[key]; else s[key] = arr;
+    saveStored(s);
+    renderSlots();
+    renderBlockedList();
+  }
+  function clearAll() {
+    if (!confirm('Clear ALL blocked slots?')) return;
+    localStorage.removeItem('blockedSlots');
+    renderSlots();
+    renderBlockedList();
+  }
+
+  function setPersonTab(p) {
+    currentPerson = p;
+    ['murali','biji'].forEach(k => {
+      const btn = document.getElementById('tab-'+k);
+      if (k === p) {
+        btn.style.background = k === 'murali' ? 'rgba(16,185,129,0.15)' : 'rgba(99,102,241,0.15)';
+        btn.style.borderColor = k === 'murali' ? 'rgba(16,185,129,0.35)' : 'rgba(99,102,241,0.35)';
+        btn.style.color = k === 'murali' ? '#34d399' : '#818cf8';
+      } else {
+        btn.style.background = 'rgba(255,255,255,0.04)';
+        btn.style.borderColor = 'rgba(255,255,255,0.1)';
+        btn.style.color = '#94a3b8';
+      }
+    });
+    renderSlots();
+  }
+
+  function renderSlots() {
+    const grid = document.getElementById('slots-grid');
+    const msg  = document.getElementById('no-date-msg');
+    if (!currentDate) { grid.style.display = 'none'; msg.style.display = ''; return; }
+    grid.style.display = 'flex';
+    msg.style.display = 'none';
+
+    const blocked = getBlockedForDate(currentDate, currentPerson);
+    grid.innerHTML = '';
+    PERSON_SLOTS[currentPerson].forEach(slot => {
+      const btn = document.createElement('button');
+      btn.className = 'slot-btn' + (blocked.includes(slot) ? ' blocked' : '');
+      btn.textContent = slot;
+      btn.title = blocked.includes(slot) ? 'Click to unblock' : 'Click to block';
+      btn.onclick = () => toggleSlot(currentDate, currentPerson, slot);
+      grid.appendChild(btn);
+    });
+  }
+
+  function renderBlockedList() {
+    const s = getStored();
+    const el = document.getElementById('blocked-list');
+    const entries = Object.entries(s).sort();
+    if (entries.length === 0) { el.textContent = 'No slots blocked.'; return; }
+    el.innerHTML = entries.map(([key, slots]) => {
+      const [person, date] = key.split('::');
+      const d = new Date(date + 'T00:00:00');
+      const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const dateStr = `${dayNames[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+      const personName = person === 'murali' ? 'Dr. Murali' : 'Biji Thomas';
+      const color = person === 'murali' ? '#34d399' : '#818cf8';
+      return `<div class="flex items-start gap-3 py-2 border-b border-white/5">
+        <span style="color:${color};font-weight:600;min-width:90px;">${personName}</span>
+        <span class="text-slate-400 min-width:100px;">${dateStr}</span>
+        <span class="text-red-400">${slots.join(', ')}</span>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('date-picker').addEventListener('change', e => {
+    currentDate = e.target.value;
+    renderSlots();
+  });
+
+  // Also sync blocked slots format that book.html reads (flat date keys)
+  // book.html uses: { 'YYYY-MM-DD': ['7:00 AM'] } merged across persons
+  // We intercept getBlockedSlots in book.html with the person-scoped key format
+  // So book.html needs updating too — handled via isSlotBlocked using person context
+
+  renderSlots();
+  renderBlockedList();
+</script>
+</body>
+</html>

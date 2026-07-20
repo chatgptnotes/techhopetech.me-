@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book a Zoom Call — Dr. BK Murali</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .slot-btn { transition: all 0.15s; }
+    .slot-btn.selected { background: #2563eb; color: white; border-color: #2563eb; }
+    .slot-btn:not(.selected):not(.booked):hover { background: #eff6ff; border-color: #93c5fd; }
+    .slot-btn.booked { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; text-decoration: line-through; }
+    .day-btn.active { background: #1e40af; color: white; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    .sidebar-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:0.875rem;font-weight:500;color:#cbd5e1;transition:background 0.15s,color 0.15s;text-decoration:none; }
+    .sidebar-link:hover { background:rgba(255,255,255,0.1);color:#fff; }
+    .sidebar-link.active { background:#2563eb;color:#fff; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="hidden md:flex flex-col w-56 min-h-screen bg-slate-900 fixed top-0 left-0 z-40 border-r border-slate-800">
+    <div class="px-4 py-5 border-b border-slate-800">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-base flex-shrink-0">M</div>
+        <div>
+          <div class="text-white font-bold text-sm leading-tight">Dr. BK Murali</div>
+          <div class="text-blue-400 text-xs">BNI AI Tools</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="/bni/tracker.html" class="sidebar-link">Tracker</a>
+      <a href="/bni/zoom-completed.html" class="sidebar-link">Zoom Meetings Done</a>
+      <a href="/bni/followup.html" class="sidebar-link">Meetings & Follow-ups</a>
+      <a href="/bni/templates.html" class="sidebar-link">Templates</a>
+      <a href="/bni/scheduler.html" class="sidebar-link active">Book Zoom Call</a>
+      <div class="pt-3 mt-3 border-t border-slate-800">
+        <a href="https://hopetech.me" class="sidebar-link">Public Site</a>
+      </div>
+    </nav>
+    <div class="px-4 py-4 border-t border-slate-800 text-xs text-slate-500">BNI 121 · Private Tool</div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="flex-1 md:ml-56 flex flex-col min-h-screen">
+
+  <!-- TOP BAR -->
+  <nav class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-30">
+    <div class="flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 text-gray-600 hover:text-gray-900">
+        <span class="md:hidden text-lg">←</span>
+        <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">M</div>
+        <span class="font-semibold text-gray-900">Dr. BK Murali</span>
+      </a>
+      <span class="text-sm text-gray-400 hidden md:block">Free 30-Min AI Consultation for BNI Members</span>
+    </div>
+  </nav>
+
+  <div class="max-w-4xl mx-auto w-full px-6 py-10">
+
+    <!-- STEP INDICATOR -->
+    <div class="flex items-center justify-center gap-4 mb-10">
+      <div id="step1ind" class="flex items-center gap-2 text-sm font-semibold text-blue-700">
+        <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">1</div> Pick a Slot
+      </div>
+      <div class="w-12 h-px bg-gray-300"></div>
+      <div id="step2ind" class="flex items-center gap-2 text-sm font-medium text-gray-400">
+        <div id="step2circle" class="w-7 h-7 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">2</div> Your Details
+      </div>
+      <div class="w-12 h-px bg-gray-300"></div>
+      <div id="step3ind" class="flex items-center gap-2 text-sm font-medium text-gray-400">
+        <div id="step3circle" class="w-7 h-7 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">3</div> Confirmed!
+      </div>
+    </div>
+
+    <!-- STEP 1: SLOT PICKER -->
+    <div id="step1" class="fade-in">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold text-gray-900">Book a Free 30-Min Zoom Call</h1>
+        <p class="text-gray-500 mt-2">Select a date and time slot that works for you.</p>
+        <div class="mt-3 inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+           BNI Members get priority scheduling
+        </div>
+      </div>
+
+      <!-- Calendar Strip -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+        <div class="flex items-center justify-between mb-5">
+          <button onclick="prevWeek()" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600 font-bold">←</button>
+          <div id="weekLabel" class="font-semibold text-gray-900"></div>
+          <button onclick="nextWeek()" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600 font-bold">→</button>
+        </div>
+        <div id="dayStrip" class="grid grid-cols-7 gap-2"></div>
+      </div>
+
+      <!-- Time Slots -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h3 id="slotsDateLabel" class="font-bold text-gray-900">Select a date above</h3>
+            <p class="text-xs text-gray-400 mt-0.5">All times in IST (India Standard Time)</p>
+          </div>
+          <div class="text-sm text-gray-400 flex items-center gap-3">
+            <span class="flex items-center gap-1">Selected</span>
+            <span class="flex items-center gap-1">Booked</span>
+          </div>
+        </div>
+        <div id="timeSlots" class="grid grid-cols-3 md:grid-cols-4 gap-3">
+          <p class="col-span-full text-center text-gray-400 text-sm py-8">← Pick a date to see available slots</p>
+        </div>
+      </div>
+
+      <div class="mt-6 text-center">
+        <button id="continueBtn" onclick="goToStep2()" disabled
+          class="px-10 py-4 rounded-xl font-bold text-lg transition shadow-md disabled:opacity-40 disabled:cursor-not-allowed bg-blue-600 text-white hover:bg-blue-700">
+          Continue →
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: CONTACT FORM -->
+    <div id="step2" class="hidden fade-in">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold text-gray-900">Your Details</h1>
+        <p class="text-gray-500 mt-2 text-sm">Slot: <strong id="selectedSlotDisplay" class="text-blue-600"></strong></p>
+      </div>
+      <div class="max-w-lg mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <form id="bookingForm" onsubmit="submitBooking(event)" class="space-y-5">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name *</label>
+            <input id="b_name" required class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Your full name" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Phone / WhatsApp *</label>
+            <input id="b_phone" required type="tel" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="+91 98765 43210" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Email</label>
+            <input id="b_email" type="email" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="you@example.com" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Company / Business</label>
+            <input id="b_company" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Your business name" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Industry</label>
+            <select id="b_industry" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+              <option value="">Select your industry…</option>
+              <option>Healthcare / Medical</option>
+              <option>Real Estate</option>
+              <option>Finance / Accounting</option>
+              <option>Legal / Law</option>
+              <option>Retail / E-commerce</option>
+              <option>Education</option>
+              <option>Manufacturing</option>
+              <option>IT / Technology</option>
+              <option>Marketing / Advertising</option>
+              <option>Hospitality / Tourism</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Are you a BNI member?</label>
+            <select id="b_bni" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+              <option value="yes">Yes — I'm a BNI member</option>
+              <option value="referred">No — I was referred by a BNI member</option>
+              <option value="no">No — I found this independently</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">What do you hope to get from this call?</label>
+            <textarea id="b_goal" rows="3" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Tell Dr. Murali what you're looking to achieve…"></textarea>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button type="button" onclick="goToStep1()" class="px-5 py-3 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition text-sm">← Back</button>
+            <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-sm">
+               Confirm Booking
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- STEP 3: CONFIRMATION -->
+    <div id="step3" class="hidden fade-in text-center">
+      <div class="max-w-lg mx-auto bg-white rounded-2xl border border-green-200 shadow-sm p-10">
+        <div class="text-6xl mb-4"></div>
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">You're Booked!</h1>
+        <p class="text-gray-500 mb-6">Dr. Murali will join the Zoom call at your scheduled time.</p>
+
+        <div class="bg-blue-50 rounded-xl p-5 text-left mb-6 border border-blue-100">
+          <div class="text-sm font-bold text-blue-800 mb-3"> Booking Summary</div>
+          <div id="confirmSummary" class="space-y-2 text-sm text-gray-700"></div>
+        </div>
+
+        <div class="bg-green-50 rounded-xl p-5 text-left mb-6 border border-green-100">
+          <div class="text-sm font-bold text-green-800 mb-2">Next step: Dr. Murali will send the Zoom link</div>
+          <div class="text-sm text-gray-700">Your booking is recorded. Dr. Murali will share the Zoom link personally on WhatsApp or email before the call. Please WhatsApp him now to confirm and avoid missed messages.</div>
+          <div id="drMuraliContactRow" class="mt-3 text-xs text-green-700 hidden">
+            <a id="drMuraliWhatsAppLink" href="#" target="_blank" rel="noopener" class="underline font-semibold">WhatsApp Dr. Murali now</a>
+            <span id="drMuraliEmailRow" class="hidden"> · <a id="drMuraliEmailLink" href="#" class="underline font-semibold">Email</a></span>
+          </div>
+          <div id="drMuraliContactFallback" class="mt-3 text-xs text-amber-700">Dr. Murali's contact details are being set up — please check back via his BNI profile.</div>
+        </div>
+
+        <div class="text-sm text-gray-500 mb-6">
+          Please arrive 2 minutes early and have a notepad ready.
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <button onclick="addToCalendar()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition"> Add to Google Calendar</button>
+          <a href="index.html" class="block w-full border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold hover:bg-gray-50 transition">← Back to Home</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- UPCOMING EVENTS (Public Google Calendar) -->
+  <section id="events" class="border-t border-gray-200 bg-white py-16 px-6">
+    <div class="max-w-4xl mx-auto">
+      <span class="block text-center text-blue-600 font-semibold text-xs uppercase tracking-widest">Calendar</span>
+      <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mt-2 mb-3 text-center">Upcoming Events at BNI 121</h2>
+      <p class="text-center text-gray-500 text-sm mb-8 max-w-xl mx-auto">
+        Chapter meetings, AI workshops, and training sessions. All times in IST.
+      </p>
+      <div class="rounded-2xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50">
+        <iframe
+          src="https://calendar.google.com/calendar/embed?src=70da8a7ac670fedf1159e9963e633b3a26fbdbbf85ea34ba8c0742bffc438a7b%40group.calendar.google.com&ctz=Asia%2FKolkata&mode=AGENDA&showTitle=0&showPrint=0&showTabs=1&showCalendars=0&showTz=0"
+          style="border: 0"
+          width="100%"
+          height="500"
+          frameborder="0"
+          scrolling="no"
+          loading="lazy"
+          title="BNI 121 public events calendar"></iframe>
+      </div>
+    </div>
+  </section>
+
+<script src="supabase-config.js"></script>
+<script>
+let currentWeekStart = getThisMonday();
+let selectedDate = null;
+let selectedTime = null;
+let bookingData  = {};
+let _bookings = {};
+
+// Host whose calendar receives this 121. Looked up at page load from bni_members.
+const HOST_EMAIL = 'cmd@hopehospital.com';
+let _hostMemberId = null;
+
+async function loadHostMemberId() {
+  try {
+    const { data } = await window.sb
+      .from('bni_members')
+      .select('id')
+      .eq('email', HOST_EMAIL)
+      .eq('active', true)
+      .limit(1);
+    if (data && data[0]) _hostMemberId = data[0].id;
+  } catch (_) { /* sync is best-effort; INSERT still proceeds */ }
+}
+
+const urlP = new URLSearchParams(location.search);
+if (urlP.get('name')) setTimeout(()=>{ const el=document.getElementById('b_name'); if(el) el.value=urlP.get('name'); },100);
+if (urlP.get('phone')) setTimeout(()=>{ const el=document.getElementById('b_phone'); if(el) el.value=urlP.get('phone'); },100);
+
+async function loadBookings() {
+  const todayStr = new Date().toISOString().slice(0,10);
+  const { data, error } = await window.sb
+    .from('bni_appointments')
+    .select('date,time')
+    .gte('date', todayStr);
+  if (error) {
+    window.bniToast('Could not load existing slots: ' + error.message, 'error');
+    return {};
+  }
+  const map = {};
+  (data || []).forEach(row => {
+    if (!row.date || !row.time) return;
+    if (!map[row.date]) map[row.date] = {};
+    map[row.date][row.time] = true;
+  });
+  return map;
+}
+
+function getBookings() {
+  return _bookings;
+}
+
+//  DATES 
+function getThisMonday() {
+  const d = new Date();
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0,0,0,0);
+  return d;
+}
+function formatDate(d) {
+  return d.toISOString().slice(0,10);
+}
+const DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+//  AVAILABLE SLOTS 
+const SLOTS = [
+  '09:00 AM','09:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM',
+  '12:00 PM','12:30 PM','02:00 PM','02:30 PM','03:00 PM','03:30 PM',
+  '04:00 PM','04:30 PM','05:00 PM','06:00 PM','06:30 PM','07:00 PM'
+];
+
+//  RENDER CALENDAR 
+function renderCalendar() {
+  const weekLabel = document.getElementById('weekLabel');
+  const strip     = document.getElementById('dayStrip');
+  const today     = new Date(); today.setHours(0,0,0,0);
+
+  const endDate = new Date(currentWeekStart);
+  endDate.setDate(endDate.getDate() + 6);
+  weekLabel.textContent = `${currentWeekStart.getDate()} ${MONTHS[currentWeekStart.getMonth()]} – ${endDate.getDate()} ${MONTHS[endDate.getMonth()]} ${endDate.getFullYear()}`;
+
+  strip.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart);
+    d.setDate(d.getDate() + i);
+    const isPast  = d < today;
+    const isToday = d.getTime() === today.getTime();
+    const dateStr = formatDate(d);
+    const isSel   = selectedDate === dateStr;
+
+    const btn = document.createElement('button');
+    btn.disabled = isPast;
+    btn.className = `day-btn flex flex-col items-center py-3 rounded-xl border text-xs font-medium transition ${
+      isPast  ? 'text-gray-300 border-gray-100 cursor-not-allowed' :
+      isSel   ? 'active border-blue-600 shadow-md' :
+      isToday ? 'border-blue-300 text-blue-600 bg-blue-50' :
+                'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+    }`;
+    btn.innerHTML = `<span class="text-gray-400 text-xs">${DAYS[i]}</span>
+      <span class="text-lg font-bold mt-0.5 ${isSel?'text-white':''}">${d.getDate()}</span>
+      ${isToday?'<span class="text-xs mt-0.5">Today</span>':''}`;
+    if (!isPast) btn.onclick = () => selectDate(dateStr, d);
+    strip.appendChild(btn);
+  }
+}
+
+function selectDate(dateStr, dateObj) {
+  selectedDate = dateStr;
+  selectedTime = null;
+  document.getElementById('continueBtn').disabled = true;
+  document.getElementById('slotsDateLabel').textContent =
+    `${DAYS[(dateObj.getDay()+6)%7]}, ${dateObj.getDate()} ${MONTHS[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+  renderCalendar();
+  renderSlots();
+}
+
+function renderSlots() {
+  const container = document.getElementById('timeSlots');
+  const bookings  = getBookings();
+  const dayBookings = (bookings[selectedDate] || {});
+
+  container.innerHTML = SLOTS.map(t => {
+    const isBooked = !!dayBookings[t];
+    const isSel    = selectedTime === t;
+    return `<button onclick="selectSlot('${t}')" ${isBooked?'disabled':''} class="slot-btn border rounded-xl py-3 text-sm font-medium ${
+      isBooked ? 'booked border-gray-100 text-gray-300 bg-gray-50' :
+      isSel    ? 'selected border-blue-600 shadow-md' :
+                 'border-gray-200 text-gray-700'
+    }">${t}</button>`;
+  }).join('');
+}
+
+function selectSlot(time) {
+  selectedTime = time;
+  document.getElementById('continueBtn').disabled = false;
+  renderSlots();
+}
+
+function prevWeek() {
+  const w = new Date(currentWeekStart);
+  w.setDate(w.getDate() - 7);
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (w < today) { currentWeekStart = getThisMonday(); }
+  else { currentWeekStart = w; }
+  renderCalendar();
+}
+function nextWeek() {
+  currentWeekStart = new Date(currentWeekStart);
+  currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+  renderCalendar();
+  if (selectedDate) renderSlots();
+}
+
+//  STEPS 
+function goToStep2() {
+  if (!selectedDate || !selectedTime) return;
+  const d = new Date(selectedDate);
+  document.getElementById('selectedSlotDisplay').textContent =
+    `${DAYS[(d.getDay()+6)%7]}, ${d.getDate()} ${MONTHS[d.getMonth()]} · ${selectedTime} IST`;
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+  activateStep(2);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goToStep1() {
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step1').classList.remove('hidden');
+  activateStep(1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function activateStep(n) {
+  [1,2,3].forEach(i => {
+    const circle = document.getElementById(`step${i}circle`);
+    if (circle) circle.className = `w-7 h-7 rounded-full ${i<=n ? 'bg-blue-600 text-white' : 'border-2 border-gray-300 text-gray-400'} flex items-center justify-center text-xs font-bold`;
+    const ind = document.getElementById(`step${i}ind`);
+    if (ind) ind.className = `flex items-center gap-2 text-sm font-${i<=n?'semibold':'medium'} ${i<=n?'text-blue-700':'text-gray-400'}`;
+  });
+}
+
+async function submitBooking(e) {
+  e.preventDefault();
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Booking…'; }
+
+  bookingData = {
+    name:     document.getElementById('b_name').value.trim(),
+    phone:    document.getElementById('b_phone').value.trim(),
+    email:    document.getElementById('b_email').value.trim(),
+    company:  document.getElementById('b_company').value.trim(),
+    industry: document.getElementById('b_industry').value,
+    bni:      document.getElementById('b_bni').value,
+    goal:     document.getElementById('b_goal').value.trim(),
+    date:     selectedDate,
+    time:     selectedTime,
+    bookedAt: new Date().toISOString(),
+  };
+
+  const phoneKey = bookingData.phone.replace(/[^\d+]/g, '');
+  const apptId = `appt_${phoneKey || 'anon'}_${selectedDate}_${selectedTime.replace(/[^\dAP]/g,'')}`;
+
+  const { data: existing } = await window.sb
+    .from('bni_contacts')
+    .select('id')
+    .eq('phone', bookingData.phone)
+    .limit(1);
+
+  let contactId;
+  if (existing && existing.length > 0) {
+    contactId = existing[0].id;
+    const { error: upErr } = await window.sb
+      .from('bni_contacts')
+      .update({
+        status: 'Meeting Scheduled',
+        email: bookingData.email || null,
+        company: bookingData.company || null,
+      })
+      .eq('id', contactId);
+    if (upErr) console.error('Contact update failed:', upErr);
+  } else if (bookingData.name) {
+    const generatedId = 'c' + Date.now();
+    const { first, last } = window.splitName(bookingData.name);
+    const { error: insErr } = await window.sb
+      .from('bni_contacts')
+      .insert({
+        id: generatedId,
+        first: first || null,
+        last:  last || null,
+        company: bookingData.company || null,
+        phone: bookingData.phone || null,
+        email: bookingData.email || null,
+        segment: bookingData.industry || null,
+        status: 'Meeting Scheduled',
+        notes: `Booked via public scheduler. Goal: ${bookingData.goal}. BNI: ${bookingData.bni}`,
+      });
+    // Only attach the contact_id if the insert actually succeeded. Otherwise the
+    // appointment's FK to bni_contacts would reference a non-existent row.
+    if (insErr) console.error('Contact insert failed:', insErr);
+    else        contactId = generatedId;
+  }
+
+  const apptPayload = {
+    id: apptId,
+    contact_id: contactId || null,
+    contact_name: bookingData.name,
+    company: bookingData.company || null,
+    date: selectedDate,
+    time: selectedTime,
+    medium: 'Zoom',
+    phone: bookingData.phone || null,
+    email: bookingData.email || null,
+    industry: bookingData.industry || null,
+    bni_status: bookingData.bni || null,
+    goal: bookingData.goal || null,
+  };
+  // host_member_id column only exists after the 20260511000000_gcal_sync migration.
+  // Include it only if we successfully resolved a host (otherwise Supabase would 400
+  // with "column does not exist" on databases where the migration hasn't run yet).
+  if (_hostMemberId) apptPayload.host_member_id = _hostMemberId;
+
+  const { error: apptErr } = await window.sb
+    .from('bni_appointments')
+    .insert(apptPayload);
+
+  if (apptErr) {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = ' Confirm Booking'; }
+    window.bniToast('Booking failed: ' + apptErr.message, 'error');
+    return;
+  }
+
+  // Instant Google Calendar sync — fire-and-forget. If this fails for any reason
+  // (function down, transient error), the cron worker will catch the row within 5 min.
+  if (_hostMemberId) {
+    window.sb.functions
+      .invoke('sync-gcal-event', { body: { appointment_id: apptId } })
+      .catch(() => { /* silent — cron is the safety net */ });
+  }
+
+  // Audit trail — writes a row Dr. Murali can see at a glance in Supabase
+  // so new bookings don't go unnoticed when there's no email/Slack automation.
+  if (window.logEmailEvent && contactId) {
+    window.logEmailEvent(contactId, 'new_booking', {
+      appointment_id: apptId,
+      date: selectedDate,
+      time: selectedTime,
+      name: bookingData.name,
+      phone: bookingData.phone,
+      email: bookingData.email,
+      company: bookingData.company,
+      source: 'public_scheduler',
+    });
+  }
+
+  if (!_bookings[selectedDate]) _bookings[selectedDate] = {};
+  _bookings[selectedDate][selectedTime] = true;
+
+  const d = new Date(selectedDate);
+  document.getElementById('confirmSummary').innerHTML = `
+    <div class="flex gap-2"><span class="font-medium w-20">Name:</span> ${bookingData.name}</div>
+    <div class="flex gap-2"><span class="font-medium w-20">Date:</span> ${DAYS[(d.getDay()+6)%7]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}</div>
+    <div class="flex gap-2"><span class="font-medium w-20">Time:</span> ${selectedTime} IST</div>
+    <div class="flex gap-2"><span class="font-medium w-20">Duration:</span> 30 minutes</div>
+    ${bookingData.company ? `<div class="flex gap-2"><span class="font-medium w-20">Company:</span> ${bookingData.company}</div>` : ''}
+    <div class="flex gap-2"><span class="font-medium w-20">Platform:</span> Zoom (link will be sent)</div>
+  `;
+
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.remove('hidden');
+  activateStep(3);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function addToCalendar() {
+  const d = new Date(selectedDate + 'T' + to24h(bookingData.time));
+  const end = new Date(d.getTime() + 30*60000);
+  const fmt = dt => dt.toISOString().replace(/[-:]/g,'').replace('.000','');
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Zoom Call: AI Consultation with Dr. BK Murali')}&dates=${fmt(d)}/${fmt(end)}&details=${encodeURIComponent('Free 30-min AI business consultation.\nZoom link will be sent by Dr. Murali.\n\nBook more: https://drbkmurali.in')}&location=${encodeURIComponent('Zoom Video Call')}`;
+  window.open(url, '_blank');
+}
+
+function to24h(t) {
+  const [time, meridiem] = t.split(' ');
+  let [h, m] = time.split(':').map(Number);
+  if (meridiem === 'PM' && h !== 12) h += 12;
+  if (meridiem === 'AM' && h === 12) h = 0;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`;
+}
+
+renderCalendar();
+activateStep(1);
+loadBookings().then(b => {
+  _bookings = b;
+  if (selectedDate) renderSlots();
+});
+loadHostMemberId();
+
+// Populate Dr. Murali's real contact on the confirmation card from bni_settings
+(async function populateMuraliContact() {
+  try {
+    if (window.loadSettings) await window.loadSettings();
+    const s = (window.BNI_SETTINGS || {});
+    const phoneRaw = String(s.my_phone || '').replace(/\D/g, '');
+    const email    = String(s.my_email || '').trim();
+    const contactRow  = document.getElementById('drMuraliContactRow');
+    const fallback    = document.getElementById('drMuraliContactFallback');
+    const waLink      = document.getElementById('drMuraliWhatsAppLink');
+    const emailRow    = document.getElementById('drMuraliEmailRow');
+    const emailLink   = document.getElementById('drMuraliEmailLink');
+    if (phoneRaw && waLink) {
+      waLink.href = `https://wa.me/${phoneRaw}?text=${encodeURIComponent('Hi Dr. Murali, I just booked a Zoom call via your BNI page.')}`;
+      if (contactRow) contactRow.classList.remove('hidden');
+      if (fallback)   fallback.classList.add('hidden');
+    }
+    if (email && emailLink) {
+      emailLink.href = `mailto:${email}?subject=${encodeURIComponent('Zoom booking via BNI page')}&body=${encodeURIComponent('Hi Dr. Murali, I just booked a Zoom call via your BNI page.')}`;
+      if (emailRow) emailRow.classList.remove('hidden');
+    }
+  } catch (e) { /* settings optional */ }
+})();
+// step2 and step3 need circle elements
+['step2','step3'].forEach(id=>{
+  const el = document.getElementById(id+'ind');
+  if(el && !el.querySelector('[id]')) {
+    const div = el.querySelector('div');
+    if(div) div.id = id+'circle';
+  }
+});
+</script>
+
+  </div><!-- end inner content -->
+  </div><!-- end main content -->
+  <script src="bni-sidebar.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "BNI 121 — Dr. BK Murali",
+  "short_name": "BNI 121",
+  "description": "BNI 1-2-1 outreach CRM — meetings, follow-ups, referrals.",
+  "start_url": "/bni/dashboard.html",
+  "scope": "/bni/",
+  "display": "standalone",
+  "background_color": "#1e3a8a",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/bni/bni-logo.jpg", "sizes": "192x192", "type": "image/jpeg", "purpose": "any" },
+    { "src": "/bni/bni-logo.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Today",          "url": "/bni/dashboard.html",       "description": "Today's follow-ups" },
+    { "name": "Add Contact",    "url": "/bni/tracker.html?add=1",   "description": "Add a new contact" },
+    { "name": "Scan Card",      "url": "/bni/tracker.html?scan=1",  "description": "Scan a business card with AI" },
+    { "name": "Zoom Meetings",  "url": "/bni/zoom-completed.html",  "description": "Recent 1-2-1s" }
+  ]
+}

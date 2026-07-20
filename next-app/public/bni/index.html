@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dr. BK Murali — AI Solutions for Business Growth</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-hero { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f4c81 100%); }
+    .gradient-card { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+    .service-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(59,130,246,0.15); }
+    .pulse-ring { animation: pulseRing 2s ease-out infinite; }
+    @keyframes pulseRing {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    .zoom-btn { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .zoom-btn:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); transform: translateY(-2px); }
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">M</div>
+        <div>
+          <div class="font-bold text-gray-900 leading-tight">Dr. BK Murali</div>
+          <div class="text-xs text-blue-600 font-medium">AI Business Consultant · BNI Member</div>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+        <a href="#services" class="hover:text-blue-600 transition">Services</a>
+        <a href="#why-ai" class="hover:text-blue-600 transition">Why AI</a>
+        <a href="#events" class="hover:text-blue-600 transition">Events</a>
+        <a href="#about" class="hover:text-blue-600 transition">About</a>
+        <a href="tracker.html" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:border-blue-400 hover:text-blue-600 transition">Login</a>
+        <a href="scheduler.html" class="zoom-btn text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition shadow-md"> Book Zoom Call</a>
+      </div>
+      <div class="md:hidden flex items-center gap-2">
+        <a href="tracker.html" class="border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:text-blue-600 transition">Login</a>
+        <a href="scheduler.html" class="zoom-btn text-white px-4 py-2 rounded-lg text-sm font-semibold transition">Book Call</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="gradient-hero text-white pt-32 pb-20 px-6">
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/30 rounded-full px-4 py-2 text-sm text-blue-200 mb-6">
+          BNI Member · Available for Referrals
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-6">
+          Grow Your Business with <span class="text-blue-400">Artificial Intelligence</span>
+        </h1>
+        <p class="text-lg text-blue-100 mb-8 leading-relaxed">
+          Dr. BK Murali helps BNI members and their referral networks harness the power of AI — automating workflows, generating leads, and scaling operations without scaling headcount.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="scheduler.html" class="zoom-btn text-white px-8 py-4 rounded-xl font-bold text-lg transition shadow-xl text-center">
+             Schedule a Free Zoom Call
+          </a>
+          <a href="#services" class="bg-white/10 border border-white/20 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/20 transition text-center">
+            See Services ↓
+          </a>
+        </div>
+        <div class="mt-10 flex items-center gap-6 text-sm text-blue-200">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            No tech background needed
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Results in 30 days
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            BNI member discount
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-center">
+        <div class="relative">
+          <div class="absolute inset-0 rounded-full bg-blue-500/20 pulse-ring"></div>
+          <div class="w-64 h-64 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center text-white shadow-2xl border-4 border-blue-300/30">
+            <div class="text-center">
+              <div class="text-6xl mb-2">‍</div>
+              <div class="text-xl font-bold">Dr. BK Murali</div>
+              <div class="text-sm text-blue-200 mt-1">AI Consultant</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="bg-blue-600 text-white py-12 px-6">
+    <div class="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <div>
+        <div class="text-3xl font-extrabold">50+</div>
+        <div class="text-blue-200 text-sm mt-1">Businesses Transformed</div>
+      </div>
+      <div>
+        <div class="text-3xl font-extrabold">3x</div>
+        <div class="text-blue-200 text-sm mt-1">Average Lead Growth</div>
+      </div>
+      <div>
+        <div class="text-3xl font-extrabold">₹40L+</div>
+        <div class="text-blue-200 text-sm mt-1">Revenue Generated via AI</div>
+      </div>
+      <div>
+        <div class="text-3xl font-extrabold">BNI</div>
+        <div class="text-blue-200 text-sm mt-1">Verified Member</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPCOMING EVENTS (Public Google Calendar) -->
+  <section id="events" class="py-20 px-6 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <span class="block text-center text-blue-600 font-semibold text-sm uppercase tracking-widest">Calendar</span>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-4 text-center">Upcoming Events</h2>
+      <p class="text-center text-gray-500 mb-10 max-w-2xl mx-auto">
+        BNI 121 chapter meetings, AI workshops, and training sessions. All times in IST.
+      </p>
+      <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-200 bg-gray-50">
+        <iframe
+          src="https://calendar.google.com/calendar/embed?src=70da8a7ac670fedf1159e9963e633b3a26fbdbbf85ea34ba8c0742bffc438a7b%40group.calendar.google.com&ctz=Asia%2FKolkata&mode=AGENDA&showTitle=0&showPrint=0&showTabs=1&showCalendars=0&showTz=0"
+          style="border: 0"
+          width="100%"
+          height="600"
+          frameborder="0"
+          scrolling="no"
+          loading="lazy"
+          title="BNI 121 public events calendar"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" class="py-20 px-6 bg-gray-50">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14">
+        <span class="text-blue-600 font-semibold text-sm uppercase tracking-widest">What I Offer</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2">AI Services for BNI Businesses</h2>
+        <p class="text-gray-500 mt-3 max-w-xl mx-auto">Whether you run a clinic, law firm, real estate agency, or retail shop — AI can work for you.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="service-card bg-white rounded-2xl p-8 border border-gray-100 shadow-sm transition duration-300">
+          <div class="text-4xl mb-5"></div>
+          <h3 class="text-xl font-bold mb-3 text-gray-900">AI Chatbot & Lead Generation</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Deploy intelligent chatbots on your website and WhatsApp to capture, qualify, and nurture leads 24/7 — even while you sleep.</p>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2">WhatsApp AI assistant</li>
+            <li class="flex items-center gap-2">Website lead capture bot</li>
+            <li class="flex items-center gap-2">Automatic appointment booking</li>
+          </ul>
+        </div>
+        <div class="service-card bg-white rounded-2xl p-8 border border-gray-100 shadow-sm transition duration-300">
+          <div class="text-4xl mb-5"></div>
+          <h3 class="text-xl font-bold mb-3 text-gray-900">Business Intelligence & Analytics</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Turn your raw data into actionable insights. Know which customers are most valuable, predict churn, and find hidden growth opportunities.</p>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2">Sales forecasting dashboards</li>
+            <li class="flex items-center gap-2">Customer behaviour analysis</li>
+            <li class="flex items-center gap-2">Competitive intelligence reports</li>
+          </ul>
+        </div>
+        <div class="service-card bg-white rounded-2xl p-8 border border-gray-100 shadow-sm transition duration-300">
+          <div class="text-4xl mb-5"></div>
+          <h3 class="text-xl font-bold mb-3 text-gray-900">Workflow Automation</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Eliminate repetitive tasks — invoicing, follow-ups, social media posts, data entry — and free your team to focus on what matters.</p>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2">Email & follow-up automation</li>
+            <li class="flex items-center gap-2">Invoice & CRM integration</li>
+            <li class="flex items-center gap-2">Social media AI scheduler</li>
+          </ul>
+        </div>
+        <div class="service-card bg-white rounded-2xl p-8 border border-gray-100 shadow-sm transition duration-300">
+          <div class="text-4xl mb-5"></div>
+          <h3 class="text-xl font-bold mb-3 text-gray-900">Healthcare AI (Specialty)</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Patient management, diagnostic assistance tools, and AI-powered health record summaries — specifically for clinics and hospitals.</p>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2">AI patient triage chatbot</li>
+            <li class="flex items-center gap-2">Medical report summariser</li>
+            <li class="flex items-center gap-2">Appointment scheduling AI</li>
+          </ul>
+        </div>
+        <div class="service-card bg-white rounded-2xl p-8 border border-gray-100 shadow-sm transition duration-300">
+          <div class="text-4xl mb-5"></div>
+          <h3 class="text-xl font-bold mb-3 text-gray-900">AI Marketing & Content</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Generate high-converting ad copy, social posts, and email campaigns in minutes using AI — tailored to your brand voice.</p>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2">AI-generated ad creatives</li>
+            <li class="flex items-center gap-2">Blog & newsletter automation</li>
+            <li class="flex items-center gap-2">Personalised email campaigns</li>
+          </ul>
+        </div>
+        <div class="service-card bg-white rounded-2xl p-8 border border-gray-100 shadow-sm transition duration-300">
+          <div class="text-4xl mb-5"></div>
+          <h3 class="text-xl font-bold mb-3 text-gray-900">AI Training for Teams</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Hands-on workshops for your staff on using AI tools (ChatGPT, Gemini, Copilot) effectively to save 10+ hours per week per person.</p>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-center gap-2">Half-day / full-day workshops</li>
+            <li class="flex items-center gap-2">Customised for your industry</li>
+            <li class="flex items-center gap-2">Post-training support</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY AI FOR BNI -->
+  <section id="why-ai" class="py-20 px-6 bg-white">
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+      <div>
+        <span class="text-blue-600 font-semibold text-sm uppercase tracking-widest">The BNI Advantage</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-6">Why BNI Members Need AI <span class="text-blue-600">Right Now</span></h2>
+        <div class="space-y-6">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0"></div>
+            <div>
+              <h4 class="font-bold text-gray-900 mb-1">Referrals × AI = Exponential Growth</h4>
+              <p class="text-gray-500 text-sm">BNI gives you warm referrals. AI turns every referral into a nurtured, converted customer automatically.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-2xl flex-shrink-0">⏰</div>
+            <div>
+              <h4 class="font-bold text-gray-900 mb-1">Save 10+ Hours per Week</h4>
+              <p class="text-gray-500 text-sm">Stop doing follow-ups manually. AI handles emails, reminders, and scheduling so you can focus on your chapter meetings and clients.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-2xl flex-shrink-0"></div>
+            <div>
+              <h4 class="font-bold text-gray-900 mb-1">Stand Out in Your Chapter</h4>
+              <p class="text-gray-500 text-sm">Be the member who brings the most innovative value. AI-powered businesses get more referrals because they deliver faster and better results.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl flex-shrink-0"></div>
+            <div>
+              <h4 class="font-bold text-gray-900 mb-1">ROI in 30 Days or Less</h4>
+              <p class="text-gray-500 text-sm">Most of my clients see measurable ROI within the first month. AI tools pay for themselves quickly — especially for SMBs.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-8 text-white shadow-2xl">
+        <h3 class="text-2xl font-bold mb-6">What You Get in a Free Zoom Call</h3>
+        <div class="space-y-4 mb-8">
+          <div class="flex items-center gap-3 bg-white/10 rounded-xl p-4">
+            <div>
+              <div class="font-semibold">AI Opportunity Audit</div>
+              <div class="text-blue-200 text-sm">I'll identify 3 quick-win AI opportunities in your business</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 bg-white/10 rounded-xl p-4">
+            <div>
+              <div class="font-semibold">Custom AI Roadmap</div>
+              <div class="text-blue-200 text-sm">A personalised 90-day AI implementation plan for your industry</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 bg-white/10 rounded-xl p-4">
+            <div>
+              <div class="font-semibold">BNI Member Exclusive</div>
+              <div class="text-blue-200 text-sm">Special pricing available for all BNI members and their referrals</div>
+            </div>
+          </div>
+        </div>
+        <a href="scheduler.html" class="block w-full bg-white text-blue-700 text-center font-bold py-4 rounded-xl hover:bg-blue-50 transition text-lg shadow-lg">
+           Book My Free 30-Min Call
+        </a>
+        <p class="text-center text-blue-200 text-sm mt-3">No obligation · No hard sell · 100% valuable</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="py-20 px-6 bg-gray-50">
+    <div class="max-w-4xl mx-auto text-center">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-widest">About</span>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-8">Dr. BK Murali</h2>
+      <div class="bg-white rounded-3xl p-10 shadow-sm border border-gray-100 text-left">
+        <div class="flex flex-col md:flex-row items-center gap-8 mb-8">
+          <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-5xl flex-shrink-0 shadow-xl">‍</div>
+          <div>
+            <h3 class="text-2xl font-bold text-gray-900">Dr. BK Murali</h3>
+            <p class="text-blue-600 font-medium">AI Business Consultant &amp; BNI Member</p>
+            <p class="text-gray-500 text-sm mt-2">Helping businesses across India leverage Artificial Intelligence for real, measurable growth since 2019.</p>
+            <div class="flex flex-wrap gap-3 mt-4">
+              <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium"> BNI Member</span>
+              <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium"> AI Specialist</span>
+              <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-medium"> Healthcare Tech</span>
+              <span class="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs font-medium"> Business Analytics</span>
+            </div>
+          </div>
+        </div>
+        <p class="text-gray-600 leading-relaxed">As a BNI member, Dr. Murali understands the power of referral networking. His unique position bridges medical expertise, technology, and business growth — making him the ideal AI partner for BNI members across healthcare, finance, law, real estate, and any industry looking to adopt AI responsibly and profitably.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FOOTER -->
+  <section class="gradient-hero text-white py-16 px-6 text-center">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Ready to Transform Your Business with AI?</h2>
+      <p class="text-blue-200 text-lg mb-8">Book a free 30-minute Zoom call with Dr. Murali. Walk away with a clear AI roadmap for your business — no tech knowledge required.</p>
+      <a href="scheduler.html" class="inline-block zoom-btn text-white px-10 py-5 rounded-xl font-bold text-xl transition shadow-2xl">
+         Book Free Zoom Call Now
+      </a>
+      <p class="text-blue-300 text-sm mt-4">Fellow BNI members get priority scheduling &amp; exclusive member pricing.</p>
+    </div>
+  </section>
+
+  <footer class="bg-gray-900 text-gray-400 py-8 px-6 text-center text-sm">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <p>© 2025 Dr. BK Murali · AI Business Consultant · BNI Member · <span class="text-gray-600">v2.8</span></p>
+      <div class="flex gap-6">
+        <a href="tracker.html" class="hover:text-white transition">BNI Tracker</a>
+        <a href="templates.html" class="hover:text-white transition">Email Templates</a>
+        <a href="index.html#events" class="hover:text-white transition">Events</a>
+        <a href="scheduler.html" class="hover:text-white transition">Book a Call</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="auth-guard.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BNI Outreach Tracker — Dr. BK Murali</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .status-identified   { background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe; }
+    .status-contacted    { background:#fefce8;color:#a16207;border-color:#fde68a; }
+    .status-meeting      { background:#f0fdf4;color:#15803d;border-color:#bbf7d0; }
+    .status-met          { background:#ecfccb;color:#3f6212;border-color:#bef264; }
+    .status-followup     { background:#fff7ed;color:#c2410c;border-color:#fed7aa; }
+    .status-converted    { background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe; }
+    .status-notinterested{ background:#f9fafb;color:#6b7280;border-color:#e5e7eb; }
+    .sidebar-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:0.875rem;font-weight:500;color:#cbd5e1;transition:background 0.15s,color 0.15s;text-decoration:none; }
+    .sidebar-link:hover { background:rgba(255,255,255,0.1);color:#fff; }
+    .sidebar-link.active { background:#2563eb;color:#fff; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="hidden md:flex flex-col w-56 min-h-screen bg-slate-900 fixed top-0 left-0 z-40 border-r border-slate-800">
+    <div class="px-4 py-5 border-b border-slate-800">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-base flex-shrink-0">M</div>
+        <div>
+          <div class="text-white font-bold text-sm leading-tight">Dr. BK Murali</div>
+          <div class="text-blue-400 text-xs">BNI AI Tools</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="/bni/tracker.html" class="sidebar-link active">Tracker</a>
+      <a href="/bni/zoom-completed.html" class="sidebar-link">Zoom Meetings Done</a>
+      <a href="/bni/followup.html" class="sidebar-link">Meetings & Follow-ups</a>
+      <a href="/bni/templates.html" class="sidebar-link">Templates</a>
+      <a href="/bni/scheduler.html" class="sidebar-link">Book Zoom Call</a>
+      <div class="pt-3 mt-3 border-t border-slate-800">
+        <a href="https://hopetech.me" class="sidebar-link">Public Site</a>
+      </div>
+    </nav>
+    <div class="px-4 py-4 border-t border-slate-800 text-xs text-slate-500">BNI 121 · Private Tool</div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="flex-1 md:ml-56 flex flex-col min-h-screen">
+
+  <!-- TOP BAR -->
+  <nav class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-30">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="md:hidden text-gray-400 hover:text-gray-600 text-sm">← Home</a>
+        <div>
+          <div class="font-bold text-gray-900">Contact Tracker</div>
+          <div class="text-xs text-slate-500">Full contact database — add, search, filter by status or city, and track each lead's outreach journey</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="exportCSV()" class="bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-100 transition">
+           Export CSV
+        </button>
+        <button onclick="openCardScan()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition shadow-sm inline-flex items-center gap-1.5" title="Scan a business card with your camera">
+          📷 Scan Card
+        </button>
+        <button onclick="openAddModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
+          + Add Contact
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- STATS BAR -->
+  <div class="bg-white border-b border-gray-100 px-6 py-4">
+    <div id="statsBar"></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="px-6 py-4 flex flex-wrap gap-3 items-center">
+    <input id="searchInput" onkeyup="renderTable()" placeholder=" Search name, company, city…" class="border border-gray-200 rounded-lg px-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+    <select id="statusFilter" onchange="renderTable()" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+      <option value="">All Statuses</option>
+      <option value="Identified">Identified</option>
+      <option value="Contacted">Contacted</option>
+      <option value="Meeting Scheduled">Meeting Scheduled</option>
+      <option value="Met">Met </option>
+      <option value="Follow-up">Follow-up</option>
+      <option value="Converted">Converted </option>
+      <option value="Not Interested">Not Interested</option>
+    </select>
+    <select id="cityFilter" onchange="renderTable()" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+      <option value="">All Cities</option>
+    </select>
+    <select id="segmentFilter" onchange="renderTable()" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+      <option value="">All Segments</option>
+      <option value="ai"> AI / Tech</option>
+      <option value="automation"> Industrial Automation</option>
+    </select>
+    <select id="assigneeFilter" onchange="renderTable()" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+      <option value="">All Developers</option>
+      <option value="__none__">— Unassigned —</option>
+    </select>
+    <button onclick="refreshContacts()" class="text-sm text-gray-400 hover:text-blue-600 transition" title="Refresh from database"></button>
+    </div>
+
+  <!-- TABLE -->
+  <div class="px-6 pb-16">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wide">
+            <tr>
+              <th class="px-5 py-4 text-left">#</th>
+              <th class="px-5 py-4 text-left">Name</th>
+              <th class="px-5 py-4 text-left">Company</th>
+              <th class="px-5 py-4 text-left">Chapter / City</th>
+              <th class="px-5 py-4 text-left">Phone</th>
+              <th class="px-5 py-4 text-left">Specialty</th>
+              <th class="px-5 py-4 text-left">Status</th>
+              <th class="px-5 py-4 text-left">Last Action</th>
+              <th class="px-5 py-4 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="contactTableBody" class="divide-y divide-gray-50"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="hidden py-20 text-center text-gray-400">
+        <div class="text-5xl mb-4"></div>
+        <p class="font-medium">No contacts yet</p>
+        <p class="text-sm mt-1">Click "+ Add Contact" to start tracking BNI outreach</p>
+      </div>
+      <div id="loadingState" class="py-20 text-center text-gray-400">
+        <div class="text-5xl mb-4">⏳</div>
+        <p class="font-medium">Loading contacts from Supabase…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT MODAL -->
+  <div id="modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-5 border-b">
+        <h2 id="modalTitle" class="text-xl font-bold text-gray-900">Add BNI Contact</h2>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+      </div>
+      <form id="contactForm" onsubmit="saveContact(event)" class="p-6 grid grid-cols-2 gap-4">
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name *</label>
+          <input id="f_name" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Company</label>
+          <input id="f_company" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">BNI Chapter</label>
+          <input id="f_chapter" list="chapterList" placeholder="Pick from list or type a new one…" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+          <datalist id="chapterList"></datalist>
+          <div class="text-xs text-gray-400 mt-1">Suggestions come from existing contacts. Any new chapter you type is saved and will appear here next time.</div>
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">City</label>
+          <input id="f_city" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Phone</label>
+          <input id="f_phone" type="tel" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Email</label>
+          <input id="f_email" type="email" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Website</label>
+          <input id="f_website" type="url" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">AI / Tech Specialty</label>
+          <input id="f_specialty" placeholder="e.g. AI automation, ML, Data analytics" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">BNI Tenure</label>
+          <input id="f_tenure" placeholder="e.g. 1 Year, 7 months" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Category (Segment)</label>
+          <select id="f_segment" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+            <option value="AI / Tech">AI / Tech</option>
+            <option value="Industrial Automation">Industrial Automation</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Assignee (Developer)</label>
+          <select id="f_assignee" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+            <option value="">— Unassigned —</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Status *</label>
+          <select id="f_status" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+            <option value="Identified"> Identified — found on BNI Connect</option>
+            <option value="Contacted"> Contacted — reached out</option>
+            <option value="Meeting Scheduled"> Meeting Scheduled</option>
+            <option value="Met"> Met — 121 happened</option>
+            <option value="Follow-up"> Follow-up needed</option>
+            <option value="Converted"> Converted — became a client/referral</option>
+            <option value="Not Interested"> Not Interested</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Meeting Date (if scheduled)</label>
+          <input id="f_meetingDate" type="datetime-local" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Notes</label>
+          <textarea id="f_notes" rows="3" placeholder="Key interests, what they need, conversation notes…" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"></textarea>
+        </div>
+        <input type="hidden" id="f_id" />
+        <div class="col-span-2 flex gap-3 pt-2">
+          <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-sm">Save Contact</button>
+          <button type="button" onclick="closeModal()" class="px-6 py-3 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NOTE MODAL -->
+  <div id="noteModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold mb-4" id="noteModalTitle">Contact Details</h3>
+      <div id="noteModalBody" class="text-sm text-gray-700 space-y-3"></div>
+      <div class="flex gap-3 mt-6">
+        <button id="noteModalEdit" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold hover:bg-blue-700 transition">Edit</button>
+        <button onclick="closeNoteModal()" class="px-5 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script src="supabase-config.js"></script>
+<script>
+let _contacts = [];
+
+async function fetchContacts() {
+  const { data, error } = await window.sb
+    .from('bni_contacts')
+    .select('*')
+    .order('id');
+  if (error) {
+    window.bniToast('Failed to load contacts: ' + error.message, 'error');
+    return [];
+  }
+  return (data || []).map(window.dbToUiContact);
+}
+
+async function refreshContacts() {
+  document.getElementById('loadingState').classList.remove('hidden');
+  _contacts = await fetchContacts();
+  document.getElementById('loadingState').classList.add('hidden');
+  populateChapterDatalist();
+  renderTable();
+}
+
+const STATUS_CLASS = {
+  'Identified':        'status-identified',
+  'Contacted':         'status-contacted',
+  'Meeting Scheduled': 'status-meeting',
+  'Met':               'status-met',
+  'Follow-up':         'status-followup',
+  'Converted':         'status-converted',
+  'Not Interested':    'status-notinterested',
+};
+const STATUS_DOT = {
+  'Identified':'','Contacted':'','Meeting Scheduled':'','Met':'',
+  'Follow-up':'','Converted':'','Not Interested':''
+};
+
+function renderTable() {
+  const contacts = _contacts;
+  const search   = document.getElementById('searchInput').value.toLowerCase();
+  const status   = document.getElementById('statusFilter').value;
+  const city     = document.getElementById('cityFilter').value;
+  const segment  = document.getElementById('segmentFilter').value;
+  const assignee = document.getElementById('assigneeFilter').value;
+
+  const cities = [...new Set(contacts.map(c => c.city).filter(Boolean))].sort();
+  const cityDd = document.getElementById('cityFilter');
+  const curCity = cityDd.value;
+  cityDd.innerHTML = '<option value="">All Cities</option>' +
+    cities.map(c => `<option value="${c}" ${c===curCity?'selected':''}>${c}</option>`).join('');
+
+  let filtered = contacts.filter(c => {
+    if (c.hidden) return false;
+    const matchSearch = !search ||
+      c.name.toLowerCase().includes(search) ||
+      (c.company||'').toLowerCase().includes(search) ||
+      (c.city||'').toLowerCase().includes(search) ||
+      (c.specialty||'').toLowerCase().includes(search);
+    const matchStatus  = !status  || c.status === status;
+    const matchCity    = !city    || c.city === city;
+    const isAutomation =
+      (c.segment||'').toLowerCase().includes('automation') ||
+      (c.specialty||'').toLowerCase().includes('industrial automation');
+    const matchSegment = !segment ||
+      (segment === 'automation' && isAutomation) ||
+      (segment === 'ai'         && !isAutomation);
+    const matchAssignee = !assignee
+      || (assignee === '__none__' && !c.assignee_id)
+      || c.assignee_id === assignee;
+    return matchSearch && matchStatus && matchCity && matchSegment && matchAssignee;
+  });
+
+  const resultCountEl = document.getElementById('resultCount');
+  if (resultCountEl) resultCountEl.textContent = `${filtered.length} of ${contacts.length} contacts`;
+
+  const tbody = document.getElementById('contactTableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    renderStats(contacts);
+    return;
+  }
+  empty.classList.add('hidden');
+
+  tbody.innerHTML = filtered.map((c, i) => `
+    <tr class="hover:bg-blue-50/30 transition">
+      <td class="px-5 py-4 text-gray-400 text-xs">${i+1}</td>
+      <td class="px-5 py-4">
+        <div class="font-semibold text-gray-900">${c.name}</div>
+        ${c.tenure ? `<div class="text-xs text-gray-400 mt-0.5">BNI: ${c.tenure}</div>` : ''}
+        ${c.assignee_id ? `<div class="text-xs text-blue-500 mt-0.5"> ${window.devName(c.assignee_id) || '—'}</div>` : ''}
+      </td>
+      <td class="px-5 py-4">
+        <div class="text-gray-700">${c.company || '—'}</div>
+        ${c.website ? `<a href="${c.website}" target="_blank" class="text-xs text-blue-500 hover:underline">${c.website.replace(/https?:\/\//,'').replace(/\/$/,'')}</a>` : ''}
+      </td>
+      <td class="px-5 py-4 text-gray-600 text-sm">
+        <div>${c.city || '—'}</div>
+        <div class="text-xs text-gray-400">${(c.chapter||'').split('>').pop()?.trim() || ''}</div>
+      </td>
+      <td class="px-5 py-4">
+        <a href="tel:${c.phone}" class="text-blue-600 hover:underline text-sm">${c.phone || '—'}</a>
+      </td>
+      <td class="px-5 py-4 text-gray-600 text-sm max-w-xs">
+        <div class="truncate">${c.specialty || '—'}</div>
+      </td>
+      <td class="px-5 py-4">
+        <select onchange="quickStatus('${c.id}', this.value)"
+          class="border rounded-lg px-2 py-1.5 text-xs font-medium ${STATUS_CLASS[c.status]||''} cursor-pointer focus:outline-none">
+          ${['Identified','Contacted','Meeting Scheduled','Met','Follow-up','Converted','Not Interested']
+            .map(s => `<option value="${s}" ${s===c.status?'selected':''}>${STATUS_DOT[s]} ${s}</option>`).join('')}
+        </select>
+        ${c.meetingDate ? `<div class="text-xs text-green-600 mt-1"> ${c.meetingDate}</div>` : ''}
+      </td>
+      <td class="px-5 py-4 text-xs text-gray-400">${c.lastAction || '—'}</td>
+      <td class="px-5 py-4">
+        <div class="flex items-center gap-2">
+          <button onclick="viewContact('${c.id}')" title="View" class="text-gray-400 hover:text-blue-600 transition"></button>
+          <button onclick="editContact('${c.id}')" title="Edit" class="text-gray-400 hover:text-blue-600 transition"></button>
+          <a href="scheduler.html?name=${encodeURIComponent(c.name)}&phone=${encodeURIComponent(c.phone||'')}" title="Schedule Zoom" class="text-gray-400 hover:text-green-600 transition"></a>
+          <a href="templates.html?name=${encodeURIComponent(c.name)}&company=${encodeURIComponent(c.company||'')}&city=${encodeURIComponent(c.city||'')}" title="Email Templates" class="text-gray-400 hover:text-purple-600 transition"></a>
+          <button onclick="openProposalModal('${c.id}')" title="Upload Proposal" class="text-gray-400 hover:text-indigo-600 transition text-xs font-medium">Proposal</button>
+          <button onclick="archiveContact('${c.id}')" title="Hide / Archive" class="text-gray-400 hover:text-amber-600 transition">Hide</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  renderStats(contacts);
+}
+
+function renderStats(contacts) {
+  const counts = {};
+  contacts.forEach(c => counts[c.status] = (counts[c.status]||0) + 1);
+  const ALL_STATUSES = ['Identified','Contacted','Meeting Scheduled','Met','Follow-up','Converted','Not Interested'];
+  document.getElementById('statsBar').innerHTML = `
+    <div class="flex flex-wrap gap-2 text-sm items-center">
+      <div class="flex items-center gap-2 mr-3"><span class="font-bold text-gray-900 text-base">${contacts.length}</span><span class="text-gray-500">Total</span></div>
+      ${ALL_STATUSES.map(s => {
+        const n = counts[s] || 0;
+        return `<div class="flex items-center gap-1 pl-2 pr-1 py-1 rounded-full border ${STATUS_CLASS[s]||''}">
+          <span>${STATUS_DOT[s]||''}</span>
+          <span class="font-semibold">${n}</span>
+          <span class="text-xs mx-1">${s}</span>
+          <button onclick="openAddModal('${s}')" title="Add ${s} contact"
+            class="text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center bg-white/60 hover:bg-white border border-current opacity-50 hover:opacity-100 transition leading-none">+</button>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function quickStatus(id, newStatus) {
+  const dbStatus = window.toDbStatus(newStatus);
+  const { error } = await window.sb
+    .from('bni_contacts')
+    .update({ status: dbStatus })
+    .eq('id', id);
+  if (error) {
+    window.bniToast('Failed to update status: ' + error.message, 'error');
+    return;
+  }
+  const c = _contacts.find(x => x.id === id);
+  if (c) {
+    c.status = newStatus;
+    c.lastAction = new Date().toLocaleDateString('en-IN');
+  }
+  renderTable();
+  window.bniToast('Status updated', 'success');
+}
+
+function openAddModal(presetStatus) {
+  document.getElementById('modalTitle').textContent = 'Add BNI Contact';
+  document.getElementById('contactForm').reset();
+  document.getElementById('f_id').value = '';
+  populateAssigneeDropdown('');
+  if (presetStatus) {
+    const sel = document.getElementById('f_status');
+    if (sel) sel.value = presetStatus;
+  }
+  document.getElementById('modal').classList.remove('hidden');
+  setTimeout(() => { const n = document.getElementById('f_name'); if (n) n.focus(); }, 50);
+}
+
+function populateAssigneeDropdown(selectedId) {
+  const sel = document.getElementById('f_assignee');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Unassigned —</option>' +
+    (window.BNI_DEVS || []).map(d =>
+      `<option value="${d.id}" ${d.id === selectedId ? 'selected' : ''}>${d.name}</option>`
+    ).join('');
+}
+
+function populateAssigneeFilter() {
+  const sel = document.getElementById('assigneeFilter');
+  if (!sel) return;
+  const current = sel.value;
+  const devOpts = (window.BNI_DEVS || [])
+    .map(d => `<option value="${d.id}">${d.name}</option>`)
+    .join('');
+  sel.innerHTML =
+    '<option value="">All Developers</option>' +
+    '<option value="__none__">— Unassigned —</option>' +
+    devOpts;
+  if (current) sel.value = current;
+}
+
+function populateChapterDatalist() {
+  const dl = document.getElementById('chapterList');
+  if (!dl) return;
+  // Canonical list comes from bni_chapters master. Fall back to chapters extracted
+  // from contacts if the master hasn't loaded yet.
+  let rows = (window.BNI_CHAPTERS || []).map(c => [c.name, c.city || '']);
+  if (!rows.length) {
+    const pairs = new Map();
+    (_contacts || []).forEach(c => {
+      const name = (c.chapter || '').trim();
+      if (!name) return;
+      if (!pairs.has(name) || (!pairs.get(name) && c.city)) pairs.set(name, c.city || '');
+    });
+    rows = [...pairs.entries()];
+  }
+  rows.sort((a, b) => a[0].localeCompare(b[0]));
+  dl.innerHTML = rows
+    .map(([name, city]) => `<option value="${name.replace(/"/g, '&quot;')}">${city ? city + ' — ' + name : name}</option>`)
+    .join('');
+}
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+function editContact(id) {
+  const c = _contacts.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('modalTitle').textContent = 'Edit Contact';
+  document.getElementById('f_id').value = c.id;
+  document.getElementById('f_name').value = c.name || '';
+  document.getElementById('f_company').value = c.company || '';
+  document.getElementById('f_chapter').value = c.chapter || '';
+  document.getElementById('f_city').value = c.city || '';
+  document.getElementById('f_phone').value = c.phone || '';
+  document.getElementById('f_email').value = c.email || '';
+  document.getElementById('f_website').value = c.website || '';
+  document.getElementById('f_specialty').value = c.specialty || '';
+  document.getElementById('f_tenure').value = c.tenure || '';
+  const segSel = document.getElementById('f_segment');
+  if (segSel) segSel.value = c.segment || 'Other';
+  populateAssigneeDropdown(c.assignee_id || '');
+  document.getElementById('f_status').value = c.status || 'Identified';
+  document.getElementById('f_meetingDate').value = c.meetingDate || '';
+  document.getElementById('f_notes').value = c.notes || '';
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function viewContact(id) {
+  const c = _contacts.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('noteModalTitle').textContent = c.name;
+  document.getElementById('noteModalBody').innerHTML = `
+    <div class="grid grid-cols-2 gap-3">
+      ${[['Company', c.company], ['Chapter', c.chapter], ['City', c.city],
+         ['Phone', c.phone ? `<a href="tel:${c.phone}" class="text-blue-600">${c.phone}</a>` : '—'],
+         ['Email', c.email ? `<a href="mailto:${c.email}" class="text-blue-600">${c.email}</a>` : '—'],
+         ['Website', c.website ? `<a href="${c.website}" target="_blank" class="text-blue-600 break-all">${c.website}</a>` : '—'],
+         ['Specialty', c.specialty], ['BNI Tenure', c.tenure],
+         ['Status', `<span class="px-2 py-0.5 rounded-full text-xs border ${STATUS_CLASS[c.status]||''}">${STATUS_DOT[c.status]||''} ${c.status}</span>`],
+         ['Meeting', c.meetingDate || '—']]
+        .map(([k,v]) => `<div><div class="text-xs font-semibold text-gray-400 uppercase tracking-wide">${k}</div><div class="mt-0.5">${v||'—'}</div></div>`).join('')}
+    </div>
+    ${c.notes ? `<div class="mt-4 pt-4 border-t"><div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Notes</div><div class="text-gray-700 text-sm leading-relaxed">${c.notes}</div></div>` : ''}
+  `;
+  document.getElementById('noteModalEdit').onclick = () => { closeNoteModal(); editContact(id); };
+  document.getElementById('noteModal').classList.remove('hidden');
+}
+function closeNoteModal() { document.getElementById('noteModal').classList.add('hidden'); }
+
+async function saveContact(e) {
+  e.preventDefault();
+  const existingId = document.getElementById('f_id').value;
+  const nextId = existingId || nextContactId();
+  const uiContact = {
+    id: nextId,
+    name: document.getElementById('f_name').value.trim(),
+    company: document.getElementById('f_company').value.trim(),
+    chapter: document.getElementById('f_chapter').value.trim(),
+    city: document.getElementById('f_city').value.trim(),
+    phone: document.getElementById('f_phone').value.trim(),
+    email: document.getElementById('f_email').value.trim(),
+    website: document.getElementById('f_website').value.trim(),
+    specialty: document.getElementById('f_specialty').value.trim(),
+    tenure: document.getElementById('f_tenure').value.trim(),
+    segment: (document.getElementById('f_segment') || {}).value || 'Other',
+    status: document.getElementById('f_status').value,
+    meetingDate: document.getElementById('f_meetingDate').value,
+    notes: document.getElementById('f_notes').value.trim(),
+  };
+  const row = window.uiToDbContact(uiContact);
+  row.assignee_id = document.getElementById('f_assignee').value || null;
+  if (row.chapter) await window.ensureChapter(row.chapter, row.city);
+  const { error } = await window.sb.from('bni_contacts').upsert(row);
+  if (error) {
+    window.bniToast('Failed to save: ' + error.message, 'error');
+    return;
+  }
+
+  // Persist the meeting date into bni_contact_details so it powers
+  // dashboard "today/upcoming" and zoom-completed cards.
+  const meetingDateRaw = uiContact.meetingDate || '';
+  if (meetingDateRaw) {
+    const isoDate = meetingDateRaw.slice(0, 10);                    // YYYY-MM-DD
+    const isoTime = meetingDateRaw.slice(11, 16) || null;           // HH:MM
+    const detailPayload = {
+      contact_id: nextId,
+      next_date:  isoDate,
+      ...(isoTime ? { meeting_time: isoTime } : {}),
+    };
+    const { error: dErr } = await window.sb
+      .from('bni_contact_details')
+      .upsert(detailPayload, { onConflict: 'contact_id' });
+    if (dErr) {
+      window.bniToast('Saved contact, but date sync failed: ' + dErr.message, 'error');
+    }
+  }
+
+  closeModal();
+  window.bniToast(existingId ? 'Contact updated' : 'Contact added', 'success');
+  await refreshContacts();
+}
+
+// ── Proposal upload ───────────────────────────────────────────────────────────
+let _proposalContactId = null;
+
+function openProposalModal(contactId) {
+  _proposalContactId = contactId;
+  const contact = _contacts.find(c => c.id === contactId);
+  document.getElementById('proposalContactName').textContent = contact ? contact.name : '';
+  document.getElementById('proposalTitle').value    = contact ? `Proposal for ${contact.name}` : '';
+  document.getElementById('proposalNotes').value    = '';
+  document.getElementById('proposalFile').value     = '';
+  document.getElementById('proposalAssignee').value = '';
+  document.getElementById('proposalStatus').textContent = '';
+  document.getElementById('proposalModal').classList.remove('hidden');
+  populateProposalAssignee();
+}
+
+function populateProposalAssignee() {
+  const sel = document.getElementById('proposalAssignee');
+  sel.innerHTML = '<option value="">— Select assignee —</option>' +
+    (window.BNI_DEVS || []).map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+}
+
+function closeProposalModal() {
+  document.getElementById('proposalModal').classList.add('hidden');
+  _proposalContactId = null;
+}
+
+async function submitProposal() {
+  const title    = document.getElementById('proposalTitle').value.trim();
+  const notes    = document.getElementById('proposalNotes').value.trim();
+  const assignee = document.getElementById('proposalAssignee').value;
+  const fileEl   = document.getElementById('proposalFile');
+  const statusEl = document.getElementById('proposalStatus');
+
+  if (!title) { window.bniToast('Title is required', 'error'); return; }
+
+  statusEl.textContent = 'Uploading...';
+  let file_url  = null;
+  let file_name = null;
+  let file_size = null;
+
+  if (fileEl.files && fileEl.files[0]) {
+    const file = fileEl.files[0];
+    file_name  = file.name;
+    file_size  = file.size;
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${_proposalContactId}/${Date.now()}_${safeName}`;
+
+    try {
+      const up = await window.bniUpload('proposals', path, file);
+      file_url = up.url;
+    } catch (err) {
+      statusEl.textContent = '';
+      window.bniToast('File upload failed: ' + err.message, 'error');
+      return;
+    }
+  }
+
+  const { error } = await window.sb.from('bni_proposals').insert({
+    contact_id:  _proposalContactId,
+    assignee_id: assignee || null,
+    title, notes: notes || null,
+    file_url, file_name, file_size,
+    status: 'pending',
+    submitted_at: new Date().toISOString(),
+  });
+
+  statusEl.textContent = '';
+  if (error) { window.bniToast('Submit failed: ' + error.message, 'error'); return; }
+
+  window.bniToast('Proposal submitted for approval', 'success');
+  closeProposalModal();
+}
+
+async function archiveContact(id) {
+  if (!confirm('Hide this contact from the list? (It stays in the database and can be unhidden later.)')) return;
+  const { error } = await window.sb.from('bni_contacts').update({ hidden: true }).eq('id', id);
+  if (error) {
+    window.bniToast('Failed to hide: ' + error.message, 'error');
+    return;
+  }
+  const c = _contacts.find(x => x.id === id);
+  if (c) c.hidden = true;
+  renderTable();
+  window.bniToast('Contact hidden', 'success');
+}
+
+function exportCSV() {
+  const data = _contacts;
+  const headers = ['Name','Company','Chapter','City','Phone','Email','Website','Specialty','Tenure','Status','Meeting Date','Notes','Added','Last Action'];
+  const rows = data.map(c => [c.name,c.company,c.chapter,c.city,c.phone,c.email,c.website,c.specialty,c.tenure,c.status,c.meetingDate,c.notes?.replace(/,/g,';'),c.addedAt,c.lastAction]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v||''}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `BNI_AI_Contacts_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function nextContactId() {
+  // Timestamp-based — max+1 over the in-memory list could collide with a row
+  // created elsewhere, and the upsert would silently overwrite that contact.
+  return 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+async function init() {
+  await window.loadDevelopers();
+  await window.loadChapters();
+  populateAssigneeDropdown('');
+  populateAssigneeFilter();
+  await refreshContacts();
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('add') === '1') {
+    openAddModal();
+  } else if (qs.get('edit')) {
+    editContact(qs.get('edit'));
+  } else if (qs.get('status')) {
+    const f = document.getElementById('statusFilter');
+    if (f) { f.value = qs.get('status'); renderTable(); }
+  }
+}
+init();
+</script>
+
+  </div><!-- end main content -->
+  <!-- PROPOSAL UPLOAD MODAL -->
+  <div id="proposalModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+      <div class="flex items-center justify-between px-6 py-5 border-b">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900">Upload Proposal</h2>
+          <div id="proposalContactName" class="text-sm text-blue-600 font-medium mt-0.5"></div>
+        </div>
+        <button onclick="closeProposalModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Proposal Title *</label>
+          <input id="proposalTitle" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Assignee (who prepared this?)</label>
+          <select id="proposalAssignee" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+            <option value="">— Select assignee —</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Attach File (PDF, Word, etc.)</label>
+          <input id="proposalFile" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+          <p class="text-xs text-gray-400 mt-1">Uploaded to secure storage — shareable link generated automatically</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Notes (optional)</label>
+          <textarea id="proposalNotes" rows="3" placeholder="Context, key points, or instructions for Dr. Murali..." class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"></textarea>
+        </div>
+        <span id="proposalStatus" class="text-xs text-blue-500 font-medium"></span>
+      </div>
+      <div class="flex items-center justify-between px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+        <a href="/bni/proposals.html" class="text-xs text-indigo-600 hover:underline font-medium">View all proposals</a>
+        <div class="flex gap-2">
+          <button onclick="closeProposalModal()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button onclick="submitProposal()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition shadow-sm">Submit for Approval</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Card scan modal ──────────────────────────────────────────────────── -->
+  <div id="cardScanModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-3">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 max-h-[95vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <div class="text-[10px] uppercase tracking-wider font-bold text-purple-600">📷 Card scan</div>
+          <h3 class="text-lg font-bold text-slate-900">Scan a business card</h3>
+        </div>
+        <button onclick="closeCardScan()" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+      </div>
+      <div id="scanStage1">
+        <p class="text-sm text-slate-600 mb-3">Point your camera at the card. The image is sent to Claude Vision and the extracted fields pre-fill the contact form — nothing is uploaded anywhere else.</p>
+        <video id="scanVideo" autoplay playsinline class="w-full rounded-lg bg-black border border-slate-200" style="aspect-ratio:4/3;object-fit:cover;"></video>
+        <div class="flex gap-2 mt-3">
+          <button onclick="captureCard()" id="scanCaptureBtn" class="flex-1 bg-purple-600 text-white py-2.5 rounded-lg font-semibold hover:bg-purple-700 inline-flex items-center justify-center gap-2"><span>📸</span>Capture</button>
+          <label class="flex-shrink-0 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
+            Upload
+            <input type="file" id="scanUpload" accept="image/*" capture="environment" class="hidden" onchange="onScanUpload(event)" />
+          </label>
+        </div>
+      </div>
+      <div id="scanStage2" class="hidden">
+        <img id="scanPreview" class="w-full rounded-lg border border-slate-200" />
+        <div id="scanStatus" class="mt-3 text-sm text-slate-600"></div>
+        <div id="scanFields" class="mt-3 hidden space-y-2 text-sm"></div>
+        <div class="flex gap-2 mt-3">
+          <button onclick="useScannedFields()" id="scanUseBtn" class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 hidden">Use these fields</button>
+          <button onclick="retakeScan()" class="px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Retake</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ── Business-card scanner via Claude Vision ──────────────────────────────
+  let _scanStream = null;
+  let _scanFields = null;
+
+  async function openCardScan() {
+    document.getElementById('cardScanModal').classList.remove('hidden');
+    document.getElementById('scanStage1').classList.remove('hidden');
+    document.getElementById('scanStage2').classList.add('hidden');
+    try {
+      _scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } } });
+      document.getElementById('scanVideo').srcObject = _scanStream;
+    } catch (e) {
+      window.bniToast?.('Camera unavailable — use Upload instead.', 'error');
+    }
+  }
+
+  function closeCardScan() {
+    document.getElementById('cardScanModal').classList.add('hidden');
+    if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
+  }
+
+  function retakeScan() {
+    document.getElementById('scanStage2').classList.add('hidden');
+    document.getElementById('scanStage1').classList.remove('hidden');
+    if (!_scanStream) openCardScan();
+  }
+
+  async function captureCard() {
+    const v = document.getElementById('scanVideo');
+    const c = document.createElement('canvas');
+    c.width  = v.videoWidth  || 1280;
+    c.height = v.videoHeight || 960;
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    const dataUrl = c.toDataURL('image/jpeg', 0.85);
+    if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
+    showScanResult(dataUrl);
+  }
+
+  function onScanUpload(ev) {
+    const f = ev.target.files?.[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = e => showScanResult(e.target.result);
+    r.readAsDataURL(f);
+  }
+
+  async function showScanResult(dataUrl) {
+    document.getElementById('scanStage1').classList.add('hidden');
+    document.getElementById('scanStage2').classList.remove('hidden');
+    document.getElementById('scanPreview').src = dataUrl;
+    document.getElementById('scanStatus').innerHTML = '<span class="inline-flex items-center gap-2"><span class="animate-spin">⏳</span>Reading card with Claude Vision…</span>';
+    document.getElementById('scanFields').classList.add('hidden');
+    document.getElementById('scanUseBtn').classList.add('hidden');
+
+    try {
+      const b64 = dataUrl.split(',')[1];
+      const data = await window.bniAI({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } },
+            { type: 'text', text: 'Extract the business-card fields. Return STRICT JSON only — no prose, no markdown — with these keys (use empty string if not present): {"first":"","last":"","company":"","title":"","email":"","phone":"","website":"","city":"","chapter":""}. Phone should be the most prominent mobile number, normalized with country code if visible. Chapter is only set if a BNI chapter name is visible. Output ONLY the JSON object.' }
+          ]
+        }]
+      });
+      const txt = (data?.content?.[0]?.text || '').trim();
+      const m = txt.match(/\{[\s\S]*\}/);
+      const json = m ? JSON.parse(m[0]) : null;
+      if (!json) throw new Error('Could not parse: ' + txt.slice(0, 100));
+      _scanFields = json;
+      document.getElementById('scanStatus').innerHTML = '<span class="text-green-700 font-semibold">✓ Read successfully</span>';
+      document.getElementById('scanFields').classList.remove('hidden');
+      document.getElementById('scanFields').innerHTML = Object.entries(json)
+        .filter(([_, v]) => v)
+        .map(([k, v]) => `<div class="flex gap-2"><div class="text-xs uppercase tracking-wider text-slate-500 w-20 flex-shrink-0">${k}</div><div class="font-medium text-slate-800">${v}</div></div>`)
+        .join('') || '<div class="text-slate-500 italic">No fields detected — try a clearer image.</div>';
+      document.getElementById('scanUseBtn').classList.remove('hidden');
+    } catch (e) {
+      document.getElementById('scanStatus').innerHTML = '<span class="text-red-600">Failed: ' + (e.message || e) + '</span>';
+    }
+  }
+
+  function useScannedFields() {
+    if (!_scanFields) return;
+    closeCardScan();
+    openAddModal();
+    setTimeout(() => {
+      const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+      set('f_name',     ((_scanFields.first || '') + ' ' + (_scanFields.last || '')).trim());
+      set('f_company',  _scanFields.company);
+      set('f_phone',    _scanFields.phone);
+      set('f_email',    _scanFields.email);
+      set('f_city',     _scanFields.city);
+      set('f_chapter',  _scanFields.chapter);
+      set('f_specialty', _scanFields.title);
+      set('f_website',  _scanFields.website);
+      const status = document.getElementById('f_status'); if (status) status.value = 'Identified';
+    }, 100);
+  }
+
+  // Honor ?scan=1 deep link from PWA shortcut
+  if (new URLSearchParams(location.search).get('scan') === '1') {
+    setTimeout(openCardScan, 300);
+  }
+  </script>
+
+  <script src="bni-sidebar.js"></script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proposal Approvals — BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .status-pending  { background:#fef3c7;color:#92400e;border-color:#fde68a; }
+    .status-approved { background:#dcfce7;color:#166534;border-color:#86efac; }
+    .status-rejected { background:#fee2e2;color:#991b1b;border-color:#fca5a5; }
+    .status-revision { background:#ede9fe;color:#5b21b6;border-color:#c4b5fd; }
+    .tab-btn { padding:7px 18px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid #e2e8f0;color:#64748b;cursor:pointer;transition:all 0.12s; }
+    .tab-btn.active { background:#2563eb;color:#fff;border-color:#2563eb; }
+    .tab-btn:hover:not(.active) { background:#f1f5f9;color:#0f172a; }
+    .proposal-card { background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px 22px;margin-bottom:14px;transition:box-shadow 0.12s; }
+    .proposal-card:hover { box-shadow:0 4px 16px rgba(15,23,42,0.07); }
+    .proposal-card.pending-card { border-left:4px solid #f59e0b; }
+    .proposal-card.approved-card { border-left:4px solid #22c55e; }
+    .proposal-card.rejected-card { border-left:4px solid #ef4444; }
+    .proposal-card.revision-card { border-left:4px solid #8b5cf6; }
+  </style>
+</head>
+<body>
+
+  <nav class="bg-white border-b sticky top-0 z-40 px-6 py-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-gray-900">Proposal Approvals</h1>
+        <div class="text-xs text-slate-500">Assignees upload proposals here — review, approve, or request revision before sending to contacts</div>
+      </div>
+      <div id="statsStrip" class="flex items-center gap-4 text-sm"></div>
+    </div>
+  </nav>
+
+  <div class="px-6 py-6 max-w-4xl mx-auto">
+
+    <!-- FILTER TABS -->
+    <div class="flex items-center gap-2 mb-6 flex-wrap">
+      <button class="tab-btn active" data-status="pending"  onclick="setTab('pending')">Pending</button>
+      <button class="tab-btn"        data-status="approved" onclick="setTab('approved')">Approved</button>
+      <button class="tab-btn"        data-status="rejected" onclick="setTab('rejected')">Rejected</button>
+      <button class="tab-btn"        data-status="revision" onclick="setTab('revision')">Needs Revision</button>
+      <button class="tab-btn"        data-status="all"      onclick="setTab('all')">All</button>
+      <span class="flex-1"></span>
+      <button onclick="loadProposals()" title="Refresh" class="text-sm text-gray-400 hover:text-blue-600 transition">
+        <i data-lucide="refresh-cw" style="width:15px;height:15px;vertical-align:-2px;"></i> Refresh
+      </button>
+    </div>
+
+    <!-- PROPOSAL LIST -->
+    <div id="proposalList"></div>
+    <div id="proposalEmpty" class="hidden py-20 text-center text-gray-400">
+      <i data-lucide="file-text" style="width:44px;height:44px;margin:0 auto 12px;display:block;opacity:0.3;"></i>
+      <p class="font-medium text-base">No proposals in this category</p>
+    </div>
+    <div id="proposalLoading" class="py-20 text-center text-gray-400 text-sm">Loading proposals...</div>
+  </div>
+
+  <!-- REVIEWER NOTES MODAL -->
+  <div id="reviewModal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+      <h3 id="reviewModalTitle" class="text-lg font-bold text-gray-900 mb-4">Add Reviewer Notes</h3>
+      <textarea id="reviewNotes" rows="4" placeholder="Optional note to the assignee..." class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 mb-4"></textarea>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeReviewModal()" class="px-4 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-200 hover:bg-gray-50">Cancel</button>
+        <button id="reviewConfirmBtn" class="px-4 py-2 text-sm font-semibold text-white rounded-lg bg-blue-600 hover:bg-blue-700">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+<script src="supabase-config.js"></script>
+<script src="auth-guard.js"></script>
+<script>
+let _proposals = [];
+let _contacts  = {};
+let _devs      = {};
+let _activeTab = 'pending';
+
+async function loadProposals() {
+  document.getElementById('proposalLoading').classList.remove('hidden');
+  document.getElementById('proposalList').innerHTML = '';
+  document.getElementById('proposalEmpty').classList.add('hidden');
+
+  const [{ data: props }, { data: contacts }, { data: devs }] = await Promise.all([
+    window.sb.from('bni_proposals').select('*').order('submitted_at', { ascending: false }),
+    window.sb.from('bni_contacts').select('id,first,last,company,status'),
+    window.sb.from('developers').select('id,name'),
+  ]);
+
+  _proposals = props || [];
+  _contacts  = Object.fromEntries((contacts || []).map(c => [c.id, c]));
+  _devs      = Object.fromEntries((devs     || []).map(d => [d.id, d]));
+
+  document.getElementById('proposalLoading').classList.add('hidden');
+  renderStats();
+  renderList();
+}
+
+function renderStats() {
+  const counts = { pending:0, approved:0, rejected:0, revision:0 };
+  _proposals.forEach(p => { if (counts[p.status] !== undefined) counts[p.status]++; });
+  document.getElementById('statsStrip').innerHTML = `
+    <span class="px-3 py-1 rounded-full text-xs font-bold border status-pending">${counts.pending} Pending</span>
+    <span class="px-3 py-1 rounded-full text-xs font-bold border status-approved">${counts.approved} Approved</span>
+    <span class="px-3 py-1 rounded-full text-xs font-bold border status-rejected">${counts.rejected} Rejected</span>
+    <span class="text-xs text-gray-400">${_proposals.length} Total</span>
+  `;
+}
+
+function setTab(status) {
+  _activeTab = status;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.status === status));
+  renderList();
+}
+
+function renderList() {
+  const rows = _activeTab === 'all' ? _proposals : _proposals.filter(p => p.status === _activeTab);
+  const list = document.getElementById('proposalList');
+  if (!rows.length) {
+    list.innerHTML = '';
+    document.getElementById('proposalEmpty').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('proposalEmpty').classList.add('hidden');
+
+  list.innerHTML = rows.map(p => {
+    const contact  = _contacts[p.contact_id] || {};
+    const assignee = _devs[p.assignee_id]   || {};
+    const name     = [contact.first, contact.last].filter(Boolean).join(' ') || 'Unknown Contact';
+    const devName  = assignee.name || 'Unknown';
+    const date     = p.submitted_at ? new Date(p.submitted_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
+    const statusCls = `status-${p.status}`;
+    const cardCls   = `${p.status}-card`;
+
+    const fileBtn = p.file_url
+      ? `<a href="${escHtml(p.file_url)}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 border border-blue-200 bg-blue-50 rounded-lg px-3 py-1.5 transition hover:bg-blue-100">
+           <i data-lucide="file-text" style="width:13px;height:13px;"></i>${escHtml(p.file_name || 'View File')}
+         </a>`
+      : `<span class="text-xs text-gray-400 italic">No file attached</span>`;
+
+    const reviewerNotes = p.reviewer_notes
+      ? `<div class="mt-3 p-2.5 rounded-lg bg-amber-50 border border-amber-100 text-xs text-amber-800"><strong>Reviewer note:</strong> ${escHtml(p.reviewer_notes)}</div>`
+      : '';
+
+    const actionBtns = p.status === 'pending' ? `
+      <div class="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
+        <button onclick="reviewProposal('${p.id}','approved')"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition">
+          <i data-lucide="check" style="width:13px;height:13px;"></i>Approve
+        </button>
+        <button onclick="reviewProposal('${p.id}','revision')"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 transition">
+          <i data-lucide="edit-2" style="width:13px;height:13px;"></i>Needs Revision
+        </button>
+        <button onclick="reviewProposal('${p.id}','rejected')"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-50 transition">
+          <i data-lucide="x" style="width:13px;height:13px;"></i>Reject
+        </button>
+      </div>` : '';
+
+    const reviewedAt = p.reviewed_at
+      ? `<span class="text-xs text-gray-400">Reviewed ${new Date(p.reviewed_at).toLocaleDateString('en-IN', { day:'numeric', month:'short' })}</span>`
+      : '';
+
+    return `
+      <div class="proposal-card ${cardCls}">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="font-bold text-gray-900 text-base">${escHtml(p.title)}</span>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold border ${statusCls}">${p.status.charAt(0).toUpperCase()+p.status.slice(1)}</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+              <span><i data-lucide="user" style="width:11px;height:11px;vertical-align:-1px;"></i> <strong class="text-gray-700">${escHtml(name)}</strong>${contact.company ? ' · ' + escHtml(contact.company) : ''}</span>
+              <span><i data-lucide="briefcase" style="width:11px;height:11px;vertical-align:-1px;"></i> Submitted by <strong class="text-gray-700">${escHtml(devName)}</strong></span>
+              <span><i data-lucide="calendar" style="width:11px;height:11px;vertical-align:-1px;"></i> ${date}</span>
+              ${reviewedAt}
+            </div>
+          </div>
+          <div class="flex-shrink-0">${fileBtn}</div>
+        </div>
+        ${p.notes ? `<p class="mt-3 text-sm text-gray-600 leading-relaxed">${escHtml(p.notes)}</p>` : ''}
+        ${reviewerNotes}
+        ${actionBtns}
+      </div>`;
+  }).join('');
+
+  if (window.bniRenderIcons) window.bniRenderIcons();
+}
+
+let _pendingReviewId = null;
+let _pendingReviewStatus = null;
+
+function reviewProposal(id, status) {
+  _pendingReviewId     = id;
+  _pendingReviewStatus = status;
+  document.getElementById('reviewNotes').value = '';
+  const titles = { approved:'Approve Proposal', rejected:'Reject Proposal', revision:'Request Revision' };
+  document.getElementById('reviewModalTitle').textContent = titles[status] || 'Review';
+  const colors = { approved:'bg-green-600 hover:bg-green-700', rejected:'bg-red-600 hover:bg-red-700', revision:'bg-violet-600 hover:bg-violet-700' };
+  const btn = document.getElementById('reviewConfirmBtn');
+  btn.className = `px-4 py-2 text-sm font-semibold text-white rounded-lg ${colors[status] || 'bg-blue-600 hover:bg-blue-700'}`;
+  btn.textContent = { approved:'Approve', rejected:'Reject', revision:'Request Revision' }[status] || 'Confirm';
+  document.getElementById('reviewModal').classList.remove('hidden');
+}
+
+function closeReviewModal() {
+  document.getElementById('reviewModal').classList.add('hidden');
+  _pendingReviewId = _pendingReviewStatus = null;
+}
+
+document.getElementById('reviewConfirmBtn').onclick = async () => {
+  if (!_pendingReviewId) return;
+  const notes = document.getElementById('reviewNotes').value.trim();
+  const { error } = await window.sb.from('bni_proposals').update({
+    status: _pendingReviewStatus,
+    reviewer_notes: notes || null,
+    reviewed_at: new Date().toISOString(),
+  }).eq('id', _pendingReviewId);
+  if (error) { window.bniToast('Update failed: ' + error.message, 'error'); return; }
+  window.bniToast({ approved:'Proposal approved!', rejected:'Proposal rejected.', revision:'Revision requested.' }[_pendingReviewStatus] || 'Updated', 'success');
+  closeReviewModal();
+  await loadProposals();
+};
+
+function escHtml(t) {
+  return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+(async () => { await loadProposals(); })();
+</script>
+<script src="bni-sidebar.js"></script>
+</body>
+</html>

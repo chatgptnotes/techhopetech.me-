@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sprints — DevOps · BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family:'Inter',sans-serif; background:#f8fafc; color:#0f172a; }
+    .glass { background:white; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+    .state-pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; }
+    .sprint-state-planned   { background:#fef3c7; color:#92400e; }
+    .sprint-state-active    { background:#dbeafe; color:#1e40af; }
+    .sprint-state-completed { background:#dcfce7; color:#15803d; }
+  </style>
+</head>
+<body>
+  <main class="px-4 sm:px-8 py-6 max-w-[1400px] mx-auto">
+    <header class="mb-5 flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-900" style="letter-spacing:-0.02em">Sprints</h1>
+        <p class="text-slate-500 text-sm mt-0.5">Capacity planning + burndown for the active sprint.</p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <select id="projectSel" onchange="onProjectChange()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold bg-white"></select>
+        <select id="sprintSel"  onchange="onSprintChange()"  class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"></select>
+        <button onclick="openNewSprint()" class="bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-blue-800">+ New sprint</button>
+      </div>
+    </header>
+
+    <div id="loading" class="py-12 text-center text-slate-400">Loading…</div>
+
+    <div id="content" class="hidden">
+      <!-- Sprint header -->
+      <div class="glass rounded-2xl p-5 mb-5">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <h2 id="s_name" class="text-xl font-bold text-slate-900"></h2>
+              <span id="s_state" class="state-pill"></span>
+            </div>
+            <p id="s_dates" class="text-xs text-slate-500"></p>
+            <p id="s_goal" class="text-sm text-slate-700 mt-2 italic"></p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="setSprintState('active')"    class="text-xs px-2.5 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-bold hover:bg-blue-100">Mark Active</button>
+            <button onclick="setSprintState('completed')" class="text-xs px-2.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-bold hover:bg-emerald-100">Complete</button>
+            <button onclick="editSprint()"                class="text-xs px-2.5 py-1.5 bg-slate-50 text-slate-700 border border-slate-200 rounded font-bold hover:bg-slate-100">Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI tiles -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5" id="kpis"></div>
+
+      <div class="grid lg:grid-cols-[2fr_1fr] gap-5 mb-5">
+        <!-- Burndown -->
+        <div class="glass rounded-2xl p-5">
+          <h3 class="text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">Burndown</h3>
+          <div id="burndown" class="w-full"></div>
+          <div class="flex items-center justify-center gap-5 mt-3 text-xs text-slate-500">
+            <div class="flex items-center gap-1.5"><span class="w-4 h-1 bg-slate-400 rounded-full"></span> Ideal</div>
+            <div class="flex items-center gap-1.5"><span class="w-4 h-1 bg-blue-600 rounded-full"></span> Actual remaining</div>
+          </div>
+        </div>
+
+        <!-- Capacity -->
+        <div class="glass rounded-2xl p-5">
+          <h3 class="text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">Capacity by developer</h3>
+          <div id="capacity" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- Item list -->
+      <div class="glass rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Items in sprint</h3>
+          <button onclick="addItemsToSprint()" class="text-xs text-blue-600 font-bold hover:underline">+ Pull from backlog</button>
+        </div>
+        <div id="itemList"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- New / edit sprint modal -->
+  <div id="sprintModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 id="sm_heading" class="text-lg font-bold">New sprint</h3>
+        <button onclick="closeSprintModal()" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+      </div>
+      <form onsubmit="saveSprint(event)" class="space-y-3 text-sm">
+        <input type="hidden" id="sm_id" />
+        <label class="block"><span class="block text-xs font-bold text-slate-600 mb-1">Name *</span>
+          <input id="sm_name" required class="w-full border rounded-lg px-3 py-2" placeholder="Sprint 12 · Search overhaul" /></label>
+        <label class="block"><span class="block text-xs font-bold text-slate-600 mb-1">Goal</span>
+          <input id="sm_goal" class="w-full border rounded-lg px-3 py-2" placeholder="Ship the new search to staging" /></label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="block"><span class="block text-xs font-bold text-slate-600 mb-1">Start *</span>
+            <input id="sm_start" type="date" required class="w-full border rounded-lg px-3 py-2" /></label>
+          <label class="block"><span class="block text-xs font-bold text-slate-600 mb-1">End *</span>
+            <input id="sm_end" type="date" required class="w-full border rounded-lg px-3 py-2" /></label>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 bg-blue-700 text-white py-2 rounded-lg font-bold hover:bg-blue-800">Save</button>
+          <button type="button" onclick="closeSprintModal()" class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="supabase-config.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="bni-sidebar.js"></script>
+  <script>
+  let _projects=[], _sprints=[], _items=[], _devs=[], _projectId=null, _sprintId=null;
+  const STATE_BG = { 'To Do':'#f1f5f9', 'In Progress':'#dbeafe', 'Review':'#fef3c7', 'Done':'#dcfce7' };
+  const STATE_FG = { 'To Do':'#475569', 'In Progress':'#1e40af', 'Review':'#92400e', 'Done':'#15803d' };
+
+  function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+  function devName(id) { const d = _devs.find(x => x.id === id); return d ? d.name : ''; }
+
+  async function loadAll() {
+    const [{data: ps}, {data: sprints}, {data: items}] = await Promise.all([
+      window.sb.from('dev_projects').select('*').eq('hidden', false).order('name'),
+      window.sb.from('dev_sprints').select('*').order('start_date', { ascending: false }),
+      window.sb.from('dev_work_items').select('*'),
+    ]);
+    _projects = ps || []; _sprints = sprints || []; _items = items || []; _devs = window.BNI_DEVS || [];
+    _projectId = localStorage.getItem('dev_project') || (_projects[0] && _projects[0].id) || null;
+    document.getElementById('projectSel').innerHTML = _projects.map(p => `<option value="${p.id}"${p.id===_projectId?' selected':''}>${escapeHtml(p.name)}</option>`).join('');
+    refreshSprintPicker();
+  }
+
+  function refreshSprintPicker() {
+    const projSprints = _sprints.filter(s => s.project_id === _projectId);
+    const sel = document.getElementById('sprintSel');
+    sel.innerHTML = projSprints.length
+      ? projSprints.map(s => `<option value="${s.id}">${escapeHtml(s.name)}  ·  ${s.start_date} → ${s.end_date}</option>`).join('')
+      : '<option value="">— No sprints yet — click + New sprint —</option>';
+    if (projSprints.length) {
+      const active = projSprints.find(s => s.state === 'active') || projSprints[0];
+      _sprintId = active.id;
+      sel.value = _sprintId;
+      render();
+    } else {
+      _sprintId = null;
+      document.getElementById('content').classList.add('hidden');
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('loading').textContent = 'No sprints yet — create one to begin.';
+    }
+  }
+
+  function onProjectChange() {
+    _projectId = document.getElementById('projectSel').value;
+    localStorage.setItem('dev_project', _projectId);
+    refreshSprintPicker();
+  }
+  function onSprintChange() {
+    _sprintId = document.getElementById('sprintSel').value;
+    render();
+  }
+
+  function render() {
+    const sprint = _sprints.find(s => s.id === _sprintId);
+    if (!sprint) return;
+    const items = _items.filter(i => i.sprint_id === _sprintId);
+
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+
+    // Header
+    document.getElementById('s_name').textContent = sprint.name;
+    document.getElementById('s_state').className  = 'state-pill sprint-state-' + sprint.state;
+    document.getElementById('s_state').textContent = sprint.state;
+    document.getElementById('s_dates').textContent = `${sprint.start_date} → ${sprint.end_date}  ·  ${daysOf(sprint)} days`;
+    document.getElementById('s_goal').textContent  = sprint.goal ? `Goal: ${sprint.goal}` : '';
+
+    // KPIs
+    const totalPts = items.reduce((s,i)=>s+(i.points||0), 0);
+    const donePts  = items.filter(i=>i.state==='Done').reduce((s,i)=>s+(i.points||0), 0);
+    const remPts   = totalPts - donePts;
+    const pct      = totalPts ? Math.round(donePts / totalPts * 100) : 0;
+    const dayInfo  = elapsedDays(sprint);
+    document.getElementById('kpis').innerHTML = [
+      { label:'Items',         val:items.length,                color:'#1e40af' },
+      { label:'Story points',  val:totalPts,                    color:'#7c3aed' },
+      { label:'Completed pts', val:donePts,                     color:'#15803d' },
+      { label:'Remaining pts', val:remPts,                      color:'#c2410c' },
+      { label:'Progress',      val:pct + '%',                   color:'#0891b2' },
+    ].map(c => `<div class="glass rounded-xl px-4 py-3">
+      <div class="text-2xl font-extrabold" style="color:${c.color}">${c.val}</div>
+      <div class="text-[11px] uppercase tracking-wider font-bold text-slate-500 mt-0.5">${c.label}</div>
+    </div>`).join('');
+
+    renderBurndown(sprint, items);
+    renderCapacity(items);
+    renderItemList(items);
+  }
+
+  function daysOf(sprint) {
+    const a = new Date(sprint.start_date), b = new Date(sprint.end_date);
+    return Math.max(1, Math.round((b - a) / 86400000) + 1);
+  }
+  function elapsedDays(sprint) {
+    const a = new Date(sprint.start_date), b = new Date(sprint.end_date);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const elapsed = Math.max(0, Math.min(daysOf(sprint), Math.round((today - a)/86400000) + 1));
+    return { elapsed, total: daysOf(sprint) };
+  }
+
+  function renderBurndown(sprint, items) {
+    const total = items.reduce((s,i)=>s+(i.points||0), 0);
+    const days  = daysOf(sprint);
+    const W = 700, H = 240, P = 30;
+    const innerW = W - 2*P, innerH = H - 2*P;
+    const idealLine = `M${P} ${P} L${P + innerW} ${P + innerH}`;
+
+    // Build actual burndown by sprint day. We approximate "done at end of day d"
+    // as: items whose state===Done and updated_at <= start_date + d days.
+    const start = new Date(sprint.start_date);
+    const points = [];
+    for (let d = 0; d <= days; d++) {
+      const cutoff = new Date(start); cutoff.setDate(cutoff.getDate() + d); cutoff.setHours(23,59,59,999);
+      const done = items.filter(i => i.state === 'Done' && i.updated_at && new Date(i.updated_at) <= cutoff)
+                        .reduce((s,i)=>s+(i.points||0), 0);
+      const remaining = total - done;
+      points.push({ d, remaining });
+    }
+    const today = new Date(); today.setHours(0,0,0,0);
+    const elapsed = Math.max(0, Math.min(days, Math.round((today - start)/86400000)));
+    const visible = points.slice(0, elapsed + 1);
+
+    const x = d => P + (d / days) * innerW;
+    const y = pts => P + (total > 0 ? (1 - pts/total) * innerH : 0);
+    const path = visible.map((p, i) => `${i ? 'L' : 'M'}${x(p.d)} ${y(p.remaining)}`).join(' ');
+
+    document.getElementById('burndown').innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" class="w-full h-auto">
+        <line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="#e2e8f0" />
+        <line x1="${P}" y1="${P}"   x2="${P}"   y2="${H-P}" stroke="#e2e8f0" />
+        <text x="${P}" y="${P-10}" font-size="10" fill="#94a3b8" font-weight="700">${total} pts</text>
+        <text x="${W-P}" y="${H-P+18}" text-anchor="end" font-size="10" fill="#94a3b8" font-weight="700">Day ${days}</text>
+        <text x="${P}" y="${H-P+18}" font-size="10" fill="#94a3b8" font-weight="700">Day 0</text>
+        <path d="${idealLine}" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 4"/>
+        ${total > 0 ? `<path d="${path}" fill="none" stroke="#2563eb" stroke-width="2.5" />` : ''}
+        ${visible.map(p => `<circle cx="${x(p.d)}" cy="${y(p.remaining)}" r="3" fill="#2563eb"/>`).join('')}
+      </svg>
+      ${total === 0 ? '<p class="text-center text-slate-400 text-xs">Add story points to items in this sprint to see the burndown.</p>' : ''}
+    `;
+  }
+
+  function renderCapacity(items) {
+    const byDev = {};
+    items.forEach(it => {
+      const id = it.assignee_id || '__none__';
+      byDev[id] = byDev[id] || { open: 0, done: 0 };
+      if (it.state === 'Done') byDev[id].done += (it.points || 0);
+      else                     byDev[id].open += (it.points || 0);
+    });
+    const rows = Object.entries(byDev).map(([id, v]) => {
+      const name = id === '__none__' ? '— Unassigned —' : devName(id) || '(unknown)';
+      const total = v.open + v.done;
+      const pct = total ? Math.round(v.done / total * 100) : 0;
+      return `<div>
+        <div class="flex items-center justify-between text-sm mb-1">
+          <span class="font-semibold text-slate-800">${escapeHtml(name)}</span>
+          <span class="text-xs text-slate-500"><span class="font-bold text-slate-800">${v.open + v.done}</span> pts · ${pct}% done</span>
+        </div>
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden flex">
+          <div style="background:#10b981;width:${total ? (v.done/total*100) : 0}%;"></div>
+          <div style="background:#3b82f6;width:${total ? (v.open/total*100) : 0}%;"></div>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('capacity').innerHTML = rows || '<p class="text-slate-400 text-xs italic">No items assigned yet.</p>';
+  }
+
+  function renderItemList(items) {
+    if (!items.length) {
+      document.getElementById('itemList').innerHTML = '<p class="text-slate-400 text-sm py-4 text-center">No items in this sprint. Click "+ Pull from backlog" to add some.</p>';
+      return;
+    }
+    const sorted = items.slice().sort((a,b) => {
+      const order = { 'To Do':0, 'In Progress':1, 'Review':2, 'Done':3 };
+      return (order[a.state]||0) - (order[b.state]||0);
+    });
+    document.getElementById('itemList').innerHTML = `<table class="w-full text-sm">
+      <thead><tr class="text-left text-xs uppercase tracking-wider font-bold text-slate-500 border-b">
+        <th class="pb-2">ID</th><th class="pb-2">Title</th><th class="pb-2">State</th><th class="pb-2">Type</th><th class="pb-2">Pts</th><th class="pb-2">Assignee</th><th class="pb-2"></th>
+      </tr></thead>
+      <tbody>${sorted.map(i => `<tr class="border-b border-slate-50 hover:bg-slate-50">
+        <td class="py-2 font-mono text-xs text-slate-500"><a href="dev-item.html?id=${encodeURIComponent(i.id)}" class="text-blue-700 hover:underline">${escapeHtml(i.id)}</a></td>
+        <td class="py-2 text-slate-800 font-semibold">${escapeHtml(i.title)}</td>
+        <td class="py-2"><span class="state-pill" style="background:${STATE_BG[i.state]||'#f1f5f9'};color:${STATE_FG[i.state]||'#475569'}">${escapeHtml(i.state)}</span></td>
+        <td class="py-2 text-xs">${escapeHtml(i.type)}</td>
+        <td class="py-2 text-xs">${i.points ?? '—'}</td>
+        <td class="py-2 text-xs">${escapeHtml(devName(i.assignee_id) || '—')}</td>
+        <td class="py-2 text-xs"><button onclick="removeFromSprint('${i.id}')" class="text-slate-400 hover:text-red-600">remove</button></td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  async function removeFromSprint(id) {
+    await window.sb.from('dev_work_items').update({ sprint_id: null }).eq('id', id);
+    const { data } = await window.sb.from('dev_work_items').select('*');
+    _items = data || [];
+    render();
+  }
+
+  async function addItemsToSprint() {
+    const backlog = _items.filter(i => i.project_id === _projectId && !i.sprint_id && i.state !== 'Done');
+    if (!backlog.length) { alert('No backlog items in this project.'); return; }
+    const opts = backlog.map(i => `${i.id} · [${i.state}] ${i.title}${i.points ? ` (${i.points}pts)` : ''}`).join('\n');
+    const pick = prompt(`Paste comma-separated IDs to add to ${_sprints.find(s=>s.id===_sprintId).name}:\n\n${opts}`);
+    if (!pick) return;
+    const ids = pick.split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+    const valid = ids.filter(id => backlog.some(b => b.id === id));
+    if (!valid.length) { alert('No valid IDs.'); return; }
+    await window.sb.from('dev_work_items').update({ sprint_id: _sprintId }).in('id', valid);
+    const { data } = await window.sb.from('dev_work_items').select('*');
+    _items = data || [];
+    render();
+  }
+
+  // ── Sprint create / edit ──────────────────────────────────────────────────
+  function openNewSprint() {
+    document.getElementById('sm_id').value = '';
+    document.getElementById('sm_name').value = '';
+    document.getElementById('sm_goal').value = '';
+    const today = new Date(), end = new Date(); end.setDate(end.getDate() + 13);
+    document.getElementById('sm_start').value = today.toISOString().slice(0,10);
+    document.getElementById('sm_end').value   = end.toISOString().slice(0,10);
+    document.getElementById('sm_heading').textContent = 'New sprint';
+    document.getElementById('sprintModal').classList.remove('hidden');
+  }
+  function editSprint() {
+    const s = _sprints.find(x => x.id === _sprintId); if (!s) return;
+    document.getElementById('sm_id').value    = s.id;
+    document.getElementById('sm_name').value  = s.name;
+    document.getElementById('sm_goal').value  = s.goal;
+    document.getElementById('sm_start').value = s.start_date;
+    document.getElementById('sm_end').value   = s.end_date;
+    document.getElementById('sm_heading').textContent = 'Edit sprint';
+    document.getElementById('sprintModal').classList.remove('hidden');
+  }
+  function closeSprintModal() { document.getElementById('sprintModal').classList.add('hidden'); }
+
+  async function saveSprint(ev) {
+    ev.preventDefault();
+    const existingId = document.getElementById('sm_id').value;
+    const name  = document.getElementById('sm_name').value.trim();
+    const goal  = document.getElementById('sm_goal').value.trim();
+    const start = document.getElementById('sm_start').value;
+    const end   = document.getElementById('sm_end').value;
+    if (new Date(end) < new Date(start)) { alert('End must be after start'); return; }
+    const id = existingId || `sp_${Date.now().toString(36)}`;
+    const payload = { id, project_id: _projectId, name, goal, start_date: start, end_date: end };
+    const { error } = await window.sb.from('dev_sprints').upsert(payload);
+    if (error) { alert(error.message); return; }
+    closeSprintModal();
+    await loadAll();
+    _sprintId = id;
+    document.getElementById('sprintSel').value = id;
+    render();
+  }
+
+  async function setSprintState(state) {
+    if (!_sprintId) return;
+    if (state === 'active') {
+      // Only one active sprint per project
+      await window.sb.from('dev_sprints').update({ state: 'completed' })
+        .eq('project_id', _projectId).eq('state', 'active').neq('id', _sprintId);
+    }
+    await window.sb.from('dev_sprints').update({ state }).eq('id', _sprintId);
+    const { data } = await window.sb.from('dev_sprints').select('*').order('start_date', { ascending: false });
+    _sprints = data || [];
+    render();
+  }
+
+  async function init() {
+    await window.loadDevelopers?.();
+    await loadAll();
+  }
+  init();
+  </script>
+</body>
+</html>

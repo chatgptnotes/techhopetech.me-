@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="auth-guard.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Today · BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; }
+    .glass { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(15,23,42,0.04); }
+    .group-header { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 14px 4px 10px; }
+    .group-header .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .group-count { font-size: 11px; background: white; padding: 2px 9px; border-radius: 999px; border: 1px solid #e2e8f0; color: #64748b; font-weight: 700; }
+    .row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; transition: all 0.15s; }
+    .row:hover { box-shadow: 0 4px 12px rgba(15,23,42,0.07); border-color: #cbd5e1; transform: translateY(-1px); }
+    .row.done { opacity: 0.55; }
+    .avatar { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; overflow: hidden; }
+    .action-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; border: 1px solid transparent; cursor: pointer; transition: all 0.12s; text-decoration: none; white-space: nowrap; letter-spacing: -0.01em; }
+    .action-btn [data-lucide] { width: 13px; height: 13px; stroke-width: 2.25; }
+    .act-call { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .act-call:hover { background: #dbeafe; }
+    .act-wa { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+    .act-wa:hover { background: #d1fae5; }
+    .act-done { background: #f0fdf4; color: #15803d; border-color: #86efac; }
+    .act-done:hover { background: #dcfce7; }
+    .act-snooze { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .act-snooze:hover { background: #ffedd5; }
+    .act-open { background: transparent; color: #64748b; border-color: #e2e8f0; }
+    .act-open:hover { background: #f1f5f9; color: #0f172a; }
+    .wa-dropdown { position: relative; display: inline-block; }
+    .wa-dropdown-menu { position: absolute; top: 100%; right: 0; margin-top: 4px; background: white; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 10px 25px rgba(15,23,42,0.1); min-width: 200px; z-index: 30; overflow: hidden; display: none; }
+    .wa-dropdown.open .wa-dropdown-menu { display: block; }
+    .wa-dropdown-menu a, .wa-dropdown-menu button { display: block; padding: 8px 12px; font-size: 0.8rem; color: #0f172a; text-decoration: none; width: 100%; text-align: left; border: 0; background: transparent; cursor: pointer; }
+    .wa-dropdown-menu a:hover, .wa-dropdown-menu button:hover { background: #f0fdf4; color: #047857; }
+    .reminder-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em; }
+    .pill-overdue { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .pill-today   { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .pill-future  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .date-tile-lg { width: 76px; min-height: 76px; flex-shrink: 0; border-radius: 14px; padding: 8px 6px; text-align: center; border: 2px solid; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
+    .date-tile-lg .dt-day { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; line-height: 1; }
+    .date-tile-lg .dt-num { font-size: 1.9rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+    .date-tile-lg .dt-mon { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; line-height: 1; }
+    .date-tile-lg.tile-empty { background: #f8fafc; border-color: #e2e8f0; color: #cbd5e1; }
+    .date-tile-lg.tile-overdue { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+    .date-tile-lg.tile-today   { background: #fffbeb; border-color: #fde68a; color: #c2410c; }
+    .date-tile-lg.tile-future  { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+    .task-label { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; font-weight: 600; margin-top: 4px; letter-spacing: -0.005em; }
+    .task-overdue { color: #b91c1c; }
+    .task-today   { color: #c2410c; }
+    .task-future  { color: #1d4ed8; }
+    @media (max-width: 640px) {
+      .date-tile-lg { width: 64px; min-height: 64px; padding: 6px 4px; }
+      .date-tile-lg .dt-num { font-size: 1.5rem; }
+    }
+    .streak { display: inline-flex; gap: 3px; }
+    .streak-dot { width: 7px; height: 7px; border-radius: 50%; background: #e2e8f0; }
+    .streak-dot.done { background: #22c55e; }
+    .todo-tab { padding: 4px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 600; border: 1.5px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; transition: all 0.12s; }
+    .todo-tab:hover { border-color: #2563eb; color: #2563eb; }
+    .todo-tab.active { background: #2563eb; color: white; border-color: #2563eb; }
+  </style>
+</head>
+<body>
+<div id="bni-sidebar-mount"></div>
+
+<main class="p-8 max-w-5xl" style="margin-left:240px;">
+  <!-- Page header -->
+  <div class="flex items-start justify-between mb-6 flex-wrap gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#2563eb,#4f46e5 55%,#7c3aed);color:white;"><i data-lucide="sunrise" style="width:22px;height:22px"></i></div>
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-900" style="letter-spacing:-0.02em">Today, <span id="todayLabel" class="text-blue-600"></span></h1>
+        <p class="text-sm text-slate-500">Your daily hub — to-do list and follow-up queue. Add tasks, call, WhatsApp, and mark things done.</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="/bni/zoom-completed.html" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 font-medium"><i data-lucide="users"></i>All Meetings</a>
+      <button onclick="refresh()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 font-medium"><i data-lucide="refresh-cw"></i>Refresh</button>
+    </div>
+  </div>
+
+  <!-- Stats strip -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" id="statsRow"></div>
+
+  <!-- Weekly goals strip -->
+  <div class="glass rounded-2xl p-4 mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <div class="text-xs text-slate-400 uppercase tracking-wide font-bold">This week's goals</div>
+        <div class="text-sm text-slate-500" id="weekRangeLabel"></div>
+      </div>
+      <button onclick="document.getElementById('goalSettings').classList.toggle('hidden')" class="text-xs text-blue-600 hover:underline">Adjust targets</button>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="goalsRow"></div>
+    <div id="goalSettings" class="hidden mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 md:grid-cols-5 gap-2">
+      <label class="text-xs flex flex-col gap-1"><span class="text-slate-500 font-semibold">1-2-1s</span>
+        <input id="t_meets" type="number" min="0" class="border rounded px-2 py-1 text-sm" /></label>
+      <label class="text-xs flex flex-col gap-1"><span class="text-slate-500 font-semibold">Proposals out</span>
+        <input id="t_props" type="number" min="0" class="border rounded px-2 py-1 text-sm" /></label>
+      <label class="text-xs flex flex-col gap-1"><span class="text-slate-500 font-semibold">Replies</span>
+        <input id="t_replies" type="number" min="0" class="border rounded px-2 py-1 text-sm" /></label>
+      <label class="text-xs flex flex-col gap-1"><span class="text-slate-500 font-semibold">Conversions</span>
+        <input id="t_conv" type="number" min="0" class="border rounded px-2 py-1 text-sm" /></label>
+      <label class="text-xs flex flex-col gap-1"><span class="text-slate-500 font-semibold">Pipeline (₹)</span>
+        <input id="t_pipe" type="number" min="0" step="1000" class="border rounded px-2 py-1 text-sm" /></label>
+      <button onclick="saveGoalTargets()" class="md:col-span-5 mt-1 bg-blue-600 text-white text-xs font-bold py-1.5 rounded hover:bg-blue-700">Save targets</button>
+    </div>
+  </div>
+
+  <!-- TO-DO LIST -->
+  <div class="glass mb-5 overflow-hidden" id="todoPanel">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <i data-lucide="check-square" style="color:#2563eb;width:17px;height:17px;flex-shrink:0;"></i>
+        <span class="font-bold text-slate-800 text-sm" style="letter-spacing:-0.01em">To-Do List</span>
+        <span id="todoBadge" class="hidden text-xs bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full"></span>
+      </div>
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <button class="todo-tab active" data-tab="today" onclick="switchTodoTab('today')">Today</button>
+        <button class="todo-tab" data-tab="tomorrow" onclick="switchTodoTab('tomorrow')">Tomorrow</button>
+        <input type="date" id="todoDatePicker" onchange="switchTodoTab('pick')"
+          class="text-xs border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200" style="max-width:145px;" />
+      </div>
+    </div>
+    <div class="px-5 py-2.5 border-b border-slate-50 flex gap-2">
+      <input id="newTodoInput" type="text" placeholder="Add a task for this day…"
+        class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
+        onkeydown="if(event.key==='Enter')addTodo()" />
+      <button onclick="addTodo()"
+        class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition flex items-center gap-1">
+        <i data-lucide="plus" style="width:14px;height:14px"></i>Add
+      </button>
+    </div>
+    <div id="todoList" class="divide-y divide-slate-50" style="max-height:208px;overflow:hidden;transition:max-height 0.3s ease;"></div>
+    <button id="todoExpandBtn" onclick="toggleTodoExpand()" class="hidden w-full py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 border-t border-slate-100 transition flex items-center justify-center gap-1">
+      <i data-lucide="chevron-down" id="todoExpandIcon" style="width:13px;height:13px;transition:transform 0.2s;"></i>
+      <span id="todoExpandLabel">Show all</span>
+    </button>
+    <div id="todoEmpty" class="hidden px-5 py-5 text-center text-slate-400 text-sm">Nothing scheduled for this day — add a task above.</div>
+    <div id="todoLoading" class="px-5 py-5 text-center text-slate-400 text-sm">Loading…</div>
+  </div>
+
+  <!-- Scope filter -->
+  <div class="flex items-center gap-2 mb-4 flex-wrap">
+    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Assignee:</span>
+    <select id="scope" onchange="render()" class="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white">
+      <option value="all">Everyone</option>
+    </select>
+    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 ml-4">Show:</span>
+    <button class="scope-btn active" data-scope="active" onclick="setCompletedScope('active')">Pending</button>
+    <button class="scope-btn" data-scope="done" onclick="setCompletedScope('done')">Done Today</button>
+    <button class="scope-btn" data-scope="all" onclick="setCompletedScope('all')">Everything</button>
+  </div>
+
+  <div id="loadingState" class="py-20 text-center text-slate-400">
+    <div class="flex justify-center mb-3" style="color:#2563eb"><i data-lucide="loader-2" class="animate-spin" style="width:28px;height:28px"></i></div>
+    <p class="text-sm">Loading your follow-ups…</p>
+  </div>
+  <div id="emptyState" class="hidden py-20 text-center text-slate-400">
+    <div class="flex justify-center mb-3"><i data-lucide="check-circle-2" style="width:36px;height:36px;color:#22c55e"></i></div>
+    <p class="font-semibold text-slate-700">All clear — no follow-ups pending for today.</p>
+    <p class="text-sm mt-1">Set a reminder on any contact's profile to add it here.</p>
+  </div>
+
+  <div id="sections" class="space-y-5"></div>
+</main>
+
+<!-- Pre-meeting AI Brief modal -->
+<div id="briefModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-start justify-between mb-3">
+      <div>
+        <div class="text-[10px] uppercase tracking-wider font-bold text-purple-600">Pre-meeting brief</div>
+        <h3 id="briefName" class="text-xl font-bold text-slate-900"></h3>
+      </div>
+      <button onclick="closeBrief()" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+    </div>
+    <div id="briefContent" class="text-sm text-slate-700 space-y-3"></div>
+    <div class="flex gap-2 mt-5 pt-4 border-t border-slate-100">
+      <button id="briefAiBtn" onclick="runAiBrief()" class="flex-1 bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 inline-flex items-center justify-center gap-1.5 text-sm"><i data-lucide="sparkles"></i>Generate AI talking points</button>
+      <button onclick="closeBrief()" class="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm">Close</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .scope-btn { padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1.5px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; transition: all 0.12s; }
+  .scope-btn:hover { border-color: #2563eb; color: #2563eb; }
+  .scope-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
+</style>
+
+<script src="supabase-config.js"></script>
+<script src="bni-sidebar.js"></script>
+<script>
+const AVATAR_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#f97316'];
+const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let _contacts = [];
+let _details  = {};
+let _completedScope = 'active';
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const isoAddDays = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); };
+
+function avatarColor(id) { return AVATAR_COLORS[parseInt(String(id).replace(/\D/g,'')) % AVATAR_COLORS.length]; }
+
+function isCompletedToday(detail) {
+  // A reminder is "done today" if its followups contain an entry dated today
+  // with type matching Call / WhatsApp / Email / Done
+  const today = todayISO();
+  return (detail?.followups || []).some(f => f.date === today && /^(Call|WhatsApp|Email|Done)$/i.test(f.type || ''));
+}
+
+async function fetchAll() {
+  const [contactsRes, detailsRes] = await Promise.all([
+    window.sb.from('bni_contacts').select('*').eq('hidden', false),
+    window.sb.from('bni_contact_details').select('contact_id,next_date,photo,followups,priority,zoom_recording_url,meeting_time,financial_proposal_sent_at,technical_proposal_sent_at,commercial_proposal_sent_at,proposal_reply_received_at,sentiment'),
+  ]);
+  _contacts = contactsRes.data || [];
+  _details  = Object.fromEntries((detailsRes.data || []).map(d => [d.contact_id, d]));
+}
+
+function populateScope() {
+  const sel = document.getElementById('scope');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="all">Everyone</option>' +
+    (window.BNI_DEVS || []).map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function setCompletedScope(scope) {
+  _completedScope = scope;
+  document.querySelectorAll('.scope-btn').forEach(b => b.classList.toggle('active', b.dataset.scope === scope));
+  render();
+}
+
+function renderStats(allCandidates) {
+  const today = todayISO();
+  const overdue = allCandidates.filter(c => c._d.next_date && c._d.next_date < today).length;
+  const todayDue = allCandidates.filter(c => c._d.next_date === today).length;
+  const upcoming = allCandidates.filter(c => c._d.next_date && c._d.next_date > today && c._d.next_date <= isoAddDays(today, 7)).length;
+  const doneToday = allCandidates.filter(c => isCompletedToday(c._d)).length;
+  document.getElementById('statsRow').innerHTML = [
+    { icon: 'alert-triangle', label: 'Overdue',    val: overdue,    color: '#b91c1c', bg: '#fef2f2' },
+    { icon: 'bell',           label: 'Due today',  val: todayDue,   color: '#c2410c', bg: '#fff7ed' },
+    { icon: 'calendar',       label: 'This week',  val: upcoming,   color: '#1d4ed8', bg: '#eff6ff' },
+    { icon: 'check-circle-2', label: 'Done today', val: doneToday,  color: '#15803d', bg: '#f0fdf4' },
+  ].map(s => `
+    <div class="glass p-4 flex items-center gap-3">
+      <div style="width:40px;height:40px;border-radius:10px;background:${s.bg};color:${s.color};display:flex;align-items:center;justify-content:center;"><i data-lucide="${s.icon}" style="width:18px;height:18px"></i></div>
+      <div>
+        <div class="text-2xl font-extrabold" style="color:${s.color};letter-spacing:-0.02em;">${s.val}</div>
+        <div class="text-[11px] uppercase tracking-wider font-bold text-slate-500">${s.label}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Pre-meeting AI brief ────────────────────────────────────────────────────
+let _briefContact = null;
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function openBrief(id) {
+  const c = _contacts.find(x => x.id === id);
+  if (!c) return;
+  _briefContact = c;
+  const d = _details[id] || {};
+  const name = ((c.first||'') + ' ' + (c.last||'')).trim() || '(no name)';
+  document.getElementById('briefName').textContent = name;
+
+  const today = todayISO();
+  const lastFup = (d.followups || []).slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''))[0];
+  const lastDate = lastFup?.date || (c.updated_at || '').slice(0,10);
+  const daysSince = lastDate ? Math.max(0, Math.round((new Date(today) - new Date(lastDate))/86400000)) : null;
+
+  const sentiment = (d.sentiment || '').toLowerCase();
+  const sentEmoji = sentiment === 'positive' ? '😊 Positive' : sentiment === 'negative' ? '😠 Negative' : sentiment === 'neutral' ? '😐 Neutral' : '— Not set';
+
+  const proposals = [
+    d.financial_proposal_sent_at  && 'Meeting',
+    d.technical_proposal_sent_at  && 'Technical',
+    d.commercial_proposal_sent_at && 'Commercial',
+  ].filter(Boolean).join(', ') || '—';
+  const reply = d.proposal_reply_received_at ? 'Yes' : 'Not yet';
+
+  const lastNote = lastFup?.note || c.notes || '';
+  const segments = [
+    ['Status',      `<span class="font-semibold">${escapeHtml(c.status || '—')}</span>${c.segment ? ` · <span class="text-slate-500">${escapeHtml(c.segment)}</span>` : ''}`],
+    ['Company',     escapeHtml(c.company || '—') + (c.city ? ` · ${escapeHtml(c.city)}` : '')],
+    ['Sentiment',   sentEmoji + (d.sentiment_note ? ` <span class="text-slate-500">— ${escapeHtml(d.sentiment_note)}</span>` : '')],
+    ['Last touch',  daysSince != null ? `${daysSince} day${daysSince===1?'':'s'} ago${lastFup?.type ? ` · ${escapeHtml(lastFup.type)}` : ''}` : '—'],
+    ['Proposals',   `Sent: ${proposals} · Reply: ${reply}`],
+    ['Phone',       (window.contactPhones?.(c) || []).join(' / ') || '—'],
+    ['Email',       escapeHtml(c.email || '—')],
+  ];
+
+  const factsHTML = `<div class="grid grid-cols-3 gap-y-2 gap-x-3 text-sm">
+    ${segments.map(([k,v]) => `
+      <div class="text-slate-400 text-xs uppercase tracking-wider font-bold col-span-1">${k}</div>
+      <div class="col-span-2">${v}</div>`).join('')}
+  </div>`;
+  const notesHTML = lastNote ? `<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-700"><div class="font-bold text-slate-500 uppercase tracking-wider mb-1">Last notes</div>${escapeHtml(lastNote).replace(/\n/g,'<br>')}</div>` : '';
+  document.getElementById('briefContent').innerHTML = factsHTML + notesHTML + '<div id="briefAi" class="hidden"></div>';
+  document.getElementById('briefAiBtn').disabled = false;
+  document.getElementById('briefAiBtn').innerHTML = '<i data-lucide="sparkles"></i>Generate AI talking points';
+  document.getElementById('briefModal').classList.remove('hidden');
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function closeBrief() {
+  document.getElementById('briefModal').classList.add('hidden');
+  _briefContact = null;
+}
+
+async function runAiBrief() {
+  if (!_briefContact) return;
+  const c = _briefContact;
+  const d = _details[c.id] || {};
+  const btn = document.getElementById('briefAiBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>Thinking…';
+  window.bniRenderIcons && window.bniRenderIcons();
+
+  const ctx = `Contact: ${(c.first||'')+' '+(c.last||'')} · ${c.company||''} · ${c.city||''}
+Status: ${c.status} · Segment: ${c.segment||'—'}
+Sentiment: ${d.sentiment||'unset'}${d.sentiment_note ? ' — '+d.sentiment_note : ''}
+Proposals sent: ${[d.financial_proposal_sent_at && 'meeting',d.technical_proposal_sent_at && 'technical',d.commercial_proposal_sent_at && 'commercial'].filter(Boolean).join(', ') || 'none'}
+Reply received: ${d.proposal_reply_received_at ? 'yes' : 'no'}
+Notes: ${(c.notes||'').slice(0,500)}
+Recent follow-ups: ${(d.followups||[]).slice(-3).map(f=>`${f.date} ${f.type}: ${f.note||''}`).join(' | ')}`;
+
+  try {
+    const data = await window.bniAI({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 600,
+      messages: [{
+        role: 'user',
+        content: `You are preparing Dr. BK Murali (BNI member, AI consulting + hospital software) for a 1-2-1 Zoom call. Below is everything we know about the contact.
+
+Produce a tight pre-meeting brief in plain markdown:
+1. **Open with** — one warm 10-word hook based on what's known.
+2. **Talking points** — 3 bullets, specific to their company/segment/sentiment. Reference proposal status if relevant.
+3. **The ask** — one concrete next step Murali should propose, calibrated to their stage.
+4. **Watch out** — one risk or thing to NOT bring up given the sentiment/history.
+
+Be concrete. No filler. No "Hello [Name]". Output markdown only.
+
+CONTACT CONTEXT:
+${ctx}`
+      }]
+    });
+    const text = data?.content?.[0]?.text || data?.error?.message || 'No response';
+    const html = text
+      .replace(/^### (.*)$/gm, '<h4 class="font-bold text-purple-700 mt-3">$1</h4>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- /gm, '• ')
+      .replace(/\n/g, '<br>');
+    document.getElementById('briefAi').classList.remove('hidden');
+    document.getElementById('briefAi').innerHTML = `<div class="mt-4 p-4 rounded-xl border border-purple-200 bg-purple-50 text-sm">${html}</div>`;
+    btn.innerHTML = '<i data-lucide="refresh-cw"></i>Regenerate';
+    btn.disabled = false;
+    window.bniRenderIcons && window.bniRenderIcons();
+  } catch (e) {
+    btn.innerHTML = '<i data-lucide="alert-triangle"></i>Failed — retry';
+    btn.disabled = false;
+    window.bniToast?.('AI brief failed: ' + e.message, 'error');
+  }
+}
+
+// ── Weekly goals (Monday→Sunday by default) ────────────────────────────────
+const DEFAULT_TARGETS = { meets: 8, props: 3, replies: 2, conv: 1, pipe: 100000 };
+function loadTargets() {
+  try { return { ...DEFAULT_TARGETS, ...(JSON.parse(localStorage.getItem('bni_weekly_targets') || '{}')) }; }
+  catch { return DEFAULT_TARGETS; }
+}
+function saveGoalTargets() {
+  const t = {
+    meets:   Number(document.getElementById('t_meets').value)   || 0,
+    props:   Number(document.getElementById('t_props').value)   || 0,
+    replies: Number(document.getElementById('t_replies').value) || 0,
+    conv:    Number(document.getElementById('t_conv').value)    || 0,
+    pipe:    Number(document.getElementById('t_pipe').value)    || 0,
+  };
+  localStorage.setItem('bni_weekly_targets', JSON.stringify(t));
+  document.getElementById('goalSettings').classList.add('hidden');
+  renderGoals();
+  window.bniToast?.('Weekly targets saved', 'success');
+}
+
+function weekBounds() {
+  const d = new Date();
+  const day = (d.getDay() + 6) % 7;        // 0 = Mon … 6 = Sun
+  d.setDate(d.getDate() - day);
+  d.setHours(0,0,0,0);
+  const start = d.toISOString().slice(0, 10);
+  const e = new Date(d); e.setDate(e.getDate() + 7);
+  const end = e.toISOString().slice(0, 10);
+  return { start, end };
+}
+
+function fmtMoneyShort(n) {
+  if (n >= 10000000) return '₹' + (n/10000000).toFixed(1) + 'Cr';
+  if (n >=   100000) return '₹' + (n/100000).toFixed(1)   + 'L';
+  if (n >=     1000) return '₹' + (n/1000).toFixed(0)     + 'K';
+  return '₹' + n;
+}
+
+function renderGoals() {
+  const t = loadTargets();
+  // Pre-populate the targets form so "Adjust targets" shows current values.
+  document.getElementById('t_meets').value   = t.meets;
+  document.getElementById('t_props').value   = t.props;
+  document.getElementById('t_replies').value = t.replies;
+  document.getElementById('t_conv').value    = t.conv;
+  document.getElementById('t_pipe').value    = t.pipe;
+
+  const { start, end } = weekBounds();
+  document.getElementById('weekRangeLabel').textContent =
+    new Date(start).toLocaleDateString('en-IN', { day:'numeric', month:'short' }) + ' – ' +
+    new Date(new Date(end).getTime() - 86400000).toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+
+  const inWeek = (iso) => iso && iso >= start && iso < end;
+  const detailsList = Object.values(_details);
+
+  const meetsDone = _contacts.filter(c => {
+    const d = _details[c.id];
+    if (!d) return false;
+    return d.meeting_outcome === 'completed' && d.next_date && inWeek(d.next_date);
+  }).length;
+
+  const propsOut = detailsList.filter(d =>
+    inWeek((d.financial_proposal_sent_at  || '').slice(0,10)) ||
+    inWeek((d.technical_proposal_sent_at  || '').slice(0,10)) ||
+    inWeek((d.commercial_proposal_sent_at || '').slice(0,10))
+  ).length;
+
+  const replies = detailsList.filter(d => inWeek((d.proposal_reply_received_at || '').slice(0,10))).length;
+
+  const conversions = _contacts.filter(c => c.status === 'Converted' &&
+    (c.updated_at || '').slice(0,10) >= start &&
+    (c.updated_at || '').slice(0,10) < end).length;
+
+  const pipeline = _contacts
+    .filter(c => ['Met','Follow-up','Meeting Scheduled'].includes(c.status))
+    .reduce((sum, c) => sum + (Number(c.deal_value) || 0) * ((Number(c.deal_probability) || 50) / 100), 0);
+
+  const items = [
+    { label: '1-2-1s done',     val: meetsDone,   target: t.meets,   color: '#7c3aed' },
+    { label: 'Proposals out',   val: propsOut,    target: t.props,   color: '#1d4ed8' },
+    { label: 'Replies in',      val: replies,     target: t.replies, color: '#0891b2' },
+    { label: 'Conversions',     val: conversions, target: t.conv,    color: '#15803d' },
+    { label: 'Pipeline value',  val: pipeline,    target: t.pipe,    color: '#c2410c', money: true },
+  ];
+
+  document.getElementById('goalsRow').innerHTML = items.map(it => {
+    const pct = it.target > 0 ? Math.min(100, Math.round((it.val / it.target) * 100)) : 0;
+    const valDisp    = it.money ? fmtMoneyShort(Math.round(it.val))    : it.val;
+    const targetDisp = it.money ? fmtMoneyShort(it.target)             : it.target;
+    return `<div class="bg-white border border-slate-200 rounded-xl p-3" style="box-shadow:0 1px 3px rgba(15,23,42,0.04);">
+      <div class="text-[10px] uppercase tracking-wider font-bold text-slate-500">${it.label}</div>
+      <div class="flex items-baseline gap-1 mt-1">
+        <span class="text-xl font-extrabold" style="color:${it.color}">${valDisp}</span>
+        <span class="text-xs text-slate-400">/ ${targetDisp}</span>
+      </div>
+      <div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div style="width:${pct}%;background:${it.color};height:100%;border-radius:999px;transition:width 0.3s;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function followupDateTileHTML(iso) {
+  if (!iso) {
+    return `<div class="date-tile-lg tile-empty">
+      <div class="dt-day">—</div><div class="dt-num">—</div><div class="dt-mon">—</div>
+    </div>`;
+  }
+  const d = new Date(iso + 'T00:00:00');
+  const today = todayISO();
+  let cls = 'tile-future';
+  if (iso < today) cls = 'tile-overdue';
+  else if (iso === today) cls = 'tile-today';
+  return `<div class="date-tile-lg ${cls}">
+    <div class="dt-day">${DAYS[d.getDay()]}</div>
+    <div class="dt-num">${d.getDate()}</div>
+    <div class="dt-mon">${MONTHS[d.getMonth()]}</div>
+  </div>`;
+}
+
+function followupTaskHTML(iso) {
+  const today = todayISO();
+  if (!iso) {
+    return `<div class="task-label" style="color:#94a3b8;">No follow-up scheduled</div>`;
+  }
+  if (iso < today) {
+    const a = new Date(iso + 'T00:00:00'), b = new Date(today + 'T00:00:00');
+    const days = Math.max(1, Math.round((b - a) / 86400000));
+    return `<div class="task-label task-overdue">⚠ Follow up was due ${days} day${days === 1 ? '' : 's'} ago — call or WhatsApp</div>`;
+  }
+  if (iso === today) {
+    return `<div class="task-label task-today">📞 Call or WhatsApp today</div>`;
+  }
+  return `<div class="task-label task-future">🔔 Schedule a follow-up call/WhatsApp</div>`;
+}
+
+function rowHTML(c) {
+  const det = _details[c.id] || {};
+  const first = c.first || '', last = c.last || '';
+  const initials = ((first[0]||'') + (last[0]||'')).toUpperCase() || '?';
+  const phones = window.contactPhones(c);
+  const primary = phones[0] || '';
+  const primaryRaw = primary.replace(/\D/g,'');
+  const nxt = det.next_date;
+  const doneMark = isCompletedToday(det);
+  const waOptions = (window.WA_TEMPLATES || []).map(t => `<button onclick="sendWA('${c.id}', '${t.id}')">${t.label}</button>`).join('');
+  const assigneeNames = window.contactAssigneeNames(c);
+
+  return `
+    <div class="row ${doneMark ? 'done' : ''}" data-id="${c.id}">
+      ${followupDateTileHTML(nxt)}
+      <div class="avatar" style="background:${avatarColor(c.id)}18;color:${avatarColor(c.id)};border:2px solid ${avatarColor(c.id)}55;">
+        ${det.photo ? `<img src="${det.photo}" style="width:100%;height:100%;object-fit:cover;" />` : initials}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <a href="contact.html?id=${c.id}" class="font-bold text-slate-900 text-base hover:text-blue-600" style="letter-spacing:-0.015em">${first} ${last}</a>
+          ${doneMark ? '<span class="reminder-pill" style="background:#dcfce7;color:#166534;border:1px solid #86efac;"><i data-lucide="check" style="width:11px;height:11px"></i>Contacted today</span>' : ''}
+        </div>
+        ${followupTaskHTML(nxt)}
+        <div class="text-sm text-slate-600 mt-0.5 flex items-center gap-2 flex-wrap">
+          ${c.company ? `<span class="font-medium">${c.company}</span>` : ''}
+          ${primary ? `<span class="text-slate-400">·</span><span>${primary}</span>` : ''}
+          ${assigneeNames.length ? `<span class="text-slate-400">·</span><span class="text-blue-600 font-medium">${assigneeNames.join(', ')}</span>` : ''}
+        </div>
+        <div class="flex items-center gap-1.5 mt-1.5">
+          <i data-lucide="clock" style="width:12px;height:12px;color:#94a3b8;flex-shrink:0;"></i>
+          <span class="text-xs text-slate-400 font-medium">Meeting time:</span>
+          <input type="time" id="mtime-${c.id}" value="${det.meeting_time || ''}"
+            onchange="saveMeetingTime('${c.id}', this.value)"
+            class="text-xs border border-slate-200 rounded-md px-2 py-0.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white"
+            style="width:105px;" />
+          ${det.meeting_time ? `<span class="text-xs text-indigo-600 font-semibold">${formatTime12(det.meeting_time)}</span>` : '<span class="text-xs text-slate-400 italic">not set</span>'}
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 flex-wrap" style="flex-shrink:0;">
+        ${primary ? `<a href="tel:${primary}" onclick="logCall('${c.id}')" class="action-btn act-call"><i data-lucide="phone"></i>Call</a>` : ''}
+        ${primaryRaw ? `<div class="wa-dropdown">
+          <button class="action-btn act-wa" onclick="toggleWa(event, this)"><i data-lucide="message-circle"></i>WhatsApp <i data-lucide="chevron-down" style="width:11px;height:11px"></i></button>
+          <div class="wa-dropdown-menu">${waOptions}</div>
+        </div>` : ''}
+        <button class="action-btn" style="background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe" onclick="openBrief('${c.id}')" title="Pre-meeting brief"><i data-lucide="sparkles"></i>Brief</button>
+        <button class="action-btn act-done" onclick="markDone('${c.id}')" title="Clear reminder and log as contacted"><i data-lucide="check"></i>Done</button>
+        <div class="wa-dropdown">
+          <button class="action-btn act-snooze" onclick="toggleWa(event, this)" title="Snooze reminder"><i data-lucide="alarm-clock"></i>Snooze</button>
+          <div class="wa-dropdown-menu">
+            <button onclick="snooze('${c.id}', 1)">+1 day (tomorrow)</button>
+            <button onclick="snooze('${c.id}', 3)">+3 days</button>
+            <button onclick="snooze('${c.id}', 7)">+1 week</button>
+            <button onclick="snooze('${c.id}', 30)">+1 month</button>
+            <button onclick="customSnooze('${c.id}')">Custom date…</button>
+          </div>
+        </div>
+        <a href="contact.html?id=${c.id}" class="action-btn act-open"><i data-lucide="external-link"></i></a>
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  const scope = document.getElementById('scope').value;
+  const today = todayISO();
+  const weekEnd = isoAddDays(today, 7);
+
+  // Join contacts with their details, keep any with a next_date
+  const all = _contacts.map(c => ({ ...c, _d: _details[c.id] || {} }));
+
+  const filtered = all.filter(c => {
+    if (scope !== 'all' && !window.contactAssigneeIds(c).includes(scope)) return false;
+    return !!c._d.next_date;
+  });
+
+  renderStats(filtered);
+  renderGoals();
+
+  const overdue = filtered.filter(c => c._d.next_date < today);
+  const todayList = filtered.filter(c => c._d.next_date === today);
+  const week = filtered.filter(c => c._d.next_date > today && c._d.next_date <= weekEnd);
+
+  // Completion scope: 'active' hides done-today, 'done' shows only done-today, 'all' shows everything
+  const pick = (list) => {
+    if (_completedScope === 'all') return list;
+    if (_completedScope === 'done') return list.filter(c => isCompletedToday(c._d));
+    return list.filter(c => !isCompletedToday(c._d));
+  };
+
+  const pOverdue = pick(overdue);
+  const pToday   = pick(todayList);
+  const pWeek    = pick(week);
+
+  const total = pOverdue.length + pToday.length + pWeek.length;
+  document.getElementById('loadingState').classList.add('hidden');
+  document.getElementById('emptyState').classList.toggle('hidden', total > 0);
+
+  const sections = document.getElementById('sections');
+  if (total === 0) { sections.innerHTML = ''; return; }
+
+  const section = (label, items, color) => {
+    if (!items.length) return '';
+    return `
+      <section>
+        <div class="group-header">
+          <span class="dot" style="background:${color}"></span>
+          <span style="color:${color}">${label}</span>
+          <span class="group-count">${items.length}</span>
+        </div>
+        <div class="space-y-2">${items.map(rowHTML).join('')}</div>
+      </section>`;
+  };
+
+  sections.innerHTML =
+    section('Overdue',   pOverdue, '#b91c1c') +
+    section('Due today', pToday,   '#c2410c') +
+    section('Upcoming (7 days)', pWeek, '#1d4ed8');
+
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function toggleWa(ev, btn) {
+  ev.preventDefault(); ev.stopPropagation();
+  const dd = btn.closest('.wa-dropdown');
+  document.querySelectorAll('.wa-dropdown.open').forEach(x => { if (x !== dd) x.classList.remove('open'); });
+  dd.classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.wa-dropdown')) {
+    document.querySelectorAll('.wa-dropdown.open').forEach(x => x.classList.remove('open'));
+  }
+});
+
+async function sendWA(id, tplId) {
+  const c = _contacts.find(x => x.id === id);
+  if (!c) return;
+  const url = window.waUrlFor(window.primaryPhone(c), c.first, tplId);
+  if (!url) { window.bniToast('No phone on file', 'error'); return; }
+  window.open(url, '_blank', 'noopener');
+  const tpl = (window.WA_TEMPLATES || []).find(t => t.id === tplId);
+  window.logActivity(id, 'WhatsApp', tpl ? tpl.label : 'Message sent');
+  document.querySelectorAll('.wa-dropdown.open').forEach(x => x.classList.remove('open'));
+  setTimeout(refresh, 400);
+}
+
+async function logCall(id) {
+  window.logActivity(id, 'Call', 'Initiated phone call');
+  setTimeout(refresh, 400);
+}
+
+async function markDone(id) {
+  // Log 'Done' activity + clear next_date (reminder resolved)
+  await window.logActivity(id, 'Done', 'Marked reminder complete');
+  const { data: d } = await window.sb.from('bni_contact_details').select('followups').eq('contact_id', id).maybeSingle();
+  const followups = (d && d.followups) || [];
+  await window.sb.from('bni_contact_details').upsert({ contact_id: id, next_date: null, followups }, { onConflict: 'contact_id' });
+  if (_details[id]) _details[id].next_date = null;
+  window.bniToast('Marked done', 'success');
+  render();
+}
+
+function formatTime12(t) {
+  if (!t) return '';
+  const [hStr, mStr] = t.split(':');
+  let h = parseInt(hStr, 10), m = parseInt(mStr, 10);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+async function saveMeetingTime(id, val) {
+  if (!_details[id]) _details[id] = { contact_id: id };
+  _details[id].meeting_time = val || null;
+  const { error } = await window.sb.from('bni_contact_details')
+    .upsert({ contact_id: id, meeting_time: val || null }, { onConflict: 'contact_id' });
+  if (error) { window.bniToast('Could not save time: ' + error.message, 'error'); return; }
+  const badge = document.querySelector(`#mtime-${id} + span`);
+  if (badge) { badge.textContent = val ? formatTime12(val) : 'not set'; badge.className = val ? 'text-xs text-indigo-600 font-semibold' : 'text-xs text-slate-400 italic'; }
+  window.bniToast('Meeting time saved', 'success');
+}
+
+async function snooze(id, days) {
+  const d = _details[id] || { contact_id: id, followups: [] };
+  const from = d.next_date && d.next_date > todayISO() ? d.next_date : todayISO();
+  const newDate = isoAddDays(from, days);
+  await window.sb.from('bni_contact_details').upsert({ contact_id: id, next_date: newDate }, { onConflict: 'contact_id' });
+  if (_details[id]) _details[id].next_date = newDate;
+  else _details[id] = { contact_id: id, next_date: newDate, followups: [] };
+  window.logActivity(id, 'Snoozed', `Reminder → ${newDate}`);
+  window.bniToast(`Snoozed to ${newDate}`, 'success');
+  document.querySelectorAll('.wa-dropdown.open').forEach(x => x.classList.remove('open'));
+  render();
+}
+
+async function customSnooze(id) {
+  const val = prompt('Set reminder date (YYYY-MM-DD):', isoAddDays(todayISO(), 7));
+  if (!val) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) { window.bniToast('Invalid date format', 'error'); return; }
+  await window.sb.from('bni_contact_details').upsert({ contact_id: id, next_date: val }, { onConflict: 'contact_id' });
+  if (!_details[id]) _details[id] = { contact_id: id, followups: [] };
+  _details[id].next_date = val;
+  window.logActivity(id, 'Snoozed', `Reminder → ${val}`);
+  window.bniToast(`Reminder set to ${val}`, 'success');
+  render();
+}
+
+async function refresh() {
+  await fetchAll();
+  render();
+}
+
+// ── TO-DO LIST ────────────────────────────────────────────────────────────────
+let _todoDateISO = todayISO();
+
+function switchTodoTab(tab) {
+  const today = todayISO();
+  if (tab === 'today') {
+    _todoDateISO = today;
+    document.getElementById('todoDatePicker').value = '';
+  } else if (tab === 'tomorrow') {
+    _todoDateISO = isoAddDays(today, 1);
+    document.getElementById('todoDatePicker').value = '';
+  } else {
+    const v = document.getElementById('todoDatePicker').value;
+    if (!v) return;
+    _todoDateISO = v;
+    tab = 'pick';
+  }
+  document.querySelectorAll('.todo-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  resetTodoExpand();
+  fetchTodos();
+}
+
+async function fetchTodos() {
+  const loadEl = document.getElementById('todoLoading');
+  const emptyEl = document.getElementById('todoEmpty');
+  const listEl = document.getElementById('todoList');
+  loadEl.classList.remove('hidden');
+  emptyEl.classList.add('hidden');
+  listEl.innerHTML = '';
+
+  const { data } = await window.sb.from('bni_todos').select('*').eq('due_date', _todoDateISO).order('created_at');
+  loadEl.classList.add('hidden');
+
+  const todos = data || [];
+  const pending = todos.filter(t => !t.done).length;
+  const badge = document.getElementById('todoBadge');
+  if (pending > 0) { badge.textContent = pending; badge.classList.remove('hidden'); }
+  else badge.classList.add('hidden');
+
+  if (!todos.length) { emptyEl.classList.remove('hidden'); resetTodoExpand(); return; }
+
+  listEl.innerHTML = todos.map(t => `
+    <div class="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 group ${t.done ? 'opacity-50' : ''}">
+      <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo('${t.id}',this.checked)"
+        class="w-4 h-4 cursor-pointer flex-shrink-0" style="accent-color:#2563eb" />
+      <span class="flex-1 text-sm text-slate-700 ${t.done ? 'line-through text-slate-400' : ''}">${escHtml(t.title)}</span>
+      <button onclick="deleteTodo('${t.id}')" title="Remove"
+        class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-400 transition p-1 rounded">
+        <i data-lucide="x" style="width:13px;height:13px"></i>
+      </button>
+    </div>
+  `).join('');
+  window.bniRenderIcons && window.bniRenderIcons();
+
+  // Show expand button only when content overflows the collapsed height
+  requestAnimationFrame(() => {
+    const btn = document.getElementById('todoExpandBtn');
+    if (listEl.scrollHeight > 208) btn.classList.remove('hidden');
+    else btn.classList.add('hidden');
+  });
+}
+
+let _todoExpanded = false;
+function toggleTodoExpand() {
+  const listEl = document.getElementById('todoList');
+  const icon   = document.getElementById('todoExpandIcon');
+  const label  = document.getElementById('todoExpandLabel');
+  _todoExpanded = !_todoExpanded;
+  listEl.style.maxHeight  = _todoExpanded ? listEl.scrollHeight + 'px' : '208px';
+  listEl.style.overflow   = _todoExpanded ? 'visible' : 'hidden';
+  icon.style.transform    = _todoExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+  label.textContent       = _todoExpanded ? 'Collapse' : 'Show all';
+}
+function resetTodoExpand() {
+  _todoExpanded = false;
+  const listEl = document.getElementById('todoList');
+  if (listEl) { listEl.style.maxHeight = '208px'; listEl.style.overflow = 'hidden'; }
+  const icon  = document.getElementById('todoExpandIcon');
+  const label = document.getElementById('todoExpandLabel');
+  if (icon)  icon.style.transform = 'rotate(0deg)';
+  if (label) label.textContent    = 'Show all';
+  const btn = document.getElementById('todoExpandBtn');
+  if (btn) btn.classList.add('hidden');
+}
+
+async function addTodo() {
+  const input = document.getElementById('newTodoInput');
+  const title = (input.value || '').trim();
+  if (!title) return;
+  input.disabled = true;
+  const { error } = await window.sb.from('bni_todos').insert({ title, due_date: _todoDateISO });
+  input.disabled = false;
+  if (error) { window.bniToast('Could not save task', 'error'); return; }
+  input.value = '';
+  fetchTodos();
+}
+
+async function toggleTodo(id, done) {
+  await window.sb.from('bni_todos').update({ done }).eq('id', id);
+  fetchTodos();
+}
+
+async function deleteTodo(id) {
+  await window.sb.from('bni_todos').delete().eq('id', id);
+  fetchTodos();
+  window.bniToast('Task removed', 'success');
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function init() {
+  const d = new Date();
+  document.getElementById('todayLabel').textContent =
+    DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  await window.loadDevelopers();
+  populateScope();
+  await Promise.all([refresh(), fetchTodos()]);
+}
+init();
+</script>
+</body>
+</html>

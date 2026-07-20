@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="auth-guard.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Work Item — DevOps · BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family:'Inter',sans-serif; background:#f8fafc; color:#0f172a; }
+    .glass { background:white; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+    .pri-Critical { color:#dc2626; }
+    .pri-High     { color:#ea580c; }
+    .pri-Medium   { color:#ca8a04; }
+    .pri-Low      { color:#94a3b8; }
+    .state-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; }
+    .type-icon { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; padding:3px 8px; border-radius:5px; }
+    .type-story { background:#ecfdf5; color:#047857; }
+    .type-task  { background:#eff6ff; color:#1d4ed8; }
+    .type-bug   { background:#fef2f2; color:#b91c1c; }
+    .type-epic  { background:#f5f3ff; color:#6d28d9; }
+    .field-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; }
+    .desc-edit { min-height:120px; }
+    .child-row { padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+    .child-row:hover { background:#f8fafc; }
+    .md-render { font-size:14px; color:#0f172a; line-height:1.55; }
+    .md-render h1, .md-render h2, .md-render h3 { font-weight:800; margin:0.6em 0 0.3em; letter-spacing:-0.01em; }
+    .md-render h1 { font-size:1.3em; } .md-render h2 { font-size:1.15em; } .md-render h3 { font-size:1.05em; }
+    .md-render p  { margin:0.4em 0; }
+    .md-render ul, .md-render ol { margin:0.4em 0 0.4em 1.4em; }
+    .md-render li { margin:0.15em 0; }
+    .md-render code { background:#f1f5f9; padding:1px 5px; border-radius:4px; font-size:0.9em; font-family:ui-monospace,monospace; }
+    .md-render pre { background:#0f172a; color:#e2e8f0; padding:10px 14px; border-radius:8px; overflow-x:auto; font-size:13px; margin:0.5em 0; }
+    .md-render pre code { background:transparent; padding:0; color:inherit; }
+    .md-render blockquote { border-left:3px solid #cbd5e1; padding-left:12px; color:#475569; margin:0.5em 0; }
+    .md-render a { color:#1d4ed8; text-decoration:underline; }
+    .md-render img { max-width:100%; border-radius:6px; }
+    .md-render table { border-collapse:collapse; margin:0.5em 0; }
+    .md-render th, .md-render td { border:1px solid #e2e8f0; padding:5px 9px; font-size:13px; }
+    .tab-btn { font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; cursor:pointer; background:transparent; border:1px solid transparent; color:#64748b; }
+    .tab-btn.active { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .att-card { display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; }
+    .att-card:hover { background:#f8fafc; }
+    .att-thumb { width:40px; height:40px; border-radius:6px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:18px; flex-shrink:0; overflow:hidden; }
+    .att-thumb img { width:100%; height:100%; object-fit:cover; }
+    .drop-zone { border:2px dashed #cbd5e1; border-radius:10px; padding:18px; text-align:center; color:#94a3b8; transition:all 0.15s; }
+    .drop-zone.dragover { background:#eff6ff; border-color:#3b82f6; color:#1d4ed8; }
+    .timer-active { background:#dc2626; color:white; }
+    .timer-active:hover { background:#b91c1c; }
+  </style>
+</head>
+<body>
+  <main class="px-4 sm:px-8 py-6 max-w-[1200px] mx-auto">
+    <div class="mb-3 flex items-center gap-2 text-xs">
+      <a href="dev-boards.html" class="text-blue-600 hover:underline">← Boards</a>
+      <span class="text-slate-300">/</span>
+      <a href="dev-backlog.html" class="text-blue-600 hover:underline">Backlog</a>
+      <span class="text-slate-300">/</span>
+      <span class="font-mono text-slate-500" id="b_id"></span>
+    </div>
+
+    <div id="loading" class="py-12 text-center text-slate-400">Loading…</div>
+    <div id="content" class="hidden grid lg:grid-cols-[1fr_340px] gap-5">
+      <!-- LEFT — main column -->
+      <div>
+        <div class="glass rounded-2xl p-5 mb-4">
+          <div class="flex items-center gap-2 flex-wrap mb-3">
+            <span id="h_type" class="type-icon"></span>
+            <span class="font-mono text-xs text-slate-500" id="h_id"></span>
+          </div>
+          <input id="f_title" class="w-full text-2xl font-extrabold text-slate-900 border-0 focus:outline-none focus:ring-0 px-0" style="letter-spacing:-0.02em" />
+          <div class="flex items-center gap-2 mt-2 text-xs text-slate-500">
+            <span>Reporter: <span id="h_reporter">—</span></span>
+            <span>·</span>
+            <span>Created: <span id="h_created">—</span></span>
+            <span>·</span>
+            <span>Updated: <span id="h_updated">—</span></span>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-5 mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="field-label">Description</div>
+            <div class="flex gap-1">
+              <button type="button" class="tab-btn active" id="descTabEdit"    onclick="setDescTab('edit')">Edit</button>
+              <button type="button" class="tab-btn"        id="descTabPreview" onclick="setDescTab('preview')">Preview</button>
+            </div>
+          </div>
+          <textarea id="f_description" class="desc-edit w-full text-sm text-slate-800 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Describe the work, acceptance criteria, links… Markdown supported (**bold**, `code`, lists, links, images)."></textarea>
+          <div id="descPreview" class="md-render hidden border border-slate-200 rounded-lg px-4 py-3 min-h-[120px]"></div>
+        </div>
+
+        <!-- Attachments -->
+        <div class="glass rounded-2xl p-5 mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="field-label">Attachments</div>
+            <span id="attCount" class="text-[10px] uppercase tracking-wider font-bold text-slate-400"></span>
+          </div>
+          <div id="attList" class="space-y-1.5 mb-2"></div>
+          <div id="dropZone" class="drop-zone" ondragover="onDropOver(event)" ondragleave="onDropLeave(event)" ondrop="onDrop(event)">
+            Drop files here or
+            <label class="text-blue-600 font-bold cursor-pointer">browse
+              <input type="file" id="fileInput" multiple class="hidden" onchange="onFilePick(event)" />
+            </label>
+            <div id="upStatus" class="text-xs text-slate-500 mt-1"></div>
+          </div>
+        </div>
+
+        <!-- Time tracking -->
+        <div class="glass rounded-2xl p-5 mb-4">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <div class="field-label">Time tracking</div>
+              <div class="text-xs text-slate-500 mt-0.5" id="timeTotal">—</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <select id="timerUser" class="text-xs border border-slate-200 rounded px-2 py-1.5"></select>
+              <button id="timerBtn" type="button" onclick="toggleTimer()" class="px-3 py-1.5 rounded-lg font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700">▶ Start</button>
+              <button type="button" onclick="logTimeManual()" class="px-3 py-1.5 rounded-lg font-bold text-sm bg-slate-100 text-slate-700 hover:bg-slate-200" title="Log time manually">+ Manual</button>
+            </div>
+          </div>
+          <div id="worklogList" class="space-y-1 text-xs"></div>
+        </div>
+
+        <!-- Children -->
+        <div class="glass rounded-2xl p-5 mb-4" id="childrenBox">
+          <div class="flex items-center justify-between mb-3">
+            <div class="field-label">Child items</div>
+            <button onclick="openLinkChild()" class="text-xs text-blue-600 font-bold hover:underline">+ Link child</button>
+          </div>
+          <div id="childrenList"></div>
+        </div>
+
+        <!-- Dependencies -->
+        <div class="glass rounded-2xl p-5 mb-4" id="depsBox">
+          <div class="field-label mb-3">Dependencies</div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <div class="text-xs font-bold text-red-700 mb-2">⛔ Blocks</div>
+              <div id="blocksList" class="space-y-1.5 mb-2"></div>
+              <button onclick="openLinkDep('blocks')" class="text-xs text-blue-600 font-bold hover:underline">+ Add what this blocks</button>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-amber-700 mb-2">⏳ Blocked by</div>
+              <div id="blockedByList" class="space-y-1.5 mb-2"></div>
+              <button onclick="openLinkDep('blocked-by')" class="text-xs text-blue-600 font-bold hover:underline">+ Add what blocks this</button>
+            </div>
+          </div>
+          <div id="relatesBox" class="mt-3 pt-3 border-t border-slate-100 hidden">
+            <div class="text-xs font-bold text-slate-700 mb-2">Related</div>
+            <div id="relatesList" class="space-y-1.5"></div>
+          </div>
+          <div id="depWarning" class="mt-3 hidden p-2 rounded bg-red-50 border border-red-200 text-xs text-red-700"></div>
+        </div>
+
+        <!-- Git refs -->
+        <div class="glass rounded-2xl p-5 mb-4">
+          <div class="field-label mb-2">Git references</div>
+          <div id="gitList" class="space-y-1.5 mb-2"></div>
+          <div class="flex gap-2">
+            <input id="gitInput" placeholder="https://github.com/org/repo/commit/abc1234 or PR URL" class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2" />
+            <button onclick="addGitRef()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-slate-900">+ Link</button>
+          </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="glass rounded-2xl p-5 mb-4">
+          <div class="field-label mb-3">Comments</div>
+          <div id="commentsList" class="space-y-3 mb-4"></div>
+          <textarea id="newComment" rows="2" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 mb-2" placeholder="Add a comment… (Ctrl/⌘+Enter to send)"></textarea>
+          <div class="flex items-center gap-2">
+            <select id="commentAuthor" class="text-sm border border-slate-200 rounded-lg px-2 py-1.5"></select>
+            <button onclick="addComment()" class="bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-blue-800">Comment</button>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="glass rounded-2xl p-5">
+          <div class="field-label mb-3">History</div>
+          <div id="historyList" class="text-xs"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT — sidebar -->
+      <div class="space-y-3">
+        <div class="glass rounded-2xl p-4">
+          <div class="field-label mb-2">State</div>
+          <select id="f_state" class="w-full border rounded-lg px-3 py-2 text-sm font-semibold"><option>To Do</option><option>In Progress</option><option>Review</option><option>Done</option></select>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="field-label mb-2">Type</div>
+          <select id="f_type" class="w-full border rounded-lg px-3 py-2 text-sm"><option>Story</option><option>Task</option><option>Bug</option><option>Epic</option></select>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="field-label mb-2">Priority</div>
+          <select id="f_priority" class="w-full border rounded-lg px-3 py-2 text-sm"><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="field-label mb-2">Assignee</div>
+          <select id="f_assignee" class="w-full border rounded-lg px-3 py-2 text-sm"><option value="">— Unassigned —</option></select>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="field-label mb-2">Sprint</div>
+          <select id="f_sprint" class="w-full border rounded-lg px-3 py-2 text-sm"><option value="">— Backlog —</option></select>
+        </div>
+        <div class="glass rounded-2xl p-4 grid grid-cols-2 gap-2">
+          <div>
+            <div class="field-label mb-2">Points</div>
+            <input id="f_points" type="number" min="0" max="100" class="w-full border rounded-lg px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <div class="field-label mb-2">Due</div>
+            <input id="f_due" type="date" class="w-full border rounded-lg px-3 py-2 text-sm" />
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="field-label mb-2">Tags</div>
+          <input id="f_tags" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="comma-separated" />
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="field-label mb-2">Parent</div>
+          <select id="f_parent" class="w-full border rounded-lg px-3 py-2 text-sm"><option value="">— None —</option></select>
+        </div>
+        <button onclick="saveItem()" id="saveBtn" class="w-full bg-blue-700 text-white py-2.5 rounded-lg font-bold hover:bg-blue-800">Save changes</button>
+        <button onclick="deleteItem()" class="w-full bg-white border border-red-200 text-red-600 py-2 rounded-lg text-sm font-bold hover:bg-red-50">Delete work item</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="supabase-config.js"></script>
+  <script src="bni-sidebar.js"></script>
+  <script>
+  let _id = null, _item = null, _devs = [], _sprints = [], _projectItems = [], _deps = [], _attachments = [], _worklogs = [], _activeTimer = null;
+  const TYPE_CLASS = { Story:'story', Task:'task', Bug:'bug', Epic:'epic' };
+  const STATE_BG = { 'To Do':'#f1f5f9', 'In Progress':'#dbeafe', 'Review':'#fef3c7', 'Done':'#dcfce7' };
+  const STATE_FG = { 'To Do':'#475569', 'In Progress':'#1e40af', 'Review':'#92400e', 'Done':'#15803d' };
+
+  function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+  function devName(id) { const d = _devs.find(x => x.id === id); return d ? d.name : ''; }
+  function fmtDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' }); }
+
+  async function load() {
+    _id = new URLSearchParams(location.search).get('id');
+    if (!_id) { alert('Missing ?id=…'); location.href = 'dev-boards.html'; return; }
+    document.getElementById('b_id').textContent = _id;
+
+    await window.loadDevelopers?.();
+    _devs = window.BNI_DEVS || [];
+
+    const [{data: item}, {data: items}, {data: sprints}, {data: comments}, {data: history}, {data: deps}, {data: attachments}, {data: worklogs}] = await Promise.all([
+      window.sb.from('dev_work_items').select('*').eq('id', _id).maybeSingle(),
+      window.sb.from('dev_work_items').select('id,title,type,state,project_id,parent_id'),
+      window.sb.from('dev_sprints').select('*').order('start_date', { ascending: false }),
+      window.sb.from('dev_comments').select('*').eq('item_id', _id).order('created_at'),
+      window.sb.from('dev_history').select('*').eq('item_id', _id).order('changed_at', { ascending: false }).limit(40),
+      window.sb.from('dev_dependencies').select('*').or(`from_id.eq.${_id},to_id.eq.${_id}`),
+      window.sb.from('dev_attachments').select('*').eq('item_id', _id).order('created_at', { ascending: false }),
+      window.sb.from('dev_worklog').select('*').eq('item_id', _id).order('started_at', { ascending: false }),
+    ]);
+    if (!item) { document.getElementById('loading').textContent = 'Work item not found.'; return; }
+    _item = item;
+    _projectItems = (items || []).filter(i => i.project_id === _item.project_id);
+    _sprints      = (sprints || []).filter(s => s.project_id === _item.project_id);
+
+    _deps        = deps || [];
+    _attachments = attachments || [];
+    _worklogs    = worklogs || [];
+    populateUI();
+    populateTimerUserPicker();
+    renderChildren(items || []);
+    renderComments(comments || []);
+    renderHistory(history || []);
+    renderGitRefs();
+    renderDependencies();
+    renderAttachments();
+    document.getElementById('fileInput').accept = _item.type === 'Epic' ? 'application/pdf,.pdf' : '';
+    renderWorklog();
+
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+
+    document.getElementById('newComment').addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); addComment(); }
+    });
+    // Paste-from-clipboard upload anywhere on the page.
+    window.addEventListener('paste', e => {
+      const files = [...(e.clipboardData?.files || [])];
+      if (files.length) { e.preventDefault(); uploadFiles(files); }
+    });
+  }
+
+  function populateUI() {
+    document.getElementById('h_type').className = `type-icon type-${TYPE_CLASS[_item.type] || 'task'}`;
+    document.getElementById('h_type').textContent = _item.type;
+    document.getElementById('h_id').textContent = _item.id;
+    document.getElementById('h_reporter').textContent = devName(_item.reporter_id) || '—';
+    document.getElementById('h_created').textContent = fmtDate(_item.created_at);
+    document.getElementById('h_updated').textContent = fmtDate(_item.updated_at);
+
+    document.getElementById('f_title').value       = _item.title;
+    document.getElementById('f_description').value = _item.description || '';
+    document.getElementById('f_state').value       = _item.state;
+    document.getElementById('f_type').value        = _item.type;
+    document.getElementById('f_priority').value    = _item.priority;
+    document.getElementById('f_points').value      = _item.points ?? '';
+    document.getElementById('f_due').value         = _item.due_date || '';
+    document.getElementById('f_tags').value        = (_item.tags || []).join(', ');
+
+    const aSel = document.getElementById('f_assignee');
+    aSel.innerHTML = '<option value="">— Unassigned —</option>' +
+      _devs.map(d => `<option value="${d.id}"${d.id === _item.assignee_id ? ' selected':''}>${escapeHtml(d.name)}</option>`).join('');
+    const cSel = document.getElementById('commentAuthor');
+    cSel.innerHTML = '<option value="">— Anonymous —</option>' +
+      _devs.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+
+    const sSel = document.getElementById('f_sprint');
+    sSel.innerHTML = '<option value="">— Backlog —</option>' +
+      _sprints.map(s => `<option value="${s.id}"${s.id === _item.sprint_id ? ' selected':''}>${escapeHtml(s.name)} (${s.start_date} → ${s.end_date})</option>`).join('');
+
+    const pSel = document.getElementById('f_parent');
+    const candidates = _projectItems.filter(i => i.id !== _item.id && i.type !== 'Task');
+    pSel.innerHTML = '<option value="">— None —</option>' +
+      candidates.map(i => `<option value="${i.id}"${i.id === _item.parent_id ? ' selected':''}>${i.id} · ${escapeHtml(i.title)}</option>`).join('');
+  }
+
+  function renderChildren(allItems) {
+    const kids = allItems.filter(i => i.parent_id === _item.id);
+    if (!kids.length) {
+      document.getElementById('childrenList').innerHTML = '<p class="text-slate-400 text-xs italic">No child items.</p>';
+      return;
+    }
+    document.getElementById('childrenList').innerHTML = kids.map(k => `<div class="child-row">
+      <span class="type-icon type-${TYPE_CLASS[k.type] || 'task'}">${escapeHtml(k.type)}</span>
+      <span class="font-mono text-xs text-slate-500">${escapeHtml(k.id)}</span>
+      <a href="dev-item.html?id=${encodeURIComponent(k.id)}" class="flex-1 font-semibold text-slate-800 hover:text-blue-600 truncate">${escapeHtml(k.title)}</a>
+      <span class="state-pill" style="background:${STATE_BG[k.state]||'#f1f5f9'};color:${STATE_FG[k.state]||'#475569'}">${escapeHtml(k.state)}</span>
+    </div>`).join('');
+  }
+
+  function renderComments(list) {
+    const node = document.getElementById('commentsList');
+    if (!list.length) { node.innerHTML = '<p class="text-slate-400 text-xs italic">No comments yet.</p>'; return; }
+    node.innerHTML = list.map(c => `<div class="border-l-4 border-blue-200 pl-3 pb-1">
+      <div class="text-xs text-slate-500 mb-1"><span class="font-bold text-slate-700">${escapeHtml(devName(c.author_id) || 'anonymous')}</span> · ${fmtDate(c.created_at)}</div>
+      <div class="md-render">${renderMarkdown(c.body)}</div>
+    </div>`).join('');
+  }
+
+  function renderMarkdown(text) {
+    if (!text) return '';
+    try {
+      const html = window.marked ? window.marked.parse(text, { breaks:true, gfm:true }) : escapeHtml(text).replace(/\n/g,'<br>');
+      return window.DOMPurify ? window.DOMPurify.sanitize(html) : html;
+    } catch {
+      return escapeHtml(text).replace(/\n/g,'<br>');
+    }
+  }
+
+  function setDescTab(t) {
+    const editing = (t === 'edit');
+    document.getElementById('descTabEdit').classList.toggle('active', editing);
+    document.getElementById('descTabPreview').classList.toggle('active', !editing);
+    document.getElementById('f_description').classList.toggle('hidden', !editing);
+    document.getElementById('descPreview').classList.toggle('hidden', editing);
+    if (!editing) {
+      document.getElementById('descPreview').innerHTML = renderMarkdown(document.getElementById('f_description').value) || '<em class="text-slate-400">No description.</em>';
+    }
+  }
+
+  function renderHistory(list) {
+    const node = document.getElementById('historyList');
+    if (!list.length) { node.innerHTML = '<p class="text-slate-400 italic">No history yet.</p>'; return; }
+    node.innerHTML = list.map(h => `<div class="flex items-start gap-2 py-1.5 border-b border-slate-50 last:border-b-0">
+      <span class="text-slate-400 whitespace-nowrap">${fmtDate(h.changed_at)}</span>
+      <span class="text-slate-600">${escapeHtml(devName(h.changed_by) || 'system')}</span>
+      <span class="text-slate-700">changed <strong>${escapeHtml(h.field)}</strong>${h.old_value ? ` from <span class="text-slate-500">${escapeHtml(h.old_value).slice(0,40)}</span>` : ''} → <span class="font-semibold text-slate-800">${escapeHtml(h.new_value || '').slice(0,40)}</span></span>
+    </div>`).join('');
+  }
+
+  function renderGitRefs() {
+    const refs = _item.git_refs || [];
+    const node = document.getElementById('gitList');
+    node.innerHTML = refs.length
+      ? refs.map((r, i) => {
+          const label = r.replace(/^https?:\/\//,'').replace('github.com/','');
+          return `<div class="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-xs">
+            <span class="text-slate-400">🔗</span>
+            <a href="${escapeHtml(r)}" target="_blank" class="flex-1 text-blue-700 hover:underline truncate">${escapeHtml(label)}</a>
+            <button onclick="removeGitRef(${i})" class="text-slate-400 hover:text-red-600">×</button>
+          </div>`;
+        }).join('')
+      : '<p class="text-slate-400 text-xs italic">No git references linked.</p>';
+  }
+
+  // ── Attachments ──────────────────────────────────────────────────────────
+  function fmtBytes(n) {
+    if (n == null) return '';
+    if (n < 1024) return n + ' B';
+    if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+    return (n/1024/1024).toFixed(1) + ' MB';
+  }
+  function isImg(mime) { return /^image\//.test(mime || ''); }
+
+  function renderAttachments() {
+    document.getElementById('attCount').textContent = _attachments.length ? `${_attachments.length} file${_attachments.length===1?'':'s'}` : '';
+    const node = document.getElementById('attList');
+    if (!_attachments.length) { node.innerHTML = ''; return; }
+    node.innerHTML = _attachments.map(a => `<div class="att-card">
+      <div class="att-thumb">${isImg(a.mime_type) ? `<img src="${escapeHtml(a.url)}" alt="" />` : '📎'}</div>
+      <div class="flex-1 min-w-0">
+        <a href="${escapeHtml(a.url)}" target="_blank" class="text-sm font-semibold text-slate-800 hover:text-blue-700 truncate block">${escapeHtml(a.name)}</a>
+        <div class="text-[10px] text-slate-400">${escapeHtml(devName(a.uploaded_by) || 'anon')} · ${fmtDate(a.created_at)} · ${fmtBytes(a.size_bytes)}</div>
+      </div>
+      <button onclick="deleteAttachment('${a.id}', '${escapeHtml(a.storage_path)}')" class="text-slate-400 hover:text-red-600 text-sm">×</button>
+    </div>`).join('');
+  }
+
+  function onDropOver(e)  { e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+  function onDropLeave(e) { e.currentTarget.classList.remove('dragover'); }
+  function onDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('dragover');
+    if (e.dataTransfer.files?.length) uploadFiles(e.dataTransfer.files);
+  }
+  function onFilePick(e) { uploadFiles(e.target.files); e.target.value = ''; }
+
+  async function uploadFiles(files) {
+    const status = document.getElementById('upStatus');
+    const epicOnlyPdf = _item?.type === 'Epic';
+    for (const f of files) {
+      if (epicOnlyPdf && f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) {
+        status.textContent = `${f.name} skipped — Epic attachments must be PDF.`;
+        continue;
+      }
+      if (f.size > 25 * 1024 * 1024) { status.textContent = `${f.name} too large (>25 MB), skipped.`; continue; }
+      const safe = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `${_id}/${Date.now()}-${safe}`;
+      status.textContent = `Uploading ${f.name}…`;
+      let up;
+      try {
+        up = await window.bniUpload('dev-attachments', path, f);
+      } catch (err) { status.textContent = `Failed: ${err.message}`; continue; }
+      const author = document.getElementById('timerUser').value || null;
+      const { data: inserted, error: dbErr } = await window.sb.from('dev_attachments').insert({
+        item_id: _id, name: f.name, storage_path: path, url: up.url,
+        size_bytes: f.size, mime_type: f.type, uploaded_by: author,
+      }).select().single();
+      if (dbErr) { status.textContent = `Saved file but DB row failed: ${dbErr.message}`; continue; }
+      _attachments.unshift(inserted);
+      logHistory('attachment', '', '+' + f.name);
+    }
+    status.textContent = '';
+    renderAttachments();
+  }
+
+  async function deleteAttachment(id, path) {
+    if (!confirm('Delete this attachment?')) return;
+    await window.bniDeleteUpload('dev-attachments', path);
+    await window.sb.from('dev_attachments').delete().eq('id', id);
+    _attachments = _attachments.filter(a => a.id !== id);
+    renderAttachments();
+  }
+
+  // ── Time tracking ────────────────────────────────────────────────────────
+  function populateTimerUserPicker() {
+    const sel = document.getElementById('timerUser');
+    const stored = localStorage.getItem('dev_timer_user') || '';
+    sel.innerHTML = '<option value="">— Anonymous —</option>' +
+      _devs.map(d => `<option value="${d.id}"${d.id===stored?' selected':''}>${escapeHtml(d.name)}</option>`).join('');
+    sel.onchange = () => localStorage.setItem('dev_timer_user', sel.value);
+  }
+
+  function totalMinutes() { return _worklogs.reduce((s, w) => s + (w.minutes || 0), 0); }
+  function fmtDuration(min) {
+    if (!min) return '0m';
+    const h = Math.floor(min / 60), m = min % 60;
+    return h ? `${h}h ${m}m` : `${m}m`;
+  }
+
+  function renderWorklog() {
+    _activeTimer = _worklogs.find(w => !w.ended_at && w.user_id === (document.getElementById('timerUser').value || null));
+    document.getElementById('timeTotal').textContent = `Total: ${fmtDuration(totalMinutes())}${_activeTimer ? ' · ⏱ running' : ''}`;
+    const btn = document.getElementById('timerBtn');
+    if (_activeTimer) {
+      btn.classList.add('timer-active');
+      btn.innerHTML = '■ Stop';
+    } else {
+      btn.classList.remove('timer-active');
+      btn.innerHTML = '▶ Start';
+    }
+    const node = document.getElementById('worklogList');
+    if (!_worklogs.length) { node.innerHTML = '<p class="text-slate-400 italic">No time logged yet.</p>'; return; }
+    const recent = _worklogs.slice(0, 10);
+    node.innerHTML = recent.map(w => `<div class="flex items-center gap-2 py-1 border-b border-slate-50 last:border-b-0">
+      <span class="font-bold text-slate-700">${fmtDuration(w.minutes || 0)}</span>
+      <span class="text-slate-500">${escapeHtml(devName(w.user_id) || 'anon')}</span>
+      <span class="text-slate-400">${fmtDate(w.started_at)}</span>
+      ${!w.ended_at ? '<span class="text-red-600 font-bold">⏱ running</span>' : ''}
+      <span class="text-slate-600 flex-1 truncate">${escapeHtml(w.notes || '')}</span>
+      <button onclick="deleteWorklog('${w.id}')" class="text-slate-300 hover:text-red-500">×</button>
+    </div>`).join('');
+  }
+
+  async function toggleTimer() {
+    const userId = document.getElementById('timerUser').value || null;
+    if (_activeTimer) {
+      const ended = new Date().toISOString();
+      const minutes = Math.max(1, Math.round((new Date(ended) - new Date(_activeTimer.started_at)) / 60000));
+      const { error } = await window.sb.from('dev_worklog').update({ ended_at: ended, minutes }).eq('id', _activeTimer.id);
+      if (error) { alert(error.message); return; }
+      logHistory('worklog', '', `+${minutes}m by ${devName(userId) || 'anon'}`);
+      const { data } = await window.sb.from('dev_worklog').select('*').eq('item_id', _id).order('started_at', { ascending: false });
+      _worklogs = data || [];
+      renderWorklog();
+    } else {
+      const started = new Date().toISOString();
+      const { data, error } = await window.sb.from('dev_worklog').insert({
+        item_id: _id, user_id: userId, started_at: started, notes: '',
+      }).select().single();
+      if (error) { alert(error.message); return; }
+      _worklogs.unshift(data);
+      renderWorklog();
+    }
+  }
+
+  async function logTimeManual() {
+    const minStr = prompt('Minutes spent (e.g. 45):');
+    const min = parseInt(minStr, 10);
+    if (!min || min <= 0) return;
+    const notes = prompt('Notes (optional):') || '';
+    const userId = document.getElementById('timerUser').value || null;
+    const now = new Date();
+    const start = new Date(now.getTime() - min * 60000).toISOString();
+    const { data, error } = await window.sb.from('dev_worklog').insert({
+      item_id: _id, user_id: userId, started_at: start, ended_at: now.toISOString(), minutes: min, notes,
+    }).select().single();
+    if (error) { alert(error.message); return; }
+    _worklogs.unshift(data);
+    logHistory('worklog', '', `+${min}m manual`);
+    renderWorklog();
+  }
+
+  async function deleteWorklog(id) {
+    if (!confirm('Delete this time entry?')) return;
+    await window.sb.from('dev_worklog').delete().eq('id', id);
+    _worklogs = _worklogs.filter(w => w.id !== id);
+    renderWorklog();
+  }
+
+  function depRowHTML(it) {
+    return `<div class="flex items-center gap-2 px-2 py-1.5 border border-slate-200 rounded text-sm bg-slate-50">
+      <span class="font-mono text-[10px] text-slate-500">${escapeHtml(it.id)}</span>
+      <span class="state-pill" style="background:${STATE_BG[it.state]||'#f1f5f9'};color:${STATE_FG[it.state]||'#475569'};font-size:9px;padding:1px 6px">${escapeHtml(it.state)}</span>
+      <a href="dev-item.html?id=${encodeURIComponent(it.id)}" class="flex-1 truncate font-semibold text-slate-800 hover:text-blue-700 text-xs">${escapeHtml(it.title)}</a>
+      <button onclick="removeDep('${escapeHtml(it._fromId)}','${escapeHtml(it._toId)}','${escapeHtml(it._type)}')" class="text-slate-400 hover:text-red-600 text-xs">×</button>
+    </div>`;
+  }
+
+  function renderDependencies() {
+    // Items this one BLOCKS  -> deps where from_id=_id and type=blocks
+    // Items BLOCKED BY this  -> deps where to_id=_id and type=blocks
+    const blocks    = _deps.filter(d => d.from_id === _id && d.type === 'blocks');
+    const blockedBy = _deps.filter(d => d.to_id   === _id && d.type === 'blocks');
+    const relates   = _deps.filter(d => d.type === 'relates-to' || d.type === 'duplicates');
+
+    const lookup = id => _projectItems.find(i => i.id === id);
+    const decorate = (rows, getId, fromId, toId, type) => rows.map(d => {
+      const it = lookup(getId(d));
+      return it ? Object.assign({}, it, { _fromId: fromId(d), _toId: toId(d), _type: type(d) }) : null;
+    }).filter(Boolean);
+
+    const blocksRows    = decorate(blocks,    d=>d.to_id,   d=>d.from_id, d=>d.to_id,   d=>d.type);
+    const blockedByRows = decorate(blockedBy, d=>d.from_id, d=>d.from_id, d=>d.to_id,   d=>d.type);
+    const relatesRows   = decorate(relates,   d=>(d.from_id===_id?d.to_id:d.from_id), d=>d.from_id, d=>d.to_id, d=>d.type);
+
+    document.getElementById('blocksList').innerHTML = blocksRows.length
+      ? blocksRows.map(depRowHTML).join('')
+      : '<p class="text-slate-400 text-xs italic">Nothing blocked.</p>';
+    document.getElementById('blockedByList').innerHTML = blockedByRows.length
+      ? blockedByRows.map(depRowHTML).join('')
+      : '<p class="text-slate-400 text-xs italic">Not blocked.</p>';
+    if (relatesRows.length) {
+      document.getElementById('relatesBox').classList.remove('hidden');
+      document.getElementById('relatesList').innerHTML = relatesRows.map(depRowHTML).join('');
+    }
+
+    // Show a warning if this item is blocked by anything not yet Done.
+    const openBlockers = blockedByRows.filter(it => it.state !== 'Done');
+    const warn = document.getElementById('depWarning');
+    if (openBlockers.length) {
+      warn.classList.remove('hidden');
+      warn.innerHTML = `<strong>⛔ This item is blocked by ${openBlockers.length} open item${openBlockers.length>1?'s':''}.</strong> Saving with state="Done" will be rejected until those are resolved.`;
+    } else {
+      warn.classList.add('hidden');
+    }
+  }
+
+  async function openLinkDep(direction) {
+    // direction = 'blocks' (this item blocks X) or 'blocked-by' (X blocks this item)
+    const candidates = _projectItems.filter(i => i.id !== _id);
+    if (!candidates.length) { alert('No other items in this project.'); return; }
+    const opts = candidates.map(i => `${i.id} · [${i.state}] ${i.title}`).join('\n');
+    const pick = prompt(`Paste the ID of the item:\n\n${opts}`);
+    if (!pick) return;
+    const id = pick.trim().split(/\s/)[0];
+    const found = candidates.find(i => i.id === id);
+    if (!found) { alert('Not found.'); return; }
+    const from_id = direction === 'blocks' ? _id   : found.id;
+    const to_id   = direction === 'blocks' ? found.id : _id;
+    const { error } = await window.sb.from('dev_dependencies').insert({ from_id, to_id, type: 'blocks' });
+    if (error) { alert('Failed: ' + error.message); return; }
+    logHistory(direction === 'blocks' ? 'blocks' : 'blocked-by', '', found.id);
+    const { data } = await window.sb.from('dev_dependencies').select('*').or(`from_id.eq.${_id},to_id.eq.${_id}`);
+    _deps = data || [];
+    renderDependencies();
+  }
+
+  async function removeDep(fromId, toId, type) {
+    if (!confirm('Remove this link?')) return;
+    await window.sb.from('dev_dependencies').delete()
+      .eq('from_id', fromId).eq('to_id', toId).eq('type', type);
+    const { data } = await window.sb.from('dev_dependencies').select('*').or(`from_id.eq.${_id},to_id.eq.${_id}`);
+    _deps = data || [];
+    renderDependencies();
+  }
+
+  async function addGitRef() {
+    const url = document.getElementById('gitInput').value.trim();
+    if (!url) return;
+    const refs = [..._item.git_refs || [], url];
+    const { error } = await window.sb.from('dev_work_items').update({ git_refs: refs }).eq('id', _id);
+    if (error) { alert('Failed: ' + error.message); return; }
+    _item.git_refs = refs;
+    document.getElementById('gitInput').value = '';
+    renderGitRefs();
+  }
+
+  async function removeGitRef(idx) {
+    const refs = (_item.git_refs || []).filter((_, i) => i !== idx);
+    await window.sb.from('dev_work_items').update({ git_refs: refs }).eq('id', _id);
+    _item.git_refs = refs;
+    renderGitRefs();
+  }
+
+  async function addComment() {
+    const body = document.getElementById('newComment').value.trim();
+    if (!body) return;
+    const author_id = document.getElementById('commentAuthor').value || null;
+    const { error } = await window.sb.from('dev_comments').insert({ item_id: _id, author_id, body });
+    if (error) { alert('Failed: ' + error.message); return; }
+    document.getElementById('newComment').value = '';
+    const { data } = await window.sb.from('dev_comments').select('*').eq('item_id', _id).order('created_at');
+    renderComments(data || []);
+  }
+
+  async function logHistory(field, oldV, newV) {
+    try { await window.sb.from('dev_history').insert({ item_id: _id, field, old_value: String(oldV ?? ''), new_value: String(newV ?? '') }); } catch {}
+  }
+
+  async function saveItem() {
+    const tags = document.getElementById('f_tags').value.split(',').map(s => s.trim()).filter(Boolean);
+    const newPayload = {
+      title:       document.getElementById('f_title').value.trim(),
+      description: document.getElementById('f_description').value.trim(),
+      type:        document.getElementById('f_type').value,
+      state:       document.getElementById('f_state').value,
+      priority:    document.getElementById('f_priority').value,
+      points:      document.getElementById('f_points').value ? Number(document.getElementById('f_points').value) : null,
+      assignee_id: document.getElementById('f_assignee').value || null,
+      due_date:    document.getElementById('f_due').value || null,
+      tags,
+      sprint_id:   document.getElementById('f_sprint').value || null,
+      parent_id:   document.getElementById('f_parent').value || null,
+    };
+    const fields = ['title','description','type','state','priority','points','assignee_id','due_date','sprint_id','parent_id'];
+    const changes = fields.filter(f => String(_item[f] ?? '') !== String(newPayload[f] ?? ''));
+    if (!changes.length && JSON.stringify(_item.tags||[]) === JSON.stringify(tags)) {
+      alert('No changes to save.'); return;
+    }
+    // Block-guard: if moving to Done while still blocked, reject.
+    if (newPayload.state === 'Done' && _item.state !== 'Done') {
+      const openBlockers = _deps.filter(d => d.to_id === _id && d.type === 'blocks')
+        .map(d => _projectItems.find(i => i.id === d.from_id))
+        .filter(it => it && it.state !== 'Done');
+      if (openBlockers.length) {
+        alert('Cannot mark Done — still blocked by:\n' + openBlockers.map(b => `  • ${b.id} ${b.title}`).join('\n'));
+        return;
+      }
+    }
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const { error } = await window.sb.from('dev_work_items').update(newPayload).eq('id', _id);
+    if (error) { alert('Save failed: ' + error.message); btn.disabled = false; btn.textContent = 'Save changes'; return; }
+    for (const f of changes) {
+      await logHistory(f, _item[f], newPayload[f]);
+    }
+    Object.assign(_item, newPayload);
+    btn.disabled = false; btn.textContent = '✓ Saved';
+    setTimeout(() => btn.textContent = 'Save changes', 1500);
+    populateUI();
+    const { data } = await window.sb.from('dev_history').select('*').eq('item_id', _id).order('changed_at', { ascending: false }).limit(40);
+    renderHistory(data || []);
+  }
+
+  async function deleteItem() {
+    if (!confirm(`Delete ${_id} permanently?`)) return;
+    const { error } = await window.sb.from('dev_work_items').delete().eq('id', _id);
+    if (error) { alert('Delete failed: ' + error.message); return; }
+    location.href = 'dev-boards.html';
+  }
+
+  async function openLinkChild() {
+    const candidates = _projectItems.filter(i =>
+      i.id !== _item.id && i.parent_id !== _item.id && i.id !== _item.parent_id
+    );
+    if (!candidates.length) { alert('No items in this project to link.'); return; }
+    const opts = candidates.map(i => `${i.id} · ${i.title}`).join('\n');
+    const pick = prompt(`Link a child item — paste an ID from this list:\n\n${opts}`);
+    if (!pick) return;
+    const target = candidates.find(i => i.id === pick.trim().split(/\s/)[0]);
+    if (!target) { alert('Not found.'); return; }
+    await window.sb.from('dev_work_items').update({ parent_id: _id }).eq('id', target.id);
+    location.reload();
+  }
+
+  load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="auth-guard.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teams (A / B / C / D) — BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background:#f8fafc; color:#0f172a; }
+    .glass { background:white; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+    .team-card { transition:all 0.18s ease; }
+    .team-card:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,0.06); }
+    .row-action { padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; cursor:pointer; border:1px solid transparent; }
+    .row-action.edit { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .row-action.edit:hover { background:#dbeafe; }
+    .row-action.del  { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+    .row-action.del:hover { background:#fee2e2; }
+    .add-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px; background:#1e3a8a; color:#fff; font-size:0.78rem; font-weight:700; cursor:pointer; border:none; }
+    .add-btn:hover { background:#1e40af; }
+    .modal-bg { position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:80; display:flex; align-items:center; justify-content:center; }
+    .modal-card { background:white; border-radius:16px; max-width:520px; width:92%; max-height:90vh; overflow-y:auto; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.25); }
+  </style>
+</head>
+<body>
+
+  <main class="px-4 sm:px-8 py-6 max-w-7xl mx-auto">
+    <header class="mb-6">
+      <h1 class="text-2xl font-extrabold text-slate-900" style="letter-spacing:-0.02em">BNI Teams — A / B / C / D</h1>
+      <p class="text-slate-500 text-sm mt-1">Team member roster. Add, edit, or remove members per team.</p>
+    </header>
+
+    <div id="loadingState" class="text-center py-10 text-slate-400 text-sm">Loading rosters…</div>
+    <div id="teamsContainer" class="grid lg:grid-cols-2 gap-6 hidden"></div>
+  </main>
+
+  <!-- Edit / Add modal -->
+  <div id="memberModal" class="modal-bg hidden">
+    <div class="modal-card">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modalTitle" class="text-lg font-bold">Add member</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+      </div>
+      <form id="memberForm" onsubmit="saveMember(event)" class="grid grid-cols-2 gap-3 text-sm">
+        <input type="hidden" id="m_id" />
+        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">First name *</span>
+          <input id="m_first" required class="w-full border rounded-lg px-3 py-2" /></label>
+        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Last name</span>
+          <input id="m_last" class="w-full border rounded-lg px-3 py-2" /></label>
+        <label class="col-span-2"><span class="block text-xs font-semibold text-slate-600 mb-1">Company</span>
+          <input id="m_company" class="w-full border rounded-lg px-3 py-2" /></label>
+        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Phone</span>
+          <input id="m_phone" class="w-full border rounded-lg px-3 py-2" /></label>
+        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Email</span>
+          <input id="m_email" type="email" class="w-full border rounded-lg px-3 py-2" /></label>
+        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Meeting date</span>
+          <input id="m_meeting_date" type="date" class="w-full border rounded-lg px-3 py-2" /></label>
+        <label class="col-span-1"><span class="block text-xs font-semibold text-slate-600 mb-1">Meeting time</span>
+          <input id="m_meeting_time" type="time" class="w-full border rounded-lg px-3 py-2" /></label>
+        <label class="col-span-2"><span class="block text-xs font-semibold text-slate-600 mb-1">Team</span>
+          <select id="m_team_select" class="w-full border rounded-lg px-3 py-2">
+            <option value="A">Team A</option><option value="B">Team B</option>
+            <option value="C">Team C</option><option value="D">Team D</option>
+          </select></label>
+        <label class="col-span-2"><span class="block text-xs font-semibold text-slate-600 mb-1">Notes</span>
+          <textarea id="m_notes" rows="2" class="w-full border rounded-lg px-3 py-2"></textarea></label>
+        <div class="col-span-2 flex gap-2 pt-2">
+          <button type="submit" class="flex-1 bg-blue-700 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-800">Save</button>
+          <button type="button" onclick="closeModal()" class="px-5 py-2.5 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="supabase-config.js"></script>
+  <script src="bni-sidebar.js"></script>
+  <script>
+  const TEAM_META = {
+    A: { color:'#7c3aed', captain:'Roma Gehi' },
+    B: { color:'#2563eb', captain:'Ruchi Raisoni' },
+    C: { color:'#0ea5e9', captain:'—' },
+    D: { color:'#15803d', captain:'—' },
+  };
+
+  let _members = {};
+
+  async function fetchAll() {
+    const { data, error } = await window.sb.from('bni_team_members').select('*').eq('hidden', false);
+    if (error) window.bniToast('Failed to load members: ' + error.message, 'error');
+    _members = {};
+    (data || []).forEach(m => { _members[m.id] = m; });
+  }
+
+  function getTeamMembers(code) {
+    return Object.values(_members)
+      .filter(m => (m.team || '').toUpperCase() === code)
+      .sort((a, b) => ((a.first||'')+(a.last||'')).localeCompare((b.first||'')+(b.last||'')));
+  }
+
+  function memberRow(m, teamCode) {
+    const name = ((m.first||'') + ' ' + (m.last||'')).trim() || '(no name)';
+    const mt = m.meeting_date ? `${m.meeting_date}${m.meeting_time ? ' ' + m.meeting_time : ''}` : '';
+    return `<tr class="border-b border-slate-100 hover:bg-slate-50">
+      <td class="py-2 pr-3 font-semibold text-slate-900 text-sm">${name}</td>
+      <td class="py-2 pr-3 text-slate-600 text-xs">${m.company||''}</td>
+      <td class="py-2 pr-3 text-slate-500 text-xs">${m.phone||''}</td>
+      <td class="py-2 pr-3 text-slate-500 text-xs whitespace-nowrap">${mt}</td>
+      <td class="py-2 text-right whitespace-nowrap">
+        <button class="row-action edit" onclick="openEdit('${m.id}','${teamCode}')">Edit</button>
+        <button class="row-action del"  onclick="deleteMember('${m.id}')">Delete</button>
+      </td>
+    </tr>`;
+  }
+
+  function render() {
+    const cont = document.getElementById('teamsContainer');
+    cont.innerHTML = ['A','B','C','D'].map(code => {
+      const members = getTeamMembers(code);
+      const meta = TEAM_META[code];
+      return `
+        <section class="team-card glass rounded-2xl p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-white" style="background:${meta.color}">${code}</span>
+            <h2 class="text-lg font-bold text-slate-900">Team ${code}</h2>
+            ${meta.captain && meta.captain !== '—' ? `<span class="text-slate-500 text-sm">· ${meta.captain}</span>` : ''}
+            <span class="ml-auto text-xs text-slate-400">${members.length} member${members.length!==1?'s':''}</span>
+            <button class="add-btn" onclick="openAdd('${code}')">+ Add</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="text-xs text-slate-400 uppercase tracking-wide">
+                <tr class="border-b border-slate-200">
+                  <th class="text-left pb-2 pr-3">Name</th>
+                  <th class="text-left pb-2 pr-3">Company</th>
+                  <th class="text-left pb-2 pr-3">Phone</th>
+                  <th class="text-left pb-2 pr-3">Meeting</th>
+                  <th class="text-right pb-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${members.length ? members.map(m => memberRow(m, code)).join('') : '<tr><td colspan="5" class="py-3 text-slate-400 text-xs text-center">No members yet — click + Add</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </section>`;
+    }).join('');
+    cont.classList.remove('hidden');
+    document.getElementById('loadingState').classList.add('hidden');
+  }
+
+  function openModalEmpty(teamCode, mode) {
+    document.getElementById('modalTitle').textContent = mode === 'add' ? `Add member to Team ${teamCode}` : 'Edit member';
+    document.getElementById('memberForm').reset();
+    document.getElementById('m_id').value = '';
+    document.getElementById('m_team_select').value = teamCode || 'A';
+    document.getElementById('memberModal').classList.remove('hidden');
+  }
+
+  function openAdd(teamCode) {
+    openModalEmpty(teamCode, 'add');
+    document.getElementById('m_first').focus();
+  }
+
+  function openEdit(id, teamCode) {
+    const m = _members[id];
+    if (!m) return alert('Member not found');
+    openModalEmpty(teamCode, 'edit');
+    document.getElementById('m_id').value            = id;
+    document.getElementById('m_first').value         = m.first || '';
+    document.getElementById('m_last').value          = m.last || '';
+    document.getElementById('m_company').value       = m.company || '';
+    document.getElementById('m_phone').value         = m.phone || '';
+    document.getElementById('m_email').value         = m.email || '';
+    document.getElementById('m_meeting_date').value  = m.meeting_date || '';
+    document.getElementById('m_meeting_time').value  = m.meeting_time || '';
+    document.getElementById('m_notes').value         = m.notes || '';
+    document.getElementById('m_team_select').value   = m.team || teamCode || 'A';
+  }
+
+  function closeModal() {
+    document.getElementById('memberModal').classList.add('hidden');
+  }
+
+  async function saveMember(ev) {
+    ev.preventDefault();
+    const existingId = document.getElementById('m_id').value;
+    const id = existingId || ('tm_' + Date.now());
+    const payload = {
+      id,
+      team:         document.getElementById('m_team_select').value,
+      first:        document.getElementById('m_first').value.trim(),
+      last:         document.getElementById('m_last').value.trim()    || null,
+      company:      document.getElementById('m_company').value.trim() || null,
+      phone:        document.getElementById('m_phone').value.trim()   || null,
+      email:        document.getElementById('m_email').value.trim()   || null,
+      meeting_date: document.getElementById('m_meeting_date').value   || null,
+      meeting_time: document.getElementById('m_meeting_time').value   || null,
+      notes:        document.getElementById('m_notes').value.trim()   || null,
+    };
+    const { error } = await window.sb.from('bni_team_members').upsert(payload);
+    if (error) { alert('Save failed: ' + error.message); return; }
+    closeModal();
+    await fetchAll();
+    render();
+  }
+
+  async function deleteMember(id) {
+    if (!confirm('Remove this member from the team?\n\nThis hides them (reversible) — does not delete the row.')) return;
+    const { error } = await window.sb.from('bni_team_members').update({ hidden: true }).eq('id', id);
+    if (error) { alert('Delete failed: ' + error.message); return; }
+    await fetchAll();
+    render();
+  }
+
+  async function init() {
+    await fetchAll();
+    render();
+  }
+  init();
+  </script>
+</body>
+</html>

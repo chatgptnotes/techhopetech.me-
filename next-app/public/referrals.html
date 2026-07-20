@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Referral Network — BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background:#f8fafc; color:#0f172a; }
+    .glass { background:white; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+    .ref-pill { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:600; text-decoration:none; }
+    .source-pill { background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; }
+    .source-pill:hover { background:#e0e7ff; }
+    .child-pill { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+    .child-pill:hover { background:#dcfce7; }
+    .stat-card { background:white; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; }
+  </style>
+</head>
+<body>
+  <main class="px-4 sm:px-8 py-6 max-w-6xl mx-auto">
+    <header class="mb-6">
+      <h1 class="text-2xl font-extrabold text-slate-900" style="letter-spacing:-0.02em">Referral Network</h1>
+      <p class="text-slate-500 text-sm mt-1">Who introduced whom. Tap any name to open their profile.</p>
+    </header>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="statsRow"></div>
+
+    <div class="glass rounded-2xl p-5 mb-6">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="users" style="color:#7c3aed"></i>
+        <h2 class="text-lg font-bold text-slate-900">Top referral sources</h2>
+        <span class="ml-auto text-xs text-slate-400" id="topCountLabel"></span>
+      </div>
+      <div id="topReferrers" class="space-y-2"></div>
+    </div>
+
+    <div class="glass rounded-2xl p-5 mb-6">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="git-branch" style="color:#0ea5e9"></i>
+        <h2 class="text-lg font-bold text-slate-900">Referral chains</h2>
+        <span class="ml-auto text-xs text-slate-400">trees show who introduced whom</span>
+      </div>
+      <div id="referralTree" class="space-y-3"></div>
+    </div>
+
+    <div class="glass rounded-2xl p-5">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="snowflake" style="color:#94a3b8"></i>
+        <h2 class="text-lg font-bold text-slate-900">Cold contacts</h2>
+        <span class="ml-auto text-xs text-slate-400">no recorded referral source</span>
+      </div>
+      <div id="coldList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2"></div>
+    </div>
+  </main>
+
+  <script src="supabase-config.js"></script>
+  <script src="auth-guard.js"></script>
+  <script src="bni-sidebar.js"></script>
+  <script>
+  let _all = [];
+  function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+  function nameOf(c) { return ((c.first||'') + ' ' + (c.last||'')).trim() || '(no name)'; }
+
+  async function load() {
+    const { data, error } = await window.sb.from('bni_contacts')
+      .select('id,first,last,company,status,referred_by_id,referred_to')
+      .eq('hidden', false);
+    if (error) { document.body.innerHTML = '<div class="p-10 text-red-600">'+error.message+' — likely the migration hasn\'t been applied. Run migrations_apply.sql in Supabase SQL editor.</div>'; return; }
+    _all = data || [];
+    render();
+  }
+
+  function render() {
+    const byId = Object.fromEntries(_all.map(c => [c.id, c]));
+    const childrenOf = {};
+    _all.forEach(c => {
+      if (c.referred_by_id) {
+        (childrenOf[c.referred_by_id] = childrenOf[c.referred_by_id] || []).push(c);
+      }
+    });
+
+    const cold     = _all.filter(c => !c.referred_by_id && !(childrenOf[c.id]||[]).length);
+    const sources  = _all.filter(c => (childrenOf[c.id]||[]).length > 0)
+      .sort((a,b) => (childrenOf[b.id].length - childrenOf[a.id].length));
+    const referred = _all.filter(c => c.referred_by_id);
+    const roots    = sources.filter(s => !s.referred_by_id);
+
+    // Stats
+    document.getElementById('statsRow').innerHTML = [
+      { label:'Total contacts',    val:_all.length,     color:'#1d4ed8' },
+      { label:'Referred contacts', val:referred.length, color:'#15803d' },
+      { label:'Active referrers',  val:sources.length,  color:'#7c3aed' },
+      { label:'Cold contacts',     val:cold.length,     color:'#64748b' },
+    ].map(s => `<div class="stat-card">
+      <div class="text-2xl font-extrabold" style="color:${s.color}">${s.val}</div>
+      <div class="text-[11px] uppercase tracking-wider font-bold text-slate-500 mt-1">${s.label}</div>
+    </div>`).join('');
+
+    // Top referrers list
+    const top = sources.slice(0, 12);
+    document.getElementById('topCountLabel').textContent = `${sources.length} unique source${sources.length===1?'':'s'}`;
+    document.getElementById('topReferrers').innerHTML = top.length
+      ? top.map(s => {
+          const kids = childrenOf[s.id] || [];
+          return `<div class="flex items-start gap-3 py-2 border-b border-slate-100 last:border-b-0">
+            <a href="contact.html?id=${s.id}" class="ref-pill source-pill flex-shrink-0"><i data-lucide="user-check" style="width:13px;height:13px"></i>${escapeHtml(nameOf(s))}</a>
+            <div class="flex flex-wrap gap-1.5 flex-1 min-w-0">
+              ${kids.map(k => `<a href="contact.html?id=${k.id}" class="ref-pill child-pill">${escapeHtml(nameOf(k))}</a>`).join('')}
+            </div>
+            <span class="text-xs text-slate-400 font-bold flex-shrink-0">${kids.length}</span>
+          </div>`;
+        }).join('')
+      : '<p class="text-slate-400 text-sm py-4 text-center">No referral sources tracked yet. Open any contact and set "Referred by" to start building your network graph.</p>';
+
+    // Tree (recursive, depth-limited to 4)
+    function renderNode(c, depth) {
+      const kids = childrenOf[c.id] || [];
+      const ind = depth * 24;
+      const head = `<div style="margin-left:${ind}px" class="flex items-center gap-2 py-1">
+        ${depth ? '<span class="text-slate-300 font-mono">└─</span>' : ''}
+        <a href="contact.html?id=${c.id}" class="ref-pill ${depth ? 'child-pill' : 'source-pill'}">${escapeHtml(nameOf(c))}${c.company ? ` · ${escapeHtml(c.company)}` : ''}</a>
+        ${kids.length ? `<span class="text-xs text-slate-400">${kids.length} introduced</span>` : ''}
+      </div>`;
+      const sub = (depth >= 4) ? '' : kids.map(k => renderNode(k, depth+1)).join('');
+      return head + sub;
+    }
+    document.getElementById('referralTree').innerHTML = roots.length
+      ? roots.map(r => `<div class="border border-slate-100 rounded-lg p-3">${renderNode(r, 0)}</div>`).join('')
+      : '<p class="text-slate-400 text-sm text-center py-4">No referral chains yet.</p>';
+
+    // Cold list
+    document.getElementById('coldList').innerHTML = cold.length
+      ? cold.slice(0, 60).map(c => `<a href="contact.html?id=${c.id}" class="block px-3 py-2 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-sm">
+          <div class="font-semibold text-slate-800">${escapeHtml(nameOf(c))}</div>
+          <div class="text-xs text-slate-500">${escapeHtml(c.company || '—')}</div>
+        </a>`).join('') + (cold.length > 60 ? `<div class="text-xs text-slate-400 col-span-full text-center mt-2">… and ${cold.length - 60} more</div>` : '')
+      : '<p class="text-slate-400 text-sm text-center py-4 col-span-full">All contacts have a recorded referral source — nice!</p>';
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  load();
+  </script>
+</body>
+</html>

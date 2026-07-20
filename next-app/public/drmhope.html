@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/jpeg" href="/bni/bni-logo.jpg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DrM Hope Softwares: Healthcare AI &amp; Medical Software | Nagpur, India</title>
+  <meta name="description" content="DrM Hope Softwares builds AI-powered healthcare software from Nagpur, India. Products: AdamRIT, PrewedAI, Linkist. Founded by Dr. BK Murali, BNI Diorite member." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; overflow-x: hidden; }
+    .font-display { font-family: 'Playfair Display', serif; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+    .grid-lines {
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; animation: orb-float 10s ease-in-out infinite; }
+    @keyframes orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.06); } }
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 100ms; }
+    .reveal-delay-2 { transition-delay: 200ms; }
+    .reveal-delay-3 { transition-delay: 300ms; }
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
+    .glass-hover { transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; }
+    .glass-hover:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.15); transform: translateY(-4px); }
+    .text-gradient-blue { background: linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .text-gradient-emerald { background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .navbar { transition: background 0.3s ease, border-color 0.3s ease; }
+    .navbar.scrolled { background: rgba(2,8,23,0.92); border-color: rgba(255,255,255,0.08) !important; backdrop-filter: blur(20px); }
+    .cta-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(59,130,246,0.3); }
+    .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.45); }
+    .cta-emerald { background: linear-gradient(135deg, #10b981, #059669); transition: all 0.25s ease; box-shadow: 0 4px 24px rgba(16,185,129,0.3); }
+    .cta-emerald:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(16,185,129,0.45); }
+    .tag-pill { font-size: 0.7rem; letter-spacing: 0.06em; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; }
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #020817; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+    /* Case study callout */
+    .case-study {
+      background: rgba(16,185,129,0.06);
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .case-study-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #34d399;
+      margin-bottom: 4px;
+    }
+
+    /* Tech tag */
+    .tech-tag {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #94a3b8;
+    }
+
+    /* Pulse indicator */
+    .pulse-dot { animation: pulseDot 2.5s ease-in-out infinite; }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.4); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/bni/index.html" class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="font-bold text-white text-lg tracking-tight">HopeTech</span>
+        </a>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-medium">
+        <a href="/bni/index.html#founders" class="hover:text-white transition-colors">Founders</a>
+        <a href="/bni/bettroi.html" class="hover:text-white transition-colors">Bettroi</a>
+        <a href="/bni/hopephoenix.html" class="hover:text-white transition-colors">HopePhoenix</a>
+        <a href="/bni/betser.html" class="hover:text-white transition-colors">Betser</a>
+        <a href="/bni/drmhope.html" class="text-white transition-colors">DrM Hope</a>
+      </div>
+      <a href="/bni/index.html" class="cta-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Book 121</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative min-h-screen flex items-center grid-lines pt-24 pb-20 overflow-hidden">
+    <!-- Orbs -->
+    <div class="orb" style="width:600px;height:600px;background:rgba(16,185,129,0.12);top:-150px;right:-180px;animation-delay:0s;"></div>
+    <div class="orb" style="width:350px;height:350px;background:rgba(5,150,105,0.1);bottom:-80px;left:-100px;animation-delay:-5s;"></div>
+    <div class="orb" style="width:250px;height:250px;background:rgba(52,211,153,0.08);top:55%;left:42%;animation-delay:-8s;"></div>
+
+    <div class="max-w-7xl mx-auto px-6 w-full relative z-10">
+      <!-- Badge row -->
+      <div class="reveal flex flex-wrap items-center gap-3 mb-8">
+        <span class="tag-pill" style="background:rgba(16,185,129,0.15);color:#6ee7b7;border:1px solid rgba(16,185,129,0.3);">Healthcare AI</span>
+        <span class="tag-pill" style="background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.08);">Nagpur, India</span>
+        <span class="flex items-center gap-1.5 text-xs text-slate-500">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot inline-block"></span>
+          BNI Diorite Chapter
+        </span>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] mb-6 reveal reveal-delay-1">
+            Where Medicine<br/>
+            <span class="text-gradient-emerald">Meets Machines</span>
+          </h1>
+          <p class="text-slate-400 text-xl leading-relaxed mb-4 reveal reveal-delay-2 max-w-xl font-light italic" style="color:#a7f3d0;">
+            "The best healthcare software is built by someone who has seen the inside of a ward, not just a boardroom."
+          </p>
+          <p class="text-slate-400 text-base leading-relaxed mb-8 reveal reveal-delay-2 max-w-xl">
+            DrM Hope Softwares brings physician-grade thinking to every product we build.
+            From ESIC patient mapping to NFC business cards, we solve real problems for real people in Nagpur and beyond.
+          </p>
+          <div class="flex flex-wrap gap-4 reveal reveal-delay-3">
+            <a href="#products" class="cta-emerald text-white font-semibold px-7 py-3.5 rounded-xl inline-flex items-center gap-2">
+              View Our Products
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="tel:+918412030400" class="glass text-slate-300 font-semibold px-7 py-3.5 rounded-xl inline-flex items-center gap-2 hover:text-white transition-colors">
+              +91 84120 30400
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: visual stats card -->
+        <div class="reveal reveal-delay-2">
+          <div class="glass rounded-2xl p-8 space-y-5">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold text-white" style="background: linear-gradient(135deg, #10b981, #059669);">M</div>
+              <div>
+                <div class="text-white font-bold text-lg">Dr. BK Murali</div>
+                <div class="text-emerald-400 text-sm font-semibold">Founder &amp; CEO</div>
+              </div>
+            </div>
+            <div class="section-divider"></div>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gradient-emerald">3</div>
+                <div class="text-slate-500 text-xs mt-1">Products</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gradient-emerald">200+</div>
+                <div class="text-slate-500 text-xs mt-1">Professionals</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gradient-emerald">Nagpur</div>
+                <div class="text-slate-500 text-xs mt-1">Based</div>
+              </div>
+            </div>
+            <div class="section-divider"></div>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              Practicing physician turned technology entrepreneur. Dr. Murali applies clinical systems
+              thinking to every product, bridging the gap between healthcare operations and AI automation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider max-w-7xl mx-auto"></div>
+
+  <!-- ABOUT -->
+  <section class="py-24 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-16 items-start">
+        <!-- Left: mission -->
+        <div class="reveal">
+          <span class="tag-pill mb-5 inline-block" style="background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Our Mission</span>
+          <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-6 leading-snug">
+            Healthcare intelligence,<br/><span class="text-gradient-emerald">built from the inside</span>
+          </h2>
+          <p class="text-slate-400 leading-relaxed mb-5">
+            DrM Hope Softwares was founded on a simple belief: the people who understand healthcare best
+            are the people who deliver it. Our founder is a practicing physician in Nagpur who saw, first-hand,
+            how broken the software layer was in Indian healthcare and decided to fix it.
+          </p>
+          <p class="text-slate-400 leading-relaxed mb-5">
+            We build tools that work in the real conditions of Indian clinics, government insurance systems,
+            and community health networks, not just in polished demos. Every line of code is validated
+            against what actually happens on a ward floor.
+          </p>
+          <p class="text-slate-400 leading-relaxed">
+            Beyond healthcare, DrM Hope Softwares is expanding into professional networking (Linkist)
+            and social event technology (PrewedAI), applying the same principle: solve a real problem,
+            do it with AI, and make it work for people in Tier-2 India.
+          </p>
+        </div>
+
+        <!-- Right: founder + address card -->
+        <div class="space-y-5 reveal reveal-delay-1">
+          <!-- Founder card -->
+          <a href="/bni/dr-murali.html" class="glass glass-hover rounded-2xl p-7 block group">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0" style="background: linear-gradient(135deg, #10b981, #059669);">M</div>
+              <div>
+                <div class="text-white font-bold text-lg">Dr. BK Murali</div>
+                <div class="text-emerald-400 text-sm font-semibold">Founder &amp; CEO, DrM Hope Softwares</div>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+              MBBS physician, AI consultant, and BNI Diorite Chapter member. Specialises in
+              healthcare AI, clinical workflow automation, and digital transformation for Tier-2 India.
+            </p>
+            <div class="inline-flex items-center gap-2 text-emerald-400 text-sm font-medium group-hover:gap-3 transition-all">
+              Full Profile
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+
+          <!-- Biji Thomas — Director -->
+          <a href="/bni/biji-thomas.html" class="glass glass-hover rounded-2xl p-7 block group">
+            <div class="flex items-center gap-4 mb-4">
+              <img src="/bni/biji-thomas.png" alt="Biji Thomas" class="w-14 h-14 rounded-2xl object-cover flex-shrink-0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+              <div class="w-14 h-14 rounded-2xl items-center justify-center text-2xl font-bold text-white flex-shrink-0 hidden" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">B</div>
+              <div>
+                <div class="text-white font-bold text-lg">Biji Thomas</div>
+                <div class="text-indigo-400 text-sm font-semibold">Director, DrM Hope Softwares</div>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+              CEO of Bettroi, Dubai. Brings enterprise AI architecture and GCC market access to DrM Hope's product portfolio. BNI Dubai member.
+            </p>
+            <div class="inline-flex items-center gap-2 text-indigo-400 text-sm font-medium group-hover:gap-3 transition-all">
+              Full Profile
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+
+          <!-- Address card -->
+          <div class="glass rounded-2xl p-7 space-y-4">
+            <div>
+              <div class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Address</div>
+              <div class="text-slate-300 text-sm leading-relaxed">
+                701, Casa Royal Apartment<br/>
+                Mohan Nagar, Nagpur 440001<br/>
+                Maharashtra, India
+              </div>
+            </div>
+            <div class="section-divider"></div>
+            <div>
+              <div class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Phone</div>
+              <a href="tel:+918412030400" class="text-emerald-400 hover:text-emerald-300 transition-colors text-sm font-medium">
+                +91 84120 30400
+              </a>
+            </div>
+            <div class="section-divider"></div>
+            <div>
+              <div class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">BNI Chapter</div>
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+                <span class="text-slate-300 text-sm font-medium">BNI Diorite, Nagpur</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider max-w-7xl mx-auto"></div>
+
+  <!-- PRODUCTS -->
+  <section id="products" class="py-24 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16 reveal">
+        <span class="tag-pill mb-5 inline-block" style="background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Products</span>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-4">Three Products, Three Problems Solved</h2>
+        <p class="text-slate-400 max-w-xl mx-auto">Each product was built to address a specific gap in Indian healthcare, professional networking, or the event industry.</p>
+      </div>
+
+      <div class="space-y-8">
+
+        <!-- AdamRIT -->
+        <div class="glass rounded-2xl p-8 reveal">
+          <div class="grid lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+              <div class="flex flex-wrap items-center gap-3 mb-4">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0" style="background: linear-gradient(135deg, #10b981, #059669);">A</div>
+                <div>
+                  <h3 class="text-white font-bold text-xl">AdamRIT</h3>
+                  <span class="tag-pill inline-block mt-0.5" style="background:rgba(16,185,129,0.12);color:#6ee7b7;">Healthcare AI</span>
+                </div>
+              </div>
+              <p class="text-slate-400 leading-relaxed mb-5">
+                AI-driven ESIC patient mapping and referral intelligence system. AdamRIT reads the
+                complexity of India's Employees' State Insurance Corporation network and automatically
+                maps beneficiaries to the nearest appropriate specialist hospital, cutting referral
+                delays and preventing insurance benefit lapses.
+              </p>
+              <div class="case-study mb-5">
+                <div class="case-study-label">Case Study</div>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                  Mapped ESIC patients across Nagpur, linking government insurance beneficiaries to
+                  specialist hospitals. Reduced manual referral paperwork and improved benefit utilisation
+                  for workers in the Vidarbha industrial corridor.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="tech-tag">Python AI</span>
+                <span class="tech-tag">ESIC API</span>
+                <span class="tech-tag">Geolocation</span>
+                <span class="tech-tag">Referral Engine</span>
+              </div>
+            </div>
+            <div class="flex flex-col justify-center">
+              <div class="space-y-4">
+                <div class="glass rounded-xl p-4 text-center">
+                  <div class="text-2xl font-bold text-gradient-emerald mb-1">ESIC</div>
+                  <div class="text-slate-500 text-xs">Government Insurance Network</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                  <div class="text-2xl font-bold text-gradient-emerald mb-1">AI</div>
+                  <div class="text-slate-500 text-xs">Intelligent Referral Matching</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                  <div class="text-2xl font-bold text-gradient-emerald mb-1">Nagpur</div>
+                  <div class="text-slate-500 text-xs">First Deployment City</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PrewedAI -->
+        <div class="glass rounded-2xl p-8 reveal reveal-delay-1">
+          <div class="grid lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+              <div class="flex flex-wrap items-center gap-3 mb-4">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0" style="background: linear-gradient(135deg, #f472b6, #ec4899);">P</div>
+                <div>
+                  <h3 class="text-white font-bold text-xl">PrewedAI</h3>
+                  <span class="tag-pill inline-block mt-0.5" style="background:rgba(236,72,153,0.12);color:#f9a8d4;">Events AI</span>
+                </div>
+              </div>
+              <p class="text-slate-400 leading-relaxed mb-5">
+                AI-powered pre-wedding planning platform. Uses machine learning to match vendors,
+                venues, and themes to a couple's budget, style preferences, and guest count.
+                Brings the efficiency of technology to an industry still largely run on phone calls and WhatsApp forwards.
+              </p>
+              <div class="case-study mb-5" style="background:rgba(236,72,153,0.06);border-color:rgba(236,72,153,0.2);">
+                <div class="case-study-label" style="color:#f472b6;">Case Study</div>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                  Deployed for wedding planning agencies in the Vidarbha region. Agencies reported
+                  faster client onboarding and higher vendor conversion rates after switching to
+                  PrewedAI for proposal generation and vendor shortlisting.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="tech-tag">ML Matching</span>
+                <span class="tech-tag">Vendor DB</span>
+                <span class="tech-tag">Budget Engine</span>
+                <span class="tech-tag">Proposal Gen</span>
+              </div>
+            </div>
+            <div class="flex flex-col justify-center">
+              <div class="space-y-4">
+                <div class="glass rounded-xl p-4 text-center">
+                  <div class="text-2xl font-bold mb-1" style="background:linear-gradient(135deg,#f472b6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">ML</div>
+                  <div class="text-slate-500 text-xs">Vendor Matching Engine</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                  <div class="text-2xl font-bold mb-1" style="background:linear-gradient(135deg,#f472b6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Vidarbha</div>
+                  <div class="text-slate-500 text-xs">First Market Deployment</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                  <div class="text-2xl font-bold mb-1" style="background:linear-gradient(135deg,#f472b6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Events</div>
+                  <div class="text-slate-500 text-xs">Industry Vertical</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Linkist -->
+        <div class="glass rounded-2xl p-8 reveal reveal-delay-2">
+          <div class="grid lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+              <div class="flex flex-wrap items-center gap-3 mb-4">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0" style="background: linear-gradient(135deg, #60a5fa, #3b82f6);">L</div>
+                <div>
+                  <h3 class="text-white font-bold text-xl">Linkist</h3>
+                  <span class="tag-pill inline-block mt-0.5" style="background:rgba(59,130,246,0.12);color:#bfdbfe;">NFC Networking</span>
+                </div>
+              </div>
+              <p class="text-slate-400 leading-relaxed mb-5">
+                NFC-enabled smart business card and contact management platform. One tap on any
+                NFC-enabled phone shares a complete digital profile with LinkedIn, WhatsApp, and
+                portfolio links, replacing paper cards that get lost in a drawer within days.
+                Linkist profiles are live, always up to date, and trackable.
+              </p>
+              <div class="case-study mb-5" style="background:rgba(59,130,246,0.06);border-color:rgba(59,130,246,0.2);">
+                <div class="case-study-label" style="color:#60a5fa;">Case Study</div>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                  Deployed for 200+ professionals in Nagpur, replacing paper cards with digital NFC
+                  profiles linked to LinkedIn and WhatsApp. Several BNI chapter members adopted Linkist
+                  for their weekly chapter networking events.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="tech-tag">NFC</span>
+                <span class="tech-tag">Digital Profile</span>
+                <span class="tech-tag">LinkedIn API</span>
+                <span class="tech-tag">WhatsApp Link</span>
+                <span class="tech-tag">Analytics</span>
+              </div>
+            </div>
+            <div class="flex flex-col justify-center">
+              <div class="space-y-4">
+                <div class="glass rounded-xl p-4 text-center">
+                  <div class="text-2xl font-bold text-gradient-blue mb-1">200+</div>
+                  <div class="text-slate-500 text-xs">Professionals Onboarded</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                  <div class="text-2xl font-bold text-gradient-blue mb-1">NFC</div>
+                  <div class="text-slate-500 text-xs">Tap to Share Technology</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                  <div class="text-2xl font-bold text-gradient-blue mb-1">0</div>
+                  <div class="text-slate-500 text-xs">Paper Cards Needed</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider max-w-7xl mx-auto"></div>
+
+  <!-- ECOSYSTEM COLLABORATION -->
+  <section class="py-24 relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-14 reveal">
+        <span class="tag-pill mb-5 inline-block" style="background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Ecosystem</span>
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-4">Part of the HopeTech Ecosystem</h2>
+        <p class="text-slate-400 max-w-xl mx-auto">DrM Hope Softwares does not operate in isolation. It is one node in a growing network of AI ventures co-founded by Dr. BK Murali.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        <!-- HopePhoenix -->
+        <a href="/bni/hopephoenix.html" class="glass glass-hover rounded-2xl p-7 block group reveal">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0" style="background: linear-gradient(135deg, #f59e0b, #d97706);">H</div>
+            <div>
+              <div class="text-white font-semibold">HopePhoenix</div>
+              <div class="text-amber-400 text-xs font-medium">Product R&amp;D Arm</div>
+            </div>
+          </div>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            The research and development unit behind HopeTech's larger platform builds. DrM Hope
+            collaborates with HopePhoenix for clinical AI modules and enterprise healthcare components.
+          </p>
+          <div class="inline-flex items-center gap-2 text-amber-400 text-sm font-medium group-hover:gap-3 transition-all">
+            Learn More
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+
+        <!-- Bettroi -->
+        <a href="/bni/bettroi.html" class="glass glass-hover rounded-2xl p-7 block group reveal reveal-delay-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">B</div>
+            <div>
+              <div class="text-white font-semibold">Bettroi</div>
+              <div class="text-indigo-400 text-xs font-medium">Enterprise AI Platform</div>
+            </div>
+          </div>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            Dr. Murali serves as Director of Bettroi, contributing domain expertise in healthcare AI
+            to their HMS+, DDO, and Aide product lines built for hospital and clinic environments.
+          </p>
+          <div class="inline-flex items-center gap-2 text-indigo-400 text-sm font-medium group-hover:gap-3 transition-all">
+            Learn More
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider max-w-7xl mx-auto"></div>
+
+  <!-- CONTACT + CTA -->
+  <section class="py-24 relative z-10 overflow-hidden">
+    <div class="orb" style="width:450px;height:450px;background:rgba(16,185,129,0.08);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-3s;"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <!-- Contact details -->
+        <div class="reveal">
+          <span class="tag-pill mb-5 inline-block" style="background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Contact</span>
+          <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-6">
+            Reach Dr. Murali directly
+          </h2>
+          <p class="text-slate-400 leading-relaxed mb-8">
+            Whether you need healthcare software, want to explore an ESIC mapping project,
+            or are simply curious about how AI can improve your medical practice, a direct conversation
+            gets further than any brochure.
+          </p>
+          <div class="space-y-4">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl glass flex items-center justify-center flex-shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.62 19.79 19.79 0 013 1.18 2 2 0 015 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.91 8.09a16 16 0 006 6l.36-.36a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+              </div>
+              <div>
+                <div class="text-slate-500 text-xs uppercase tracking-widest mb-0.5">Phone</div>
+                <a href="tel:+918412030400" class="text-white font-medium hover:text-emerald-400 transition-colors">+91 84120 30400</a>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl glass flex items-center justify-center flex-shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <div>
+                <div class="text-slate-500 text-xs uppercase tracking-widest mb-0.5">Address</div>
+                <div class="text-white font-medium text-sm">701, Casa Royal, Mohan Nagar, Nagpur 440001</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl glass flex items-center justify-center flex-shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div>
+                <div class="text-slate-500 text-xs uppercase tracking-widest mb-0.5">BNI Chapter</div>
+                <div class="text-white font-medium text-sm">BNI Diorite, Nagpur</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA card -->
+        <div class="reveal reveal-delay-1">
+          <div class="glass rounded-2xl p-10 text-center">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mx-auto mb-6" style="background: linear-gradient(135deg, #10b981, #059669);">121</div>
+            <h3 class="font-display text-2xl font-bold text-white mb-4">
+              Book a 121 with Dr. Murali
+            </h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-8">
+              A 1-on-1 conversation is the fastest way to understand how healthcare AI can work for
+              your clinic, hospital, or health-tech project. Dr. Murali keeps it direct and practical.
+            </p>
+            <a href="/bni/index.html" class="cta-emerald text-white font-bold px-8 py-4 rounded-xl inline-flex items-center gap-3">
+              Request a 121 Meeting
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <p class="text-slate-600 text-xs mt-5">via BNI 121 portal, HopeTech Ventures</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 py-12 mt-4 relative z-10">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <span class="text-white font-semibold">HopeTech Ventures</span>
+      </div>
+      <p class="text-slate-500 text-sm">&copy; 2025 HopeTech Ventures. Dr. BK Murali &amp; Biji Thomas. All rights reserved.</p>
+      <div class="flex items-center gap-6 text-sm text-slate-500">
+        <a href="/bni/index.html" class="hover:text-white transition-colors">Home</a>
+        <a href="/bni/dr-murali.html" class="hover:text-white transition-colors">Dr. Murali</a>
+        <a href="/bni/biji-thomas.html" class="hover:text-white transition-colors">Biji Thomas</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    // Scroll reveal
+    document.querySelectorAll('.reveal').forEach(el => {
+      new IntersectionObserver(([e]) => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+      }, { threshold: 0.08 }).observe(el);
+    });
+  </script>
+</body>
+</html>

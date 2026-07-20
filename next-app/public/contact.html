@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact · BNI 121</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; }
+    .glass { background: white; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    input, select, textarea {
+      background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 8px 12px; outline: none; transition: border-color 0.15s;
+      font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: #64748b; margin-bottom: 8px; }
+    .kv { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+    .kv:last-child { border-bottom: 0; }
+    .kv .k { min-width: 110px; color: #64748b; font-weight: 500; }
+    .kv .v { flex: 1; color: #0f172a; }
+    .avatar-xl { width: 96px; height: 96px; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 2rem; position: relative; }
+    .timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; margin-top: 6px; flex-shrink: 0; }
+    .timeline-line { width: 2px; background: #e2e8f0; margin-left: 4px; min-height: 20px; }
+    .file-card { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #ffffff; }
+    .file-card:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .dropzone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; color: #64748b; background: #f8fafc; cursor: pointer; transition: all 0.15s; }
+    .dropzone:hover, .dropzone.dragover { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+  </style>
+</head>
+<body>
+<div id="bni-sidebar-mount"></div>
+
+<main class="p-8 max-w-5xl mx-auto" id="pageRoot">
+  <div id="loadingState" class="py-20 text-center text-slate-400">
+    <div class="flex justify-center mb-3 icon-xl" style="color:var(--bni-primary);"><i data-lucide="loader-2" class="animate-spin"></i></div>
+    <p class="text-sm">Loading contact…</p>
+  </div>
+  <div id="notFoundState" class="hidden py-20 text-center text-slate-400">
+    <div class="flex justify-center mb-3 icon-xl"><i data-lucide="search-x"></i></div>
+    <p class="font-medium">Contact not found</p>
+    <a href="/bni/zoom-completed.html" class="text-blue-600 text-sm hover:underline mt-2 inline-flex items-center gap-1.5"><i data-lucide="arrow-left"></i>Back to meetings list</a>
+  </div>
+  <div id="contactBody" class="hidden space-y-6"></div>
+</main>
+
+<script src="supabase-config.js"></script>
+<script src="auth-guard.js"></script>
+<script src="bni-sidebar.js"></script>
+<script>
+const STATUS_COLOR = {
+  'Identified':'#3b82f6','Contacted':'#f59e0b','Meeting Scheduled':'#15803d',
+  'Met':'#8b5cf6','Follow-up':'#c2410c','Converted':'#10b981','Not Interested':'#64748b'
+};
+const AVATAR_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#f97316'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let _contact = null;
+let _detail  = null;
+let _showArchivedFollowups = false;
+let _showArchivedFiles     = false;
+
+function qs(name) { return new URLSearchParams(location.search).get(name); }
+function avatarColor(id) { return AVATAR_COLORS[parseInt(String(id).replace(/\D/g,'')) % AVATAR_COLORS.length]; }
+
+function meetingDate(c) {
+  const re = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/g;
+  const m = [...(c.notes || '').matchAll(re)].pop();
+  if (m) {
+    let yy = m[3].length === 2 ? '20' + m[3] : m[3];
+    return `${yy}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  }
+  return c.updated_at ? c.updated_at.slice(0, 10) : null;
+}
+
+async function loadContact() {
+  const id = qs('id');
+  if (!id) { notFound(); return; }
+  const { data: c, error: cErr } = await window.sb
+    .from('bni_contacts').select('*').eq('id', id).maybeSingle();
+  if (cErr || !c) { notFound(); return; }
+  _contact = c;
+  const { data: d } = await window.sb
+    .from('bni_contact_details').select('*').eq('contact_id', id).maybeSingle();
+  _detail = d || { contact_id: id, followups: [], pdfs: [], photo: '', about: '', linkedin: '', website: '', priority: 'Normal', next_date: null,
+    financial_proposal_sent_at: null, technical_proposal_sent_at: null, commercial_proposal_sent_at: null,
+    financial_proposal_url: '', technical_proposal_url: '', commercial_proposal_url: '',
+    meeting_outcome: null, proposal_reply_received_at: null,
+    sentiment: null, sentiment_note: '' };
+  render();
+}
+
+function notFound() {
+  document.getElementById('loadingState').classList.add('hidden');
+  document.getElementById('notFoundState').classList.remove('hidden');
+}
+
+// Back button — uses history if available, else falls back to a sensible list page.
+function goBack() {
+  const ref = document.referrer || '';
+  const sameOrigin = ref && ref.startsWith(location.origin);
+  if (sameOrigin && history.length > 1) { history.back(); return; }
+  location.href = '/bni/members-met.html';
+}
+
+function render() {
+  document.getElementById('loadingState').classList.add('hidden');
+  document.getElementById('contactBody').classList.remove('hidden');
+  const c = _contact, d = _detail;
+  const name = ((c.first || '') + ' ' + (c.last || '')).trim() || '(no name)';
+  const initials = ((c.first?.[0] || '') + (c.last?.[0] || '')).toUpperCase() || '?';
+  const assigneeNames = window.contactAssigneeNames(c);
+  const assignee = assigneeNames.length ? assigneeNames.join(', ') : '—';
+  const iso = meetingDate(c);
+  const dateStr = iso ? (() => {
+    const dd = new Date(iso + 'T00:00:00');
+    return DAYS[dd.getDay()] + ', ' + dd.getDate() + ' ' + MONTHS[dd.getMonth()] + ' ' + dd.getFullYear();
+  })() : '—';
+  const statusColor = STATUS_COLOR[c.status] || '#64748b';
+
+  document.title = name + ' · BNI 121';
+
+  document.getElementById('contactBody').innerHTML = `
+    <!-- Header / profile card -->
+    <section class="glass rounded-2xl p-6">
+      <div class="flex items-start gap-5 flex-wrap">
+        <div class="avatar-xl" style="background:${avatarColor(c.id)}18;color:${avatarColor(c.id)};border:3px solid ${avatarColor(c.id)}55;overflow:hidden;">
+          ${d.photo ? `<img src="${d.photo}" alt="${name}" class="w-full h-full object-cover rounded-[22px]" />` : initials}
+          <button onclick="triggerUpload('photo')" title="Upload photo"
+            class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white border border-slate-200 shadow text-sm hover:bg-slate-50"><i data-lucide="camera"></i></button>
+          <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="uploadFile(event, 'photo')" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-2xl font-bold text-slate-900">${name}</h1>
+            <span class="badge" style="background:${statusColor}18;color:${statusColor};border:1px solid ${statusColor}55;">${c.status || '—'}</span>
+            ${renderHeaderFollowUpChip(d.next_date)}
+          </div>
+          <div class="text-slate-600 mt-1">${c.company || '—'}${c.city ? ' · ' + c.city : ''}</div>
+          ${renderProgressBar(c, d)}
+          ${renderSentimentBar(d)}
+          <div class="flex items-center gap-4 mt-3 text-sm flex-wrap">
+            ${(() => {
+              const phones = window.contactPhones(c);
+              return phones.map((p, i) => `<a href="tel:${p}" class="text-blue-600 hover:underline inline-flex items-center gap-1.5"><i data-lucide="phone"></i>${p}${i === 0 && phones.length > 1 ? ' <span class="text-slate-400">(+' + (phones.length - 1) + ' more)</span>' : ''}</a>`).join('');
+            })()}
+            ${c.email ? `<a href="mailto:${c.email}" class="text-blue-600 hover:underline inline-flex items-center gap-1.5"><i data-lucide="mail"></i>${c.email}</a>` : ''}
+            ${d.website ? `<a href="${d.website}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center gap-1.5"><i data-lucide="globe"></i>${d.website.replace(/https?:\/\//,'')}</a>` : ''}
+            ${d.linkedin ? `<a href="${d.linkedin}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center gap-1.5"><i data-lucide="linkedin"></i>LinkedIn</a>` : ''}
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="goBack()" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 font-medium"><i data-lucide="arrow-left"></i>Back</button>
+          <button onclick="saveContact()" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"><i data-lucide="save"></i>Save</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Prominent Follow-up Banner -->
+    ${renderFollowUpBanner(d.next_date)}
+
+    <!-- Key info -->
+    <section class="grid md:grid-cols-2 gap-6">
+      <div class="glass rounded-2xl p-6">
+        <h3 class="section-title">Contact Details</h3>
+        <div class="kv"><span class="k">First name</span><span class="v"><input id="ef_first" value="${escapeAttr(c.first)}" class="w-full" /></span></div>
+        <div class="kv"><span class="k">Last name</span><span class="v"><input id="ef_last" value="${escapeAttr(c.last)}" class="w-full" /></span></div>
+        <div class="kv"><span class="k">Company</span><span class="v"><input id="ef_company" value="${escapeAttr(c.company)}" class="w-full" /></span></div>
+        <div class="kv"><span class="k">City</span><span class="v"><input id="ef_city" value="${escapeAttr(c.city)}" class="w-full" /></span></div>
+        <div class="kv"><span class="k">Chapter</span><span class="v"><input id="ef_chapter" value="${escapeAttr(c.chapter)}" class="w-full" list="chapterList" /></span></div>
+        <datalist id="chapterList"></datalist>
+        <div class="kv"><span class="k">Phone(s)</span><span class="v">
+          <div id="ef_phones_list" class="space-y-2">${(() => {
+            const phones = window.contactPhones(c);
+            const rows = phones.length ? phones : [''];
+            return rows.map((p, i) => `
+              <div class="flex gap-2 phone-row">
+                <input class="ef-phone flex-1" value="${escapeAttr(p)}" placeholder="${i === 0 ? 'Primary phone' : 'Additional phone'}" />
+                ${i === 0 ? '' : '<button type="button" onclick="this.parentElement.remove()" class="px-2 text-slate-400 hover:text-red-500" title="Remove this number"><i data-lucide="x" style="width:14px;height:14px"></i></button>'}
+              </div>`).join('');
+          })()}</div>
+          <button type="button" onclick="addPhoneField()" class="mt-2 text-xs text-blue-600 hover:text-blue-800 inline-flex items-center gap-1.5 font-semibold"><i data-lucide="plus" style="width:12px;height:12px"></i>Add another phone</button>
+        </span></div>
+        <div class="kv"><span class="k">Email</span><span class="v"><input id="ef_email" value="${escapeAttr(c.email)}" class="w-full" /></span></div>
+      </div>
+
+      <div class="glass rounded-2xl p-6">
+        <h3 class="section-title">Meeting & Assignment</h3>
+        <div class="kv"><span class="k">Meeting Date</span><span class="v">${dateStr}</span></div>
+        <div class="kv"><span class="k">Assignees</span><span class="v">
+          <select id="ef_assignees" multiple size="5" class="w-full">${window.devMultiOptionsHtml(window.contactAssigneeIds(c))}</select>
+          <div class="text-xs text-slate-400 mt-1">Hold ⌘/Ctrl to select multiple.</div>
+        </span></div>
+        <div class="kv"><span class="k">Status</span><span class="v">
+          <select id="ef_status" class="w-full">
+            ${['Identified','Contacted','Meeting Scheduled','Met','Follow-up','Converted','Not Interested']
+              .map(s => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+        </span></div>
+        <div class="kv"><span class="k">Segment</span><span class="v">
+          <select id="ef_segment" class="w-full">
+            ${['AI / Tech','Industrial Automation','Healthcare','Other'].map(s => `<option ${s === c.segment ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+        </span></div>
+        <div class="kv"><span class="k">Priority</span><span class="v">
+          <select id="ef_priority" class="w-full">
+            ${['High','Normal','Low'].map(s => `<option ${s === (d.priority || 'Normal') ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+        </span></div>
+        <div class="kv"><span class="k">Next reminder</span><span class="v"><input type="date" id="ef_next_date" value="${d.next_date || ''}" class="w-full" /></span></div>
+        <div class="kv"><span class="k">Tags</span><span class="v"><input id="ef_tags" value="${(c.tags || []).join(', ')}" placeholder="e.g. warm-lead, healthcare, proposal-sent" class="w-full" /><div class="text-xs text-slate-400 mt-1">Comma-separated. Used for filtering on the list page.</div></span></div>
+      </div>
+    </section>
+
+    <!-- WhatsApp drip scheduler -->
+    <section class="glass rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="section-title m-0">WhatsApp drip sequence</h3>
+        <button onclick="scheduleStandardDrip()" class="text-xs px-3 py-1 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700">+ Standard 3-step drip</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">Auto-send WhatsApp messages on a schedule. Uses templates from the Templates page; placeholders <code>{first}</code> and <code>{company}</code> are filled in. Worker runs every 5 minutes.</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Template</label>
+          <select id="drip_template" class="w-full text-sm border rounded px-2 py-1.5"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Date</label>
+          <input id="drip_date" type="date" class="w-full text-sm border rounded px-2 py-1.5" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Time</label>
+          <input id="drip_time" type="time" value="09:30" class="w-full text-sm border rounded px-2 py-1.5" />
+        </div>
+        <div class="flex items-end">
+          <button onclick="scheduleDrip()" class="w-full bg-emerald-600 text-white py-1.5 rounded-lg text-sm font-bold hover:bg-emerald-700">Schedule</button>
+        </div>
+      </div>
+      <div id="drip_list" class="space-y-1.5"></div>
+    </section>
+
+    <!-- Referral graph -->
+    <section class="glass rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="section-title m-0">Referrals</h3>
+        <a href="referrals.html" class="text-xs text-blue-600 hover:underline">View full network →</a>
+      </div>
+      <div class="kv"><span class="k">Referred by</span><span class="v">
+        <select id="ef_referred_by" class="w-full">
+          <option value="">— No-one (cold contact)</option>
+        </select>
+        <div class="text-xs text-slate-400 mt-1">Who introduced you to this person?</div>
+      </span></div>
+      <div class="kv"><span class="k">Has referred TO Murali</span><span class="v">
+        <input id="ef_referred_to" value="${escapeAttr(c.referred_to || '')}" placeholder="Names of people they introduced you to (comma-separated)" class="w-full" />
+        <div class="text-xs text-slate-400 mt-1">Track outbound referrals from this contact.</div>
+      </span></div>
+      <div id="referredByMeBox" class="mt-3 hidden">
+        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">People referred via this contact</div>
+        <div id="referredByMeList" class="flex flex-wrap gap-2"></div>
+      </div>
+    </section>
+
+    <!-- Deal / opportunity tracking -->
+    <section class="glass rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="section-title m-0">Deal / Opportunity</h3>
+        ${(() => {
+          const score = window.leadScore(c, d);
+          const sc = window.scoreColor(score);
+          return `<span class="badge" style="background:${sc.bg};color:${sc.fg};border:1px solid ${sc.bd};">Lead Score ${score}</span>`;
+        })()}
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Deal value (₹)</label>
+          <input type="number" id="ef_deal_value" value="${c.deal_value || ''}" placeholder="50000" class="w-full" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Close date</label>
+          <input type="date" id="ef_deal_close_date" value="${c.deal_close_date || ''}" class="w-full" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Probability (%)</label>
+          <input type="number" min="0" max="100" id="ef_deal_probability" value="${c.deal_probability != null ? c.deal_probability : 50}" class="w-full" />
+        </div>
+      </div>
+      ${c.deal_value ? `<p class="text-xs text-slate-500 mt-3">Weighted value: <strong style="color:#7c3aed">₹${Math.round((Number(c.deal_value) || 0) * ((c.deal_probability ?? 50) / 100)).toLocaleString('en-IN')}</strong></p>` : ''}
+    </section>
+
+    <!-- Calendar & quick actions -->
+    <section class="glass rounded-2xl p-6">
+      <h3 class="section-title">Quick Actions</h3>
+      <div class="flex flex-wrap gap-2">
+        <a href="${window.gcalUrl(c, d)}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm bg-blue-50 text-blue-700 border border-blue-200 rounded-lg font-semibold hover:bg-blue-100"><i data-lucide="calendar-plus"></i>Add to Google Calendar</a>
+        ${(() => {
+          const primary = window.primaryPhone(c);
+          if (!primary) return '';
+          return `<a href="tel:${primary}" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-semibold hover:bg-emerald-100"><i data-lucide="phone"></i>Call</a>
+          <a href="${window.waUrlFor(primary, c.first, 'thanks')}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm bg-green-50 text-green-700 border border-green-200 rounded-lg font-semibold hover:bg-green-100"><i data-lucide="message-circle"></i>WhatsApp</a>`;
+        })()}
+        ${c.email ? `<a href="mailto:${c.email}?subject=${encodeURIComponent('BNI 121 follow-up')}" onclick="window.logEmailEvent('${c.id}', 'sent', { from: 'contact-page' })" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm bg-amber-50 text-amber-700 border border-amber-200 rounded-lg font-semibold hover:bg-amber-100"><i data-lucide="mail"></i>Email</a>` : ''}
+      </div>
+    </section>
+
+    <!-- Zoom recording, transcript, AI summary -->
+    <section class="glass rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="section-title m-0">Zoom Meeting Artifacts</h3>
+        ${window.BNI_SETTINGS?.ai_summary_disabled ? '' : `<button onclick="runAISummary()" class="inline-flex items-center gap-1.5 text-xs bg-violet-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-violet-700"><i data-lucide="sparkles"></i>Summarize with AI</button>`}
+      </div>
+      <div class="kv"><span class="k">Recording URL</span><span class="v"><input id="ef_rec_url" value="${escapeAttr(d.zoom_recording_url)}" placeholder="https://zoom.us/rec/share/…" class="w-full" /></span></div>
+      <div class="kv"><span class="k">Transcript URL</span><span class="v"><input id="ef_trans_url" value="${escapeAttr(d.zoom_transcript_url)}" placeholder="https://zoom.us/rec/…/transcript.vtt" class="w-full" /></span></div>
+      <div class="mt-4">
+        <label class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Transcript text (paste here for AI summary)</label>
+        <textarea id="ef_transcript" rows="5" class="w-full mt-1" placeholder="Paste the Zoom auto-transcript or meeting notes here…">${escapeText(d.zoom_transcript)}</textarea>
+      </div>
+      ${d.zoom_recording_url ? `<div class="mt-4 rounded-xl overflow-hidden bg-slate-900"><a href="${d.zoom_recording_url}" target="_blank" class="flex items-center gap-3 px-4 py-3 text-white hover:bg-slate-800 transition-colors"><i data-lucide="play-circle"></i><span class="font-semibold">Open recording on Zoom</span><span class="ml-auto text-xs text-slate-400">${d.zoom_recording_url.replace(/https?:\/\//,'').slice(0,40)}…</span></a></div>` : ''}
+      ${d.ai_summary ? `<div class="mt-4 p-4 rounded-xl" style="background:linear-gradient(135deg,#faf5ff,#fdf4ff);border:1px solid #e9d5ff;"><div class="flex items-center gap-2 mb-2"><i data-lucide="sparkles" style="color:#7c3aed"></i><span class="font-bold text-violet-900 text-sm">AI Summary</span></div><div class="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">${escapeText(d.ai_summary)}</div></div>` : ''}
+      ${d.ai_draft_followup ? `<div class="mt-3 p-4 rounded-xl" style="background:#ecfdf5;border:1px solid #a7f3d0;"><div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><i data-lucide="message-circle" style="color:#047857"></i><span class="font-bold text-emerald-900 text-sm">Draft Follow-up</span></div><button onclick="copyDraft()" class="text-xs text-emerald-700 hover:text-emerald-900 inline-flex items-center gap-1"><i data-lucide="copy" style="width:12px;height:12px"></i>Copy</button></div><div class="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed" id="aiDraftText">${escapeText(d.ai_draft_followup)}</div></div>` : ''}
+    </section>
+
+    <!-- Notes & About -->
+    <section class="glass rounded-2xl p-6">
+      <h3 class="section-title">Notes (contact summary)</h3>
+      <textarea id="ef_notes" rows="4" class="w-full mb-4">${escapeText(c.notes)}</textarea>
+      <h3 class="section-title">About / Background (from meeting)</h3>
+      <textarea id="ef_about" rows="4" class="w-full">${escapeText(d.about)}</textarea>
+    </section>
+
+    <!-- Follow-up messages timeline -->
+    <section class="glass rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="section-title m-0">Follow-up Log (${(d.followups || []).length})</h3>
+        <button onclick="addFollowup()" class="inline-flex items-center gap-1.5 text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-700"><i data-lucide="plus"></i>Add Follow-up</button>
+      </div>
+      <div id="followupList">${renderFollowups(d.followups || [], _showArchivedFollowups)}</div>
+    </section>
+
+    <!-- Proposals (3 tracks) -->
+    <section class="glass rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="section-title m-0">Proposals</h3>
+        <span class="text-xs text-slate-400">Upload → Send via WhatsApp / Email → Auto-sets follow-up +4d</span>
+      </div>
+      <input type="file" id="proposalInput" class="hidden" accept="application/pdf,.doc,.docx" onchange="uploadProposal(event)" />
+      <div class="grid md:grid-cols-3 gap-4">
+        ${renderProposalTrack('financial',  'Financial',  '#0891b2', 'landmark',    d)}
+        ${renderProposalTrack('technical',  'Technical',  '#7c3aed', 'settings-2',  d)}
+        ${renderProposalTrack('commercial', 'Commercial', '#16a34a', 'handshake',   d)}
+      </div>
+    </section>
+
+    <!-- Other attachments (photos, references, anything non-proposal) -->
+    <section class="glass rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="section-title m-0">Other Attachments (${(d.pdfs || []).length})</h3>
+        <button onclick="triggerUpload('file')" class="inline-flex items-center gap-1.5 text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-700"><i data-lucide="upload-cloud"></i>Upload File</button>
+        <input type="file" id="fileInput" class="hidden" multiple onchange="uploadFile(event, 'file')" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx" />
+      </div>
+      <div id="filesList" class="space-y-2">${renderFiles(d.pdfs || [], _showArchivedFiles)}</div>
+      <div class="dropzone mt-4" ondragover="event.preventDefault(); this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="event.preventDefault(); this.classList.remove('dragover'); handleDrop(event)">
+        Drag & drop files here, or click the <strong>Upload File</strong> button above
+      </div>
+    </section>
+  `;
+
+  populateChapterDatalist();
+  populateReferralPicker();
+  populateDrip();
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+// ── WhatsApp drip scheduling ────────────────────────────────────────────────
+let _dripTemplates = [];
+async function populateDrip() {
+  const sel = document.getElementById('drip_template');
+  if (!sel) return;
+  if (!_dripTemplates.length) {
+    const { data } = await window.sb.from('bni_templates')
+      .select('id,title,body,channel').eq('hidden', false).order('sort_order');
+    _dripTemplates = (data || []).filter(t => (t.channel || '').toLowerCase().includes('whatsapp'));
+  }
+  sel.innerHTML = _dripTemplates.length
+    ? _dripTemplates.map(t => `<option value="${t.id}">${escapeAttr(t.title)}</option>`).join('')
+    : '<option value="">— No WhatsApp templates configured —</option>';
+
+  const today = new Date(); today.setDate(today.getDate() + 1);
+  document.getElementById('drip_date').value = today.toISOString().slice(0,10);
+
+  // Render scheduled drips for this contact
+  const { data: drips } = await window.sb.from('bni_drip_schedule')
+    .select('*').eq('contact_id', _contact.id).order('scheduled_at');
+  const list = document.getElementById('drip_list');
+  if (!drips || !drips.length) {
+    list.innerHTML = '<p class="text-xs text-slate-400 italic">No drips scheduled.</p>';
+    return;
+  }
+  list.innerHTML = drips.map(d => {
+    const tmpl = _dripTemplates.find(t => t.id === d.template_id);
+    const tmplName = tmpl ? tmpl.title : d.template_id;
+    let badge, color;
+    if (d.cancelled_at) { badge = 'CANCELLED'; color = '#94a3b8'; }
+    else if (d.error)   { badge = 'FAILED';    color = '#b91c1c'; }
+    else if (d.sent_at) { badge = 'SENT';      color = '#15803d'; }
+    else                { badge = 'SCHEDULED'; color = '#1d4ed8'; }
+    const when = new Date(d.scheduled_at).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    return `<div class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm">
+      <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background:${color}18;color:${color};border:1px solid ${color}55">${badge}</span>
+      <span class="font-semibold text-slate-800">${escapeText(tmplName)}</span>
+      <span class="text-slate-500 text-xs">${when}</span>
+      ${d.error ? `<span class="text-xs text-red-600 truncate" title="${escapeAttr(d.error)}">— ${escapeText(d.error.slice(0,40))}</span>` : ''}
+      ${!d.sent_at && !d.cancelled_at ? `<button onclick="cancelDrip('${d.id}')" class="ml-auto text-xs text-red-600 hover:underline">Cancel</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function scheduleDrip() {
+  const tid = document.getElementById('drip_template').value;
+  const date = document.getElementById('drip_date').value;
+  const time = document.getElementById('drip_time').value || '09:30';
+  if (!tid || !date) { window.bniToast('Pick a template and a date', 'error'); return; }
+  const scheduled_at = new Date(`${date}T${time}:00`).toISOString();
+  const { error } = await window.sb.from('bni_drip_schedule').insert({
+    contact_id: _contact.id, template_id: tid, scheduled_at,
+  });
+  if (error) { window.bniToast('Schedule failed: ' + error.message, 'error'); return; }
+  window.bniToast('Drip scheduled', 'success');
+  populateDrip();
+}
+
+async function scheduleStandardDrip() {
+  const wa = _dripTemplates;
+  if (wa.length < 1) { window.bniToast('Add WhatsApp templates first', 'error'); return; }
+  // Pick up to 3 templates by typical drip-step naming
+  const pick = (kw) => wa.find(t => (t.title||'').toLowerCase().includes(kw)) || null;
+  const t1 = pick('thank') || pick('day 1') || wa[0];
+  const t2 = pick('value') || pick('day 7') || wa[Math.min(1, wa.length-1)];
+  const t3 = pick('referral') || pick('day 14') || wa[Math.min(2, wa.length-1)];
+  const now = new Date();
+  const at = (days, hh, mm) => { const d = new Date(now); d.setDate(d.getDate()+days); d.setHours(hh,mm,0,0); return d.toISOString(); };
+  const rows = [
+    { contact_id:_contact.id, template_id:t1.id, scheduled_at: at(1,  9, 30) },
+    { contact_id:_contact.id, template_id:t2.id, scheduled_at: at(7, 10, 30) },
+    { contact_id:_contact.id, template_id:t3.id, scheduled_at: at(14, 10, 30) },
+  ];
+  const { error } = await window.sb.from('bni_drip_schedule').insert(rows);
+  if (error) { window.bniToast('Schedule failed: ' + error.message, 'error'); return; }
+  window.bniToast('3-step drip scheduled (1, 7, 14 days)', 'success');
+  populateDrip();
+}
+
+async function cancelDrip(id) {
+  if (!confirm('Cancel this scheduled message?')) return;
+  await window.sb.from('bni_drip_schedule').update({ cancelled_at: new Date().toISOString() }).eq('id', id);
+  populateDrip();
+}
+
+// ── Referral picker + back-references ─────────────────────────────────────
+let _allContactsForReferrals = [];
+async function populateReferralPicker() {
+  const sel = document.getElementById('ef_referred_by');
+  if (!sel) return;
+  if (!_allContactsForReferrals.length) {
+    const { data } = await window.sb.from('bni_contacts')
+      .select('id,first,last,company,referred_by_id')
+      .eq('hidden', false);
+    _allContactsForReferrals = data || [];
+  }
+  const others = _allContactsForReferrals.filter(x => x.id !== _contact.id);
+  others.sort((a,b) => ((a.first||'')+(a.last||'')).localeCompare((b.first||'')+(b.last||'')));
+  sel.innerHTML = '<option value="">— No-one (cold contact)</option>' +
+    others.map(x => {
+      const name = ((x.first||'') + ' ' + (x.last||'')).trim();
+      const co = x.company ? ` · ${x.company}` : '';
+      const sel = x.id === _contact.referred_by_id ? ' selected' : '';
+      return `<option value="${x.id}"${sel}>${name}${co}</option>`;
+    }).join('');
+
+  const referees = _allContactsForReferrals.filter(x => x.referred_by_id === _contact.id);
+  const box  = document.getElementById('referredByMeBox');
+  const list = document.getElementById('referredByMeList');
+  if (referees.length) {
+    box.classList.remove('hidden');
+    list.innerHTML = referees.map(x => {
+      const name = ((x.first||'') + ' ' + (x.last||'')).trim();
+      return `<a href="contact.html?id=${x.id}" class="px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold hover:bg-blue-100">${name}${x.company ? ` · ${x.company}` : ''}</a>`;
+    }).join('');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+
+function escapeAttr(s)  { return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function escapeText(s)  { return String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function addPhoneField() {
+  const list = document.getElementById('ef_phones_list');
+  if (!list) return;
+  const row = document.createElement('div');
+  row.className = 'flex gap-2 phone-row';
+  row.innerHTML = `
+    <input class="ef-phone flex-1" placeholder="Additional phone" />
+    <button type="button" onclick="this.parentElement.remove()" class="px-2 text-slate-400 hover:text-red-500" title="Remove this number"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+  `;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function gatherPhones() {
+  return [...document.querySelectorAll('#ef_phones_list .ef-phone')]
+    .map(el => el.value.trim())
+    .filter(Boolean);
+}
+
+function populateChapterDatalist() {
+  const dl = document.getElementById('chapterList');
+  if (!dl) return;
+  const rows = (window.BNI_CHAPTERS || []).map(c => [c.name, c.city || '']);
+  dl.innerHTML = rows.sort((a,b) => a[0].localeCompare(b[0]))
+    .map(([n, city]) => `<option value="${n.replace(/"/g,'&quot;')}">${city ? city + ' — ' + n : n}</option>`).join('');
+}
+
+function renderFollowups(list, showArchived) {
+  const all = list || [];
+  const visible = showArchived ? all : all.filter(f => !f.archived);
+  const hiddenCount = all.length - visible.length;
+  if (!visible.length && !hiddenCount) return '<p class="text-sm text-slate-400">No follow-ups logged yet.</p>';
+  const items = visible.map((f, i) => {
+    const origIdx = all.indexOf(f);
+    return `
+    <div class="flex gap-3 mb-3" style="${f.archived ? 'opacity:0.5' : ''}">
+      <div class="flex flex-col items-center">
+        <div class="timeline-dot" style="background:${f.type === 'Proposal' ? '#ea580c' : f.archived ? '#94a3b8' : '#3b82f6'};"></div>
+        ${i < visible.length - 1 ? '<div class="timeline-line flex-1"></div>' : ''}
+      </div>
+      <div class="flex-1 pb-3 border-b border-slate-100">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-600">${f.type || 'Note'} · ${f.date || '—'}${f.archived ? ' · <em>archived</em>' : ''}</span>
+          <button onclick="toggleFollowupArchive(${origIdx})" class="text-slate-400 hover:text-amber-600" title="${f.archived ? 'Unarchive' : 'Archive'}"><i data-lucide="${f.archived ? 'archive-restore' : 'archive'}" style="width:14px;height:14px"></i></button>
+        </div>
+        <div class="text-sm text-slate-800 mt-1 whitespace-pre-wrap">${escapeText(f.message || f.text || '')}</div>
+      </div>
+    </div>
+  `;
+  }).join('');
+  const toggleLink = hiddenCount
+    ? `<button onclick="toggleShowArchivedFollowups()" class="text-xs text-slate-400 hover:text-slate-600 mb-3 inline-flex items-center gap-1"><i data-lucide="archive" style="width:12px;height:12px"></i>${showArchived ? 'Hide' : 'Show'} ${hiddenCount} archived</button>`
+    : '';
+  return toggleLink + items;
+}
+
+function renderFiles(list, showArchived) {
+  const all = list || [];
+  const visible = showArchived ? all : all.filter(f => !f.archived);
+  const hiddenCount = all.length - visible.length;
+  if (!visible.length && !hiddenCount) return '<p class="text-sm text-slate-400">No files uploaded yet.</p>';
+  const items = visible.map((f, i) => {
+    const origIdx = all.indexOf(f);
+    const name = (f.name || f.url || '').toLowerCase();
+    const isImg  = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(name);
+    const isPdf  = /\.pdf$/i.test(name);
+    const iconName = isImg ? 'image' : isPdf ? 'file-text' : 'paperclip';
+    return `
+      <div class="file-card" style="${f.archived ? 'opacity:0.5' : ''}">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${f.archived ? '#f1f5f9;color:#64748b' : '#eff6ff;color:#2563eb'};"><i data-lucide="${iconName}" style="width:20px;height:20px"></i></div>
+        <div class="flex-1 min-w-0">
+          <a href="${f.url}" target="_blank" class="text-sm font-medium text-slate-900 hover:text-blue-600 truncate block">${f.name || f.url}${f.archived ? ' (archived)' : ''}</a>
+          <div class="text-xs text-slate-400">${f.uploaded_at ? new Date(f.uploaded_at).toLocaleString('en-IN') : ''}</div>
+        </div>
+        <button onclick="toggleFileArchive(${origIdx})" class="text-slate-400 hover:text-amber-600" title="${f.archived ? 'Unarchive' : 'Archive'}"><i data-lucide="${f.archived ? 'archive-restore' : 'archive'}"></i></button>
+      </div>
+    `;
+  }).join('');
+  const toggleLink = hiddenCount
+    ? `<button onclick="toggleShowArchivedFiles()" class="text-xs text-slate-400 hover:text-slate-600 mb-2 inline-flex items-center gap-1"><i data-lucide="archive" style="width:12px;height:12px"></i>${showArchived ? 'Hide' : 'Show'} ${hiddenCount} archived</button>`
+    : '';
+  return toggleLink + items;
+}
+
+async function addFollowup() {
+  const msg = prompt('Follow-up message or note:');
+  if (!msg) return;
+  const type = prompt('Type (Note / Proposal / Email / Call / Meeting):', 'Note') || 'Note';
+  _detail.followups = _detail.followups || [];
+  _detail.followups.push({ date: new Date().toISOString().slice(0,10), type, message: msg });
+  await persistDetail();
+  document.getElementById('followupList').innerHTML = renderFollowups(_detail.followups, _showArchivedFollowups);
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+async function toggleFollowupArchive(i) {
+  const f = _detail.followups[i];
+  if (!f) return;
+  f.archived = !f.archived;
+  await persistDetail();
+  document.getElementById('followupList').innerHTML = renderFollowups(_detail.followups, _showArchivedFollowups);
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+  window.bniToast(f.archived ? 'Follow-up archived' : 'Follow-up restored', 'success');
+}
+
+async function toggleFileArchive(i) {
+  const f = _detail.pdfs[i];
+  if (!f) return;
+  f.archived = !f.archived;
+  await persistDetail();
+  document.getElementById('filesList').innerHTML = renderFiles(_detail.pdfs, _showArchivedFiles);
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+  window.bniToast(f.archived ? 'File archived' : 'File restored', 'success');
+}
+
+function toggleShowArchivedFollowups() {
+  _showArchivedFollowups = !_showArchivedFollowups;
+  document.getElementById('followupList').innerHTML = renderFollowups(_detail.followups, _showArchivedFollowups);
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function toggleShowArchivedFiles() {
+  _showArchivedFiles = !_showArchivedFiles;
+  document.getElementById('filesList').innerHTML = renderFiles(_detail.pdfs, _showArchivedFiles);
+  setTimeout(() => window.bniRenderIcons && window.bniRenderIcons(), 0);
+}
+
+function triggerUpload(which) {
+  document.getElementById(which === 'photo' ? 'photoInput' : 'fileInput').click();
+}
+
+// ── Header follow-up chip (inline, editable) ─────────────────────────────────
+function renderHeaderFollowUpChip(iso) {
+  const today = new Date().toISOString().slice(0,10);
+  let bg, fg, border, label, dateStr, icon;
+  if (!iso) {
+    bg = '#f1f5f9'; fg = '#475569'; border = '#cbd5e1';
+    icon = 'calendar-plus';
+    label = 'No follow-up';
+    dateStr = 'Set date';
+  } else {
+    const dd = new Date(iso + 'T00:00:00');
+    const daysDiff = Math.round((dd - new Date(today + 'T00:00:00')) / 86400000);
+    dateStr = `${DAYS[dd.getDay()]}, ${dd.getDate()} ${MONTHS[dd.getMonth()]} ${dd.getFullYear()}`;
+    if (iso < today) {
+      bg = '#fef2f2'; fg = '#b91c1c'; border = '#fecaca';
+      icon = 'alert-triangle';
+      label = `Overdue ${Math.abs(daysDiff)}d`;
+    } else if (iso === today) {
+      bg = '#fffbeb'; fg = '#b45309'; border = '#fde68a';
+      icon = 'bell-ring';
+      label = 'Today';
+    } else {
+      bg = '#eff6ff'; fg = '#1d4ed8'; border = '#bfdbfe';
+      icon = 'calendar-check';
+      label = `In ${daysDiff}d`;
+    }
+  }
+  return `
+    <span class="inline-flex items-center gap-2 rounded-full pl-2 pr-1 py-1 cursor-pointer"
+          style="background:${bg};color:${fg};border:1.5px solid ${border};font-weight:700;font-size:0.78rem;letter-spacing:0.02em;"
+          onclick="document.getElementById('hdr_fub_input').showPicker?.() || document.getElementById('hdr_fub_input').focus()"
+          title="Click to edit follow-up date">
+      <i data-lucide="${icon}" style="width:14px;height:14px"></i>
+      <span class="uppercase tracking-wider">Follow-up</span>
+      <span style="font-weight:800;">${dateStr}</span>
+      <span class="px-1.5 py-0.5 rounded-full text-[10px]" style="background:${fg};color:${bg};">${label}</span>
+      <input type="date" id="hdr_fub_input" value="${iso || ''}"
+             onchange="setFollowUpDate(this.value)"
+             onclick="event.stopPropagation()"
+             style="border:none;background:transparent;color:${fg};padding:2px 4px;font-size:0.72rem;width:130px;cursor:pointer;" />
+    </span>`;
+}
+
+// ── Header progress bar: meeting outcome + 3 proposal types + reply ─────────
+function renderProgressBar(c, d) {
+  const stepDef = (key, label, active, ts) => {
+    const tip = ts ? `Set ${new Date(ts).toLocaleDateString('en-IN')}` : 'Click to mark';
+    const bg  = active ? '#15803d' : '#f1f5f9';
+    const fg  = active ? '#ffffff' : '#475569';
+    const br  = active ? '#15803d' : '#cbd5e1';
+    return `<button type="button" onclick="toggleProgress('${key}')"
+              title="${tip}"
+              style="background:${bg};color:${fg};border:1.5px solid ${br};padding:4px 10px;border-radius:999px;font-size:0.7rem;font-weight:700;letter-spacing:0.02em;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
+              ${active ? '<i data-lucide=\"check\" style=\"width:11px;height:11px\"></i>' : '<i data-lucide=\"circle\" style=\"width:10px;height:10px\"></i>'}
+              ${label}
+            </button>`;
+  };
+
+  const outcome   = (d.meeting_outcome || '').toLowerCase();
+  const metDone   = c.status === 'Met' || outcome === 'completed';
+  const resched   = outcome === 'rescheduled';
+  return `
+    <div class="flex items-center gap-2 mt-3 flex-wrap" id="hdrProgressBar">
+      <span style="font-size:0.65rem;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;">Progress</span>
+      ${stepDef('zoom_completed', 'Zoom Completed', metDone, d.updated_at)}
+      ${stepDef('rescheduled',    'Rescheduled',    resched, d.updated_at)}
+      ${stepDef('financial_proposal_sent_at',  'Meeting Proposal',    !!d.financial_proposal_sent_at,  d.financial_proposal_sent_at)}
+      ${stepDef('technical_proposal_sent_at',  'Technical Proposal',  !!d.technical_proposal_sent_at,  d.technical_proposal_sent_at)}
+      ${stepDef('commercial_proposal_sent_at', 'Commercial Proposal', !!d.commercial_proposal_sent_at, d.commercial_proposal_sent_at)}
+      ${stepDef('proposal_reply_received_at',  'Reply Received',      !!d.proposal_reply_received_at,  d.proposal_reply_received_at)}
+    </div>`;
+}
+
+async function toggleProgress(key) {
+  const nowIso = new Date().toISOString();
+  if (key === 'zoom_completed') {
+    const newOutcome = _detail.meeting_outcome === 'completed' ? null : 'completed';
+    _detail.meeting_outcome = newOutcome;
+    if (newOutcome === 'completed') {
+      // Also flip contact status to "Met" so it appears on Zoom Meetings Done page.
+      const prev = _contact.status;
+      _contact.status = 'Met';
+      await window.sb.from('bni_contacts').update({ status: 'Met' }).eq('id', _contact.id);
+      if (prev !== 'Met') window.logActivity?.(_contact.id, 'Status', `${prev} → Met`);
+    }
+  } else if (key === 'rescheduled') {
+    _detail.meeting_outcome = _detail.meeting_outcome === 'rescheduled' ? null : 'rescheduled';
+  } else {
+    // Toggle one of the timestamp columns: financial / technical / commercial / reply.
+    _detail[key] = _detail[key] ? null : nowIso;
+  }
+  await persistDetail();
+  render();
+  window.bniToast('Progress updated', 'success');
+}
+
+// ── Sentiment bar: positive / neutral / negative + free-text note ───────────
+function renderSentimentBar(d) {
+  const v = (d.sentiment || '').toLowerCase();
+  const opt = (val, label, emoji, on) => {
+    const palette = {
+      positive: { bg:'#ecfdf5', fg:'#047857', br:'#a7f3d0' },
+      neutral:  { bg:'#f1f5f9', fg:'#475569', br:'#cbd5e1' },
+      negative: { bg:'#fef2f2', fg:'#b91c1c', br:'#fecaca' },
+    }[val] || { bg:'#f1f5f9', fg:'#475569', br:'#cbd5e1' };
+    const bg = on ? palette.fg : palette.bg;
+    const fg = on ? '#fff'    : palette.fg;
+    const br = on ? palette.fg : palette.br;
+    return `<button type="button" onclick="setSentiment('${val}')"
+              style="background:${bg};color:${fg};border:1.5px solid ${br};padding:4px 11px;border-radius:999px;font-size:0.72rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
+              <span>${emoji}</span>${label}
+            </button>`;
+  };
+  return `
+    <div class="flex items-center gap-2 mt-2 flex-wrap" id="hdrSentimentBar">
+      <span style="font-size:0.65rem;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;">Sentiment</span>
+      ${opt('positive', 'Positive', '😊', v === 'positive')}
+      ${opt('neutral',  'Neutral',  '😐', v === 'neutral' || !v)}
+      ${opt('negative', 'Negative', '😠', v === 'negative')}
+      <input id="hdrSentimentNote" value="${escapeAttr(d.sentiment_note || '')}"
+             placeholder="Why this sentiment? (optional)"
+             onblur="setSentimentNote(this.value)"
+             style="flex:1;min-width:180px;border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:0.75rem;color:#0f172a;background:#f8fafc;" />
+    </div>`;
+}
+
+async function setSentiment(val) {
+  _detail.sentiment = (_detail.sentiment === val) ? null : val;
+  await persistDetail();
+  render();
+  window.bniToast('Sentiment updated', 'success');
+}
+
+async function setSentimentNote(text) {
+  if ((_detail.sentiment_note || '') === (text || '')) return;
+  _detail.sentiment_note = text || '';
+  await persistDetail();
+}
+
+// ── Prominent follow-up banner ──────────────────────────────────────────────
+function renderFollowUpBanner(iso) {
+  const today = new Date().toISOString().slice(0,10);
+  if (!iso) {
+    return `
+      <section class="rounded-2xl p-5 flex items-center gap-4" style="background:#f8fafc;border:2px dashed #cbd5e1;">
+        <div style="width:52px;height:52px;border-radius:14px;background:#e2e8f0;color:#64748b;display:flex;align-items:center;justify-content:center;"><i data-lucide="calendar-plus" style="width:26px;height:26px"></i></div>
+        <div class="flex-1">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-500">No follow-up scheduled</div>
+          <div class="text-lg font-extrabold text-slate-700 mt-0.5">Set a date to follow up with this contact</div>
+        </div>
+        <input type="date" id="fub_date_input" onchange="setFollowUpDate(this.value)" class="text-sm" style="min-width:160px;" />
+      </section>`;
+  }
+  const d = new Date(iso + 'T00:00:00');
+  const daysDiff = Math.round((d - new Date(today + 'T00:00:00')) / 86400000);
+  const dayOfWeek = DAYS[d.getDay()];
+  const dateStr = `${dayOfWeek}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+
+  let bg, border, iconBg, iconCol, label, subLabel, icon, textCol;
+  if (iso < today) {
+    bg = '#fef2f2'; border = '#fecaca'; iconBg = '#b91c1c'; iconCol = '#fff'; textCol = '#7f1d1d';
+    icon = 'alert-triangle';
+    label = `OVERDUE — Follow up was due ${Math.abs(daysDiff)} day${Math.abs(daysDiff) === 1 ? '' : 's'} ago`;
+    subLabel = dateStr;
+  } else if (iso === today) {
+    bg = '#fffbeb'; border = '#fde68a'; iconBg = '#d97706'; iconCol = '#fff'; textCol = '#78350f';
+    icon = 'bell-ring';
+    label = 'FOLLOW UP TODAY';
+    subLabel = dateStr;
+  } else {
+    bg = '#eff6ff'; border = '#bfdbfe'; iconBg = '#2563eb'; iconCol = '#fff'; textCol = '#1e3a8a';
+    icon = 'calendar-check';
+    label = `FOLLOW UP IN ${daysDiff} DAY${daysDiff === 1 ? '' : 'S'}`;
+    subLabel = dateStr;
+  }
+  return `
+    <section class="rounded-2xl p-5 flex items-center gap-4" style="background:${bg};border:2px solid ${border};box-shadow:0 2px 6px rgba(15,23,42,0.04);">
+      <div style="width:52px;height:52px;border-radius:14px;background:${iconBg};color:${iconCol};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="${icon}" style="width:26px;height:26px"></i></div>
+      <div class="flex-1 min-w-0">
+        <div class="text-xs font-extrabold uppercase tracking-wider" style="color:${iconBg};letter-spacing:0.08em;">${label}</div>
+        <div class="text-2xl font-extrabold mt-0.5" style="color:${textCol};letter-spacing:-0.015em;">${subLabel}</div>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <input type="date" id="fub_date_input" value="${iso}" onchange="setFollowUpDate(this.value)" class="text-sm" style="min-width:160px;background:white;" />
+        <button onclick="setFollowUpDate('')" title="Clear follow-up date" class="text-slate-400 hover:text-red-500 p-2"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+      </div>
+    </section>`;
+}
+
+async function setFollowUpDate(iso) {
+  _detail.next_date = iso || null;
+  await persistDetail();
+  render();
+  window.bniToast(iso ? `Follow-up set for ${iso}` : 'Follow-up cleared', 'success');
+}
+
+// ── Proposal tracks (Financial / Technical / Commercial) ────────────────────
+const PROPOSAL_LABELS = { financial: 'Financial', technical: 'Technical', commercial: 'Commercial' };
+let _pendingProposalKey = null;
+
+function renderProposalTrack(key, label, color, icon, d) {
+  const url = d[key + '_proposal_url'] || '';
+  const sentAt = d[key + '_proposal_sent_at'] || '';
+  const hasFile = !!url;
+  const isSent = !!sentAt;
+  const sentStr = sentAt ? new Date(sentAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+
+  let statusPill;
+  if (isSent) {
+    statusPill = `<span class="badge" style="background:#dcfce7;color:#166534;border:1px solid #86efac;"><i data-lucide="check-circle-2" style="width:12px;height:12px;display:inline;vertical-align:-2px;margin-right:3px"></i>SENT ${sentStr}</span>`;
+  } else if (hasFile) {
+    statusPill = `<span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">READY TO SEND</span>`;
+  } else {
+    statusPill = `<span class="badge" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;">NO PROPOSAL</span>`;
+  }
+
+  const fileName = url ? decodeURIComponent(url.split('/').pop().split('?')[0]) : '';
+
+  return `
+    <div class="rounded-xl p-4 flex flex-col gap-3" style="background:white;border:2px solid ${color}22;">
+      <div class="flex items-center gap-2">
+        <div style="width:36px;height:36px;border-radius:10px;background:${color}18;color:${color};display:flex;align-items:center;justify-content:center;"><i data-lucide="${icon}" style="width:18px;height:18px"></i></div>
+        <div class="flex-1">
+          <div class="font-bold text-slate-900" style="letter-spacing:-0.01em;">${label}</div>
+          <div class="text-xs text-slate-500">Proposal</div>
+        </div>
+      </div>
+      <div>${statusPill}</div>
+      ${hasFile ? `
+        <a href="${url}" target="_blank" class="text-xs text-blue-600 hover:underline truncate block" title="${fileName}">
+          <i data-lucide="paperclip" style="width:11px;height:11px;display:inline;vertical-align:-1px;margin-right:2px"></i>${fileName}
+        </a>` : ''}
+      <div class="flex flex-wrap gap-1.5 mt-auto">
+        <button onclick="pickProposal('${key}')" class="flex-1 text-xs font-semibold px-3 py-2 rounded-lg border transition" style="background:${hasFile ? '#f8fafc' : color + '18'};color:${hasFile ? '#64748b' : color};border-color:${hasFile ? '#e2e8f0' : color + '44'};">
+          <i data-lucide="${hasFile ? 'refresh-cw' : 'upload-cloud'}" style="width:12px;height:12px;display:inline;vertical-align:-2px;margin-right:3px"></i>${hasFile ? 'Replace' : 'Upload'}
+        </button>
+        ${hasFile ? `
+          <button onclick="sendProposal('${key}', 'whatsapp')" class="text-xs font-semibold px-3 py-2 rounded-lg transition" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;" title="Send via WhatsApp">
+            <i data-lucide="message-circle" style="width:12px;height:12px;display:inline;vertical-align:-2px"></i>
+          </button>
+          <button onclick="sendProposal('${key}', 'email')" class="text-xs font-semibold px-3 py-2 rounded-lg transition" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;" title="Send via Email">
+            <i data-lucide="mail" style="width:12px;height:12px;display:inline;vertical-align:-2px"></i>
+          </button>` : ''}
+        ${isSent ? `
+          <button onclick="clearProposalSent('${key}')" class="text-xs text-slate-400 hover:text-red-500 px-2 py-2" title="Clear sent status">
+            <i data-lucide="rotate-ccw" style="width:12px;height:12px;display:inline;vertical-align:-2px"></i>
+          </button>` : ''}
+      </div>
+    </div>`;
+}
+
+function pickProposal(key) {
+  _pendingProposalKey = key;
+  document.getElementById('proposalInput').click();
+}
+
+async function uploadProposal(e) {
+  const file = (e.target.files || [])[0];
+  e.target.value = '';
+  if (!file || !_pendingProposalKey) return;
+  const key = _pendingProposalKey;
+  _pendingProposalKey = null;
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const storagePath = `${_contact.id}/proposals/${key}_${Date.now()}_${safeName}`;
+  const { data, error } = await window.sb.storage.from('bni-files').upload(storagePath, file, { upsert: true, contentType: file.type });
+  if (error) { window.bniToast('Upload failed: ' + error.message, 'error'); return; }
+  const { data: pub } = window.sb.storage.from('bni-files').getPublicUrl(data.path);
+  _detail[key + '_proposal_url'] = pub.publicUrl;
+  await persistDetail();
+  render();
+  window.bniToast(`${PROPOSAL_LABELS[key]} proposal uploaded — ready to send`, 'success');
+}
+
+async function sendProposal(key, channel) {
+  const url = _detail[key + '_proposal_url'];
+  if (!url) { window.bniToast('Upload a proposal first', 'error'); return; }
+  const label = PROPOSAL_LABELS[key];
+  const first = _contact.first || '';
+  const msg = `Hi ${first}, as discussed — sharing the ${label} Proposal for your review:\n\n${url}\n\nHappy to jump on a call if anything needs adjustment. — Dr. BK Murali`;
+
+  if (channel === 'whatsapp') {
+    const phone = window.primaryPhone(_contact);
+    if (!phone) { window.bniToast('No phone number on file', 'error'); return; }
+    const raw = String(phone).replace(/\D/g,'');
+    window.open(`https://wa.me/${raw}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+  } else if (channel === 'email') {
+    if (!_contact.email) { window.bniToast('No email on file', 'error'); return; }
+    const subject = `${label} Proposal — Dr. BK Murali (BNI 121)`;
+    window.open(`mailto:${_contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+  }
+
+  // Record: sent_at, followups entry, auto-schedule +4d follow-up
+  const nowIso = new Date().toISOString();
+  _detail[key + '_proposal_sent_at'] = nowIso;
+  _detail.followups = _detail.followups || [];
+  _detail.followups.push({
+    date: nowIso.slice(0,10),
+    type: 'Proposal',
+    message: `${label} Proposal sent via ${channel === 'whatsapp' ? 'WhatsApp' : 'Email'}`,
+  });
+  const plus4 = new Date(Date.now() + 4 * 86400000).toISOString().slice(0,10);
+  _detail.next_date = plus4;
+
+  await persistDetail();
+  render();
+  window.bniToast(`${label} proposal marked sent. Follow-up set for ${plus4}.`, 'success');
+}
+
+async function clearProposalSent(key) {
+  if (!confirm(`Clear the "sent" status for ${PROPOSAL_LABELS[key]} proposal?`)) return;
+  _detail[key + '_proposal_sent_at'] = null;
+  await persistDetail();
+  render();
+  window.bniToast('Sent status cleared', 'success');
+}
+
+async function handleDrop(e) {
+  const files = [...e.dataTransfer.files];
+  for (const f of files) await uploadOneFile(f, 'file');
+}
+
+async function uploadFile(e, which) {
+  const files = [...(e.target.files || [])];
+  for (const f of files) await uploadOneFile(f, which);
+  e.target.value = '';
+}
+
+async function uploadOneFile(file, which) {
+  if (!file) return;
+  const contactId = _contact.id;
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const key = `${contactId}/${which === 'photo' ? 'photo' : 'files'}/${Date.now()}_${safeName}`;
+  const { data, error } = await window.sb.storage.from('bni-files').upload(key, file, { upsert: true, contentType: file.type });
+  if (error) { window.bniToast('Upload failed: ' + error.message, 'error'); return; }
+  const { data: pub } = window.sb.storage.from('bni-files').getPublicUrl(data.path);
+  const url = pub.publicUrl;
+  if (which === 'photo') {
+    _detail.photo = url;
+  } else {
+    _detail.pdfs = _detail.pdfs || [];
+    _detail.pdfs.push({ name: file.name, url, uploaded_at: new Date().toISOString() });
+  }
+  await persistDetail();
+  render();
+  window.bniToast('Uploaded ' + file.name, 'success');
+}
+
+async function persistDetail() {
+  const payload = {
+    contact_id:           _contact.id,
+    followups:            _detail.followups || [],
+    pdfs:                 _detail.pdfs      || [],
+    photo:                _detail.photo     || '',
+    about:                _detail.about     || '',
+    linkedin:             _detail.linkedin  || '',
+    website:              _detail.website   || '',
+    priority:             _detail.priority  || 'Normal',
+    next_date:            _detail.next_date || null,
+    zoom_recording_url:   _detail.zoom_recording_url  || '',
+    zoom_transcript_url:  _detail.zoom_transcript_url || '',
+    zoom_transcript:      _detail.zoom_transcript     || '',
+    ai_summary:           _detail.ai_summary          || '',
+    ai_draft_followup:    _detail.ai_draft_followup   || '',
+    financial_proposal_sent_at:  _detail.financial_proposal_sent_at  || null,
+    technical_proposal_sent_at:  _detail.technical_proposal_sent_at  || null,
+    commercial_proposal_sent_at: _detail.commercial_proposal_sent_at || null,
+    financial_proposal_url:      _detail.financial_proposal_url  || '',
+    technical_proposal_url:      _detail.technical_proposal_url  || '',
+    commercial_proposal_url:     _detail.commercial_proposal_url || '',
+    meeting_outcome:             _detail.meeting_outcome           || null,
+    proposal_reply_received_at:  _detail.proposal_reply_received_at || null,
+    sentiment:                   _detail.sentiment                  || null,
+    sentiment_note:              _detail.sentiment_note             || '',
+  };
+  const { error } = await window.sb.from('bni_contact_details').upsert(payload, { onConflict: 'contact_id' });
+  if (error) window.bniToast('Detail save failed: ' + error.message, 'error');
+}
+
+async function runAISummary() {
+  if (window.BNI_SETTINGS?.ai_summary_disabled) {
+    window.bniToast('AI summary is disabled in Settings', 'error');
+    return;
+  }
+  const transcript = (document.getElementById('ef_transcript').value || '').trim();
+  if (!transcript) { window.bniToast('Paste transcript text first', 'error'); return; }
+  let key = localStorage.getItem('bni_anthropic_key');
+  if (!key) {
+    key = prompt('Enter your Anthropic API key (stored locally in this browser only):');
+    if (!key) return;
+    localStorage.setItem('bni_anthropic_key', key.trim());
+  }
+  const btn = event.target.closest('button');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>Summarizing…';
+  window.bniRenderIcons();
+  try {
+    const first = _contact.first || '';
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: `You are analyzing the transcript of a BNI 121 Zoom meeting between Dr. BK Murali (AI business consultant) and ${first} ${_contact.last||''} from ${_contact.company||'their company'}.\n\nReturn exactly in this format:\n\nSUMMARY:\n- <bullet>\n- <bullet>\n- <bullet>\n\nNEXT STEP: <one clear action>\n\nDRAFT WHATSAPP FOLLOW-UP:\n<3-4 sentences, warm, personal, references one specific thing from the transcript>\n\nTRANSCRIPT:\n${transcript.slice(0, 20000)}`
+        }]
+      })
+    });
+    if (!resp.ok) { const err = await resp.text(); throw new Error(err.slice(0, 200)); }
+    const j = await resp.json();
+    const txt = j.content?.[0]?.text || '';
+    const sumMatch = txt.match(/SUMMARY:([\s\S]*?)(?:NEXT STEP:|$)/i);
+    const drftMatch = txt.match(/DRAFT WHATSAPP FOLLOW-UP:([\s\S]*)/i);
+    const nextMatch = txt.match(/NEXT STEP:([^\n]*)/i);
+    _detail.ai_summary = ((sumMatch ? sumMatch[1].trim() : '') + (nextMatch ? '\n\nNext step: ' + nextMatch[1].trim() : '')).trim();
+    _detail.ai_draft_followup = (drftMatch ? drftMatch[1].trim() : txt).slice(0, 2000);
+    _detail.zoom_transcript = transcript;
+    await persistDetail();
+    render();
+    window.bniToast('AI summary ready', 'success');
+  } catch (e) {
+    window.bniToast('AI failed: ' + e.message, 'error');
+    btn.innerHTML = orig;
+    window.bniRenderIcons();
+  }
+}
+
+function copyDraft() {
+  const t = document.getElementById('aiDraftText')?.textContent || '';
+  navigator.clipboard.writeText(t).then(() => window.bniToast('Copied to clipboard', 'success'));
+}
+
+async function saveContact() {
+  const get = id => document.getElementById(id).value;
+  const tagStr = (get('ef_tags') || '').split(',').map(s => s.trim()).filter(Boolean);
+  const updates = {
+    first:       get('ef_first').trim(),
+    last:        get('ef_last').trim(),
+    company:     get('ef_company').trim(),
+    city:        get('ef_city').trim(),
+    chapter:     get('ef_chapter').trim(),
+    phones:      gatherPhones(),
+    phone:       gatherPhones()[0] || '',
+    email:       get('ef_email').trim(),
+    notes:       get('ef_notes'),
+    segment:     get('ef_segment'),
+    status:      get('ef_status'),
+    assignee_ids: [...document.getElementById('ef_assignees').selectedOptions].map(o => o.value).filter(Boolean),
+    assignee_id:  [...document.getElementById('ef_assignees').selectedOptions].map(o => o.value).filter(Boolean)[0] || null,
+    tags:        tagStr,
+    deal_value:        get('ef_deal_value') ? Number(get('ef_deal_value')) : null,
+    deal_close_date:   get('ef_deal_close_date') || null,
+    deal_probability:  get('ef_deal_probability') !== '' ? Number(get('ef_deal_probability')) : null,
+    referred_by_id:    get('ef_referred_by') || null,
+    referred_to:       get('ef_referred_to').trim(),
+  };
+  const prevStatus = _contact.status;
+  if (updates.chapter && window.ensureChapter) await window.ensureChapter(updates.chapter, updates.city);
+  const { error } = await window.sb.from('bni_contacts').update(updates).eq('id', _contact.id);
+  if (error) { window.bniToast('Save failed: ' + error.message, 'error'); return; }
+  _detail.about              = get('ef_about');
+  _detail.priority           = get('ef_priority');
+  _detail.next_date          = get('ef_next_date') || null;
+  _detail.zoom_recording_url = get('ef_rec_url').trim();
+  _detail.zoom_transcript_url= get('ef_trans_url').trim();
+  _detail.zoom_transcript    = get('ef_transcript');
+  await persistDetail();
+  if (prevStatus !== updates.status) {
+    window.logActivity(_contact.id, 'Status', `${prevStatus} → ${updates.status}`);
+  }
+  Object.assign(_contact, updates);
+  window.bniToast('Saved', 'success');
+}
+
+async function init() {
+  await window.loadDevelopers();
+  await window.loadChapters?.();
+  await window.loadSettings?.();
+  await loadContact();
+}
+init();
+</script>
+</body>
+</html>

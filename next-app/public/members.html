@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoom Meetings Completed with BNI Members — HopeTech</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; }
+    .glass { background: white; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    input, select { background: white; border: 1px solid #e2e8f0; color: #0f172a; border-radius: 8px; padding: 8px 12px; outline: none; transition: border-color 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    input:focus, select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    input::placeholder { color: #94a3b8; }
+    select option { background: white; color: #0f172a; }
+    .member-card { transition: all 0.15s; cursor: pointer; }
+    .member-card:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .avatar { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+    .date-tile { width: 52px; flex-shrink: 0; border-radius: 10px; padding: 6px 4px; text-align: center; border: 1.5px solid; }
+    .date-tile .dt-day { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .date-tile .dt-num { font-size: 1.35rem; font-weight: 800; line-height: 1.1; }
+    .date-tile .dt-mon { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .qf-btn { padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; border: 1.5px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+    .qf-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+    .qf-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .qf-btn.active-red { background: #dc2626; color: white; border-color: #dc2626; }
+    .qf-btn.active-amber { background: #d97706; color: white; border-color: #d97706; }
+    .qf-btn.active-orange { background: #ea580c; color: white; border-color: #ea580c; }
+    .group-header { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; padding: 12px 4px 6px; border-bottom: 1px solid #e2e8f0; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+    .date-label { font-size: 0.72rem; font-weight: 600; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Nav -->
+  <header class="sticky top-0 z-50 border-b border-slate-200" style="background:rgba(248,250,252,0.97);backdrop-filter:blur(20px);">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/bni/hopetech-index.html" class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#3b82f6,#6366f1);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="text-slate-500 text-sm hover:text-slate-900 transition-colors">HopeTech</span>
+        </a>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900 text-sm font-semibold">Zoom Meetings Completed with BNI Members</span>
+      </div>
+      <a href="/bni/admin.html" class="text-slate-400 hover:text-slate-700 text-xs transition-colors">Admin </a>
+    </div>
+  </header>
+
+  <div class="max-w-6xl mx-auto px-6 py-10">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900 mb-2">Zoom Meetings Completed with BNI Members</h1>
+      <p class="text-slate-500">Log of all completed 121 Zoom meetings with BNI connections.</p>
+    </div>
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8" id="stats-row"></div>
+
+    <!-- Filters -->
+    <div class="glass rounded-2xl p-4 mb-6 space-y-3">
+      <!-- Row 1: Search + Status + Chapter + Sort -->
+      <div class="flex flex-wrap gap-2">
+        <input type="text" id="searchInput" placeholder="Search name, company, city, chapter…" oninput="render()" style="min-width:200px;flex:1;" />
+        <select id="statusFilter" onchange="render()" style="min-width:130px;">
+          <option value="">All Status</option>
+          <option value="Identified">Identified</option>
+          <option value="Contacted">Contacted</option>
+          <option value="Met" selected>Met</option>
+          <option value="Referred">Referred</option>
+          <option value="Cold">Cold</option>
+        </select>
+        <select id="segmentFilter" onchange="render()" style="min-width:150px;">
+          <option value="">All Segments</option>
+          <option value="AI / Tech">AI / Tech</option>
+          <option value="Industrial Automation">Industrial Automation</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Other">Other</option>
+        </select>
+        <select id="chapterFilter" onchange="render()" style="min-width:160px;">
+          <option value="">All BNI Chapters</option>
+        </select>
+        <select id="sortBy" onchange="render()" style="min-width:160px;">
+          <option value="followup">Sort: Follow-up Date ↑</option>
+          <option value="name">Sort: Name</option>
+          <option value="status">Sort: Status</option>
+          <option value="recent">Sort: Recent Activity</option>
+        </select>
+      </div>
+      <!-- Row 2: Date quick-filters + Proposal + Grouping -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Date:</span>
+        <button class="qf-btn active" onclick="setDateFilter('all')"     id="qf-all">All</button>
+        <button class="qf-btn"        onclick="setDateFilter('today')"   id="qf-today">Today</button>
+        <button class="qf-btn"        onclick="setDateFilter('week')"    id="qf-week">This Week</button>
+        <button class="qf-btn"        onclick="setDateFilter('overdue')" id="qf-overdue">Overdue</button>
+        <button class="qf-btn"        onclick="setDateFilter('nodate')"  id="qf-nodate">No Date Set</button>
+        <div class="w-px h-5 bg-slate-200"></div>
+        <button class="qf-btn" id="qf-proposal" onclick="toggleProposal()">Needs Proposal</button>
+        <button class="qf-btn" id="qf-hidden"   onclick="toggleShowHidden()" style="color:#dc2626;border-color:#fecaca;">Show Hidden</button>
+        <div class="w-px h-5 bg-slate-200"></div>
+        <span class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Group:</span>
+        <select id="groupBy" onchange="render()" style="min-width:150px;padding:4px 10px;font-size:0.78rem;">
+          <option value="">No Grouping</option>
+          <option value="segment">By Segment / Team</option>
+          <option value="chapter">By BNI Chapter</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Result count -->
+    <p id="result-count" class="text-xs text-slate-400 mb-3"></p>
+
+    <!-- Member list -->
+    <div id="member-list"></div>
+  </div>
+
+<script>
+//  SUPABASE 
+const SB_URL = 'https://bvaefzcsgtgqwftczixb.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2YWVmemNzZ3RncXdmdGN6aXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2ODU0ODIsImV4cCI6MjA4NzI2MTQ4Mn0.Q-AxSMpO6lKogtR_m0j2CvpzdRiDpZiKebR8XCPq1Nc';
+const _sb = supabase.createClient(SB_URL, SB_KEY);
+
+// Fetch fresh contacts from Supabase → localStorage → re-render
+// Preserves localStorage-only fields (hidden flag) that aren't in Supabase yet
+async function syncContactsFromSupabase() {
+  try {
+    const { data, error } = await _sb.from('bni_contacts').select('*');
+    if (error || !data || !data.length) return;
+    const existing = JSON.parse(localStorage.getItem('bni_contacts') || '[]');
+    const hiddenMap = {};
+    existing.forEach(c => { if (c.hidden) hiddenMap[c.id] = true; });
+    const merged = data.map(c => hiddenMap[c.id] ? {...c, hidden: true} : c);
+    localStorage.setItem('bni_contacts', JSON.stringify(merged));
+    localStorage.setItem('bni_contacts_ver', String(SEED_VERSION));
+    render();
+  } catch(e) { console.error('SB sync:', e); }
+}
+
+let showHidden = false;
+function toggleShowHidden() {
+  showHidden = !showHidden;
+  const btn = document.getElementById('qf-hidden');
+  btn.className = showHidden ? 'qf-btn active' : 'qf-btn';
+  btn.textContent = showHidden ? 'Showing Hidden' : 'Show Hidden';
+  render();
+}
+
+const SEED_VERSION = 6;
+const SEED = [
+  {id:'c1', first:'Kamlesh',       last:'Shewani',       company:'Savit Interactive',               city:'Pune',        phone:'+91 7823852090', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c2', first:'Diwakar',       last:'Reddy',          company:'Solvode',                         city:'Hyderabad',   phone:'+91 9652691508', email:'', segment:'AI / Tech',            status:'Identified', notes:'HIGH PRIORITY'},
+  {id:'c3', first:'Gunjan',        last:'Bhatia',         company:'Shivohini TechAI',                city:'Udaipur',     phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c4', first:'Pranjal',       last:'Srivastava',     company:'Smoketrees Digital',               city:'Bangalore',   phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c5', first:'Ramasundaram',  last:'.S',             company:'Actionpackd',                     city:'Chennai',     phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c6', first:'Raghavendra',   last:'Chandregowda',   company:'THEEKSHNA',                       city:'Mysore',      phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c7', first:'Mihir',         last:'Mehta',          company:'Royal Technosoft',                city:'Ahmedabad',   phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c8', first:'Sameer',        last:'Wadhwa',         company:'Excelerate Technologies',         city:'Bengaluru',   phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c9', first:'Harmeet',       last:'Singh',          company:'Air Masters',                     city:'Mohali',      phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c10',first:'Valthan',       last:'Industries',     company:'Valthan Industries',              city:'Sangli',      phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c11',first:'Pradeep',       last:'Easwarmoorthy',  company:'Nexus Automations',               city:'Coimbatore',  phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c12',first:'Sathish Kumar', last:'K',              company:'Innovative Automation Solutions', city:'Bangalore',   phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c13',first:'Jamen',         last:'Shah',           company:'Neca Automation',                 city:'Mumbai',      phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c14',first:'Praktat',       last:'Dhamu',          company:'DPhitech LLP',                    city:'Navi Mumbai', phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c15',first:'Rajkumar',      last:'Shanmugavel',    company:'KVPM Automation',                 city:'Chennai',     phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c16',first:'Dhruv',         last:'Pandya',         company:'Intuitive Research & Development',city:'Hubli',       phone:'', email:'', segment:'Industrial Automation', status:'Identified',  notes:''},
+  // --- Confirmed 121 meetings from WhatsApp group (added 22 Apr 2026) ---
+  {id:'c17',first:'Aishray',       last:'Srinivasa',      company:'SatiShiva Healthcare',            city:'Bangalore',   phone:'', email:'', segment:'Healthcare',           status:'Met',         notes:'Meeting confirmed 22/04/26 1 PM. Bangalore\'s leading provider of long-term home care management for chronic ailments and elderly support.'},
+  {id:'c18',first:'Varlaxman',     last:'',               company:'APEX Electricals & Networks',     city:'',            phone:'', email:'', segment:'Industrial Automation', status:'Met',         notes:'Meeting confirmed 22/04/26 4 PM. 4K Grade Electrical Contractor with 20+ years experience in Commercial Buildings, IT Parks, Transformer, Generators, Cabling, UPS. CEIG Approved, ISO Licensed.'},
+  {id:'c19',first:'Prabha',        last:'Sathuraman',     company:'Architecture & Engineering',      city:'',            phone:'', email:'', segment:'Industrial Automation', status:'Met',         notes:'Meeting confirmed 22/04/26 2 PM. Architecture & Engineering, Industrial Automation.'},
+  {id:'c20',first:'Roma',          last:'',               company:'Physiotherapy Practice',          city:'Delhi',       phone:'', email:'', segment:'Healthcare',           status:'Contacted',   notes:'Meeting confirmed tomorrow 9:30 AM daily zoom. With Dr. A Santosh Kumar. BNI Physiotherapist 2023.'},
+  {id:'c21',first:'Yousuf',        last:'Najmuddin',      company:'',                                city:'',            phone:'', email:'', segment:'Other',                status:'Contacted',   notes:'Meeting confirmed 12:00–12:30 PM.'},
+  {id:'c22',first:'Prakriti',      last:'Verma',          company:'Vardaan IVF Centre & Care N Cure Multi-speciality Hospital', city:'Bilaspur',  phone:'9575731059',  email:'prakrati_verma@gmail.com', segment:'Healthcare', status:'Contacted',  notes:'Doctor / Physician. BNI Chapter: BNI Collaborators. Proposal sent 21/04/26 (HMS + NABH AI Toolkit, Ref: BTR-2026-VRD-01).'},
+  {id:'c23',first:'Reshma',        last:'Dave',           company:'',                                                           city:'',          phone:'',            email:'ndivid_lab@gmail.com',    segment:'Healthcare', status:'Contacted',  notes:'Meeting confirmed 6:30 PM.'},
+  {id:'c24',first:'Rajani',        last:'TS',             company:'Thealth Solutions',                                          city:'',          phone:'9597415636',  email:'gajc.contact@gmail.com',  segment:'Healthcare', status:'Contacted',  notes:'Meeting confirmed 4:00 PM – 6:00 PM. Software product: thealth.solutions'},
+  // --- BNI Outreach Report — Pharma/Pathology/Diagnostics (msgs sent 16/04/26 by Reha Kharwade) ---
+  {id:'c25',first:'Neha',        last:'Bedi',          company:'Pathocity Path Lab',           city:'Delhi',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Impetus. Lab Director, diagnostics, 31 testimonials. Outreach msg sent 16/04/26.'},
+  {id:'c26',first:'Bhaskar',     last:'Thakkar',        company:'Life Care Pathology Lab',      city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Helenus. Pathology, 3 branches. Outreach msg sent 16/04/26.'},
+  {id:'c27',first:'Abhijit',     last:'Ahire',          company:'DVA Pathology Lab',            city:'Mumbai',      phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Aura. Comprehensive diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c28',first:'Kaushal',     last:'Patel',          company:'EA Labs',                      city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Roxanne. Allergy Testing, India leader. Outreach msg sent 16/04/26.'},
+  {id:'c29',first:'Swapnil',     last:'Bhosale',        company:'PathCure Labs',                city:'Kolhapur',    phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Vaayu. Fastest-growing diagnostic chain. Outreach msg sent 16/04/26.'},
+  {id:'c30',first:'Mosey',       last:'Mohan P',        company:'Health Assure Clinical Lab',   city:'Sivakasi',    phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Pyros. Home services, genetic testing. Outreach msg sent 16/04/26.'},
+  {id:'c31',first:'Vipul',       last:'Rajput',         company:'Unipath Specialty Lab',        city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Nikolaus. Precision diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c32',first:'Mayank',      last:'Joshi',          company:'Sun Pathology Lab & Research', city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Raphael. Since 1997, 5 locations. Outreach msg sent 16/04/26.'},
+  {id:'c33',first:'Reshma',      last:'Dave',           company:'Thyrocare Krishnamil Ind Lab', city:'Surat',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BAHUBALI. Biopsy, FNAC, Ambassador. Outreach msg sent 16/04/26. (Different from c23 Reshma/NDIVID Lab)'},
+  {id:'c34',first:'Boskey',      last:'Gandhi',         company:'Mehkey Pathology Lab',         city:'Surat',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: FALCON. Biopsy, FNAC specialist. Outreach msg sent 16/04/26.'},
+  {id:'c35',first:'Asan',        last:'Akbar B',        company:'Fully Auto Medical Lab',       city:'Erode',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI VISION. X-ray, ECG, Chapter President. Outreach msg sent 16/04/26.'},
+  {id:'c36',first:'Rajani',      last:'T R',            company:'ILABZ Diagnostic Lab',         city:'Pondicherry', phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Gold. Full-service, home collection. Outreach msg sent 16/04/26. (Different from c24 Rajani TS/Thealth Solutions)'},
+  {id:'c37',first:'Kiran',       last:'B',              company:'Dr Remedies Labs',             city:'Trivandrum',  phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Mystics. Franchise, cutting-edge tech. Outreach msg sent 16/04/26.'},
+  {id:'c38',first:'Vaibhav',     last:'Girotra',        company:'Pathocity Path Lab & Imaging', city:'New Delhi',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Excellence. Automated lab, MBBS MD DNB. Outreach msg sent 16/04/26.'},
+  {id:'c39',first:'Narasimman',  last:'B',              company:'Puduvai Labs',                 city:'Pondicherry', phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI KURAL. 15 years trusted diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c40',first:'Venkata',     last:'Lakshman',       company:'Global Diagnostics India',     city:'Guntur',      phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI ATOMS. Medical diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c41',first:'Seema',       last:'Satpute',        company:'DiagnoSpectra Pathology Lab',  city:'Pune',        phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Benevolent. Blood & urine diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c42',first:'Dipin',       last:'Abraham',        company:'Lab Equipment Stores',         city:'Cochin',      phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: TITANS. Lab equipment since 1966. Outreach msg sent 16/04/26.'},
+  {id:'c43',first:'Kavita',      last:'Chaukimath',     company:'Pathology Lab Services',       city:'Pune',        phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Nitya. Ex-Manipal, Quality Manager. Outreach msg sent 16/04/26.'},
+  {id:'c44',first:'Gautham',    last:'Goswami',        company:'',                             city:'',            phone:'', email:'', segment:'Other',      status:'Identified', notes:''},
+];
+
+function loadContacts() {
+  const raw = localStorage.getItem('bni_contacts');
+  const ver = parseInt(localStorage.getItem('bni_contacts_ver') || '0');
+  if (!raw) { localStorage.setItem('bni_contacts', JSON.stringify(SEED)); localStorage.setItem('bni_contacts_ver', String(SEED_VERSION)); return JSON.parse(JSON.stringify(SEED)); }
+  let data = JSON.parse(raw);
+  if (ver < SEED_VERSION) {
+    const ids = new Set(data.map(c => c.id));
+    SEED.forEach(s => { if (!ids.has(s.id)) data.push(s); });
+    localStorage.setItem('bni_contacts', JSON.stringify(data));
+    localStorage.setItem('bni_contacts_ver', String(SEED_VERSION));
+  }
+  return data;
+}
+
+function getDetail(id) {
+  return JSON.parse(localStorage.getItem('bni_detail_' + id) || '{"followups":[],"nextDate":"","linkedin":"","website":"","about":"","priority":"Normal"}');
+}
+
+const STATUS_COLOR  = { Identified:'#3b82f6', Contacted:'#f59e0b', Met:'#8b5cf6', Referred:'#10b981', Cold:'#64748b' };
+const STATUS_ORDER  = { Referred:0, Met:1, Contacted:2, Identified:3, Cold:4 };
+const AVATAR_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#f97316'];
+const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let activeDateF = 'all';
+let proposalF   = false;
+
+function avatarColor(id) { return AVATAR_COLORS[parseInt(id.replace(/\D/g,'')) % AVATAR_COLORS.length]; }
+function lastActivity(detail) { return detail.followups.length ? detail.followups[detail.followups.length-1].date : null; }
+function extractChapter(c) {
+  if (c.chapter) return c.chapter;
+  const m = (c.notes || '').match(/BNI Chapter:\s*([^.,(]+)/i);
+  return m ? m[1].trim() : '';
+}
+function hasProposalSent(detail) { return detail.followups.some(f => f.type === 'Proposal'); }
+
+// Extract most-recent DD/MM/YY date from notes text → YYYY-MM-DD
+function noteDate(c) {
+  const matches = [...(c.notes || '').matchAll(/(\d{2})\/(\d{2})\/(\d{2})/g)];
+  if (!matches.length) return null;
+  const last = matches[matches.length - 1];
+  return '20' + last[3] + '-' + last[2] + '-' + last[1];
+}
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+}
+
+function dateColors(iso) {
+  if (!iso) return { bg:'#f8fafc', col:'#cbd5e1', bdr:'#e2e8f0' };
+  const today = new Date().toISOString().split('T')[0];
+  if (iso < today)  return { bg:'#fef2f2', col:'#dc2626', bdr:'#fecaca' };
+  if (iso === today) return { bg:'#fffbeb', col:'#d97706', bdr:'#fde68a' };
+  return { bg:'#eff6ff', col:'#1d4ed8', bdr:'#bfdbfe' };
+}
+
+function dateTile(detail, c) {
+  const iso = detail.nextDate || (c ? noteDate(c) : null);
+  const fromNotes = !detail.nextDate && !!iso;
+  if (!iso) {
+    return `<div class="date-tile" style="background:#f8fafc;border-color:#e2e8f0;color:#cbd5e1;min-height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div class="dt-day">—</div><div class="dt-num" style="font-size:1rem;">?</div><div class="dt-mon">—</div>
+    </div>`;
+  }
+  const d = new Date(iso + 'T00:00:00');
+  const {bg,col,bdr} = dateColors(iso);
+  // dashed border = date extracted from notes (not manually confirmed)
+  const borderStyle = fromNotes ? 'border-style:dashed;' : '';
+  return `<div class="date-tile" style="background:${bg};border-color:${bdr};color:${col};${borderStyle}">
+    <div class="dt-day">${DAYS[d.getDay()]}</div>
+    <div class="dt-num">${d.getDate()}</div>
+    <div class="dt-mon">${MONTHS[d.getMonth()]}</div>
+  </div>`;
+}
+
+function setDateFilter(f) {
+  activeDateF = f;
+  ['all','today','week','overdue','nodate'].forEach(k => {
+    const btn = document.getElementById('qf-'+k);
+    btn.className = 'qf-btn';
+    if (k === f) btn.classList.add(k==='overdue'?'active-red':k==='today'?'active-amber':'active');
+  });
+  render();
+}
+
+function toggleProposal() {
+  proposalF = !proposalF;
+  const btn = document.getElementById('qf-proposal');
+  btn.className = proposalF ? 'qf-btn active-orange' : 'qf-btn';
+  render();
+}
+
+function buildChapterDropdown(contacts) {
+  const chapters = [...new Set(contacts.map(c => extractChapter(c)).filter(Boolean))].sort();
+  const sel = document.getElementById('chapterFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All BNI Chapters</option>' +
+    chapters.map(ch => `<option value="${ch}"${ch===cur?' selected':''}>${ch}</option>`).join('');
+}
+
+function renderStats(contacts) {
+  const counts = {};
+  ['Identified','Contacted','Met','Referred','Cold'].forEach(s => counts[s] = contacts.filter(c => c.status===s).length);
+  const today = new Date().toISOString().split('T')[0];
+  const overdue = contacts.filter(c => { const d=getDetail(c.id); return d.nextDate && d.nextDate < today; }).length;
+  const needsProp = contacts.filter(c => {
+    if (c.status!=='Contacted'&&c.status!=='Met') return false;
+    return !hasProposalSent(getDetail(c.id));
+  }).length;
+
+  document.getElementById('stats-row').innerHTML = [
+    { label:'Total',          val: contacts.length,                              color:'#3b82f6' },
+    { label:'Met',            val: counts.Met,                                   color:'#8b5cf6' },
+    { label:'Referred',       val: counts.Referred,                              color:'#10b981' },
+    { label:'Overdue',        val: overdue,                                      color:'#ef4444' },
+    { label:'Needs Proposal', val: needsProp,                                    color:'#ea580c' },
+  ].map(s => `
+    <div class="glass rounded-xl p-4 text-center cursor-pointer hover:shadow-md transition-shadow">
+      <p class="text-2xl font-bold" style="color:${s.color}">${s.val}</p>
+      <p class="text-slate-500 text-xs mt-0.5">${s.label}</p>
+    </div>
+  `).join('');
+}
+
+function render() {
+  const allContacts = loadContacts();
+  buildChapterDropdown(allContacts);
+
+  const search   = document.getElementById('searchInput').value.toLowerCase();
+  const statusF  = document.getElementById('statusFilter').value;
+  const segF     = document.getElementById('segmentFilter').value;
+  const chF      = document.getElementById('chapterFilter').value;
+  const sortBy   = document.getElementById('sortBy').value;
+  const groupBy  = document.getElementById('groupBy').value;
+  const today    = new Date().toISOString().split('T')[0];
+  const weekEnd  = new Date(Date.now() + 7*864e5).toISOString().split('T')[0];
+
+  renderStats(allContacts);
+
+  let list = allContacts.filter(c => {
+    if (c.hidden && !showHidden) return false;
+    const detail = getDetail(c.id);
+    const txt = ((c.first||'')+' '+(c.last||'')+' '+(c.company||'')+' '+(c.city||'')+' '+(c.notes||'')).toLowerCase();
+    if (search && !txt.includes(search)) return false;
+    if (statusF && c.status !== statusF) return false;
+    if (segF && c.segment !== segF) return false;
+    if (chF && extractChapter(c) !== chF) return false;
+    if (proposalF) {
+      if (c.status!=='Contacted'&&c.status!=='Met') return false;
+      if (hasProposalSent(detail)) return false;
+    }
+    // date filter
+    if (activeDateF === 'today')   { if (!detail.nextDate || detail.nextDate !== today) return false; }
+    if (activeDateF === 'week')    { if (!detail.nextDate || detail.nextDate < today || detail.nextDate > weekEnd) return false; }
+    if (activeDateF === 'overdue') { if (!detail.nextDate || detail.nextDate >= today) return false; }
+    if (activeDateF === 'nodate')  { if (detail.nextDate) return false; }
+    return true;
+  });
+
+  if (sortBy === 'status')   list.sort((a,b) => (STATUS_ORDER[a.status]||9)-(STATUS_ORDER[b.status]||9));
+  if (sortBy === 'name')     list.sort((a,b) => (a.first+a.last).localeCompare(b.first+b.last));
+  if (sortBy === 'followup') list.sort((a,b) => { const da=getDetail(a.id).nextDate||'9999'; const db=getDetail(b.id).nextDate||'9999'; return da.localeCompare(db); });
+  if (sortBy === 'recent')   list.sort((a,b) => { const da=lastActivity(getDetail(a.id))||''; const db=lastActivity(getDetail(b.id))||''; return db.localeCompare(da); });
+
+  document.getElementById('result-count').textContent = list.length + ' contact' + (list.length!==1?'s':'') + ' shown';
+
+  if (!list.length) {
+    document.getElementById('member-list').innerHTML = '<p class="text-slate-400 text-center py-16">No members match the current filters.</p>';
+    return;
+  }
+
+  function cardHTML(c) {
+    const detail   = getDetail(c.id);
+    const initials = ((c.first?.[0] || '') + (c.last && c.last !== '.S' ? (c.last[0] || '') : '')).toUpperCase() || '?';
+    const lastAct  = lastActivity(detail);
+    const chapter  = extractChapter(c);
+    const noProposal = (c.status==='Contacted'||c.status==='Met') && !hasProposalSent(detail);
+    const displayDate = detail.nextDate || noteDate(c);
+    const fromNotes   = !detail.nextDate && !!displayDate;
+    const {col: dateCol} = dateColors(displayDate);
+
+    return `
+      <a href="/bni/member.html?id=${c.id}" class="member-card glass rounded-2xl px-4 py-3 flex items-center gap-3 block no-underline mb-2" style="${c.hidden ? 'opacity:0.45;border-style:dashed;' : ''}">
+        ${dateTile(detail, c)}
+        <div class="avatar" style="background:${avatarColor(c.id)}18;color:${avatarColor(c.id)};border:2px solid ${avatarColor(c.id)}33;">
+          ${initials}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-900">${c.first} ${c.last}</span>
+            <span class="badge" style="background:${STATUS_COLOR[c.status]}18;color:${STATUS_COLOR[c.status]};border:1px solid ${STATUS_COLOR[c.status]}55;">${c.status}</span>
+            ${noProposal ? '<span class="badge" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;">Send Proposal</span>' : ''}
+            ${c.notes.includes('HIGH PRIORITY') ? '<span class="badge" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">Priority</span>' : ''}
+          </div>
+          <div class="flex items-center gap-2 mt-0.5 flex-wrap text-sm text-slate-600">
+            <span class="font-medium">${c.company || '—'}</span>
+            ${c.city ? `<span class="flex items-center gap-1" style="color:#3b82f6;font-weight:500;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 21s-8-7.5-8-12a8 8 0 0 1 16 0c0 4.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>${c.city}</span>` : ''}
+            ${chapter ? `<span class="badge" style="background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;">${chapter}</span>` : `<span class="badge" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;">${c.segment}</span>`}
+          </div>
+          <div class="flex items-center gap-3 mt-0.5 text-xs">
+            ${displayDate
+              ? `<span class="date-label" style="color:${dateCol};">${fromNotes ? 'Note' : 'Next'}: ${fmtDate(displayDate)}</span>`
+              : '<span class="text-slate-400">No date set</span>'}
+            ${lastAct ? `<span class="text-slate-400">· Last: ${lastAct}</span>` : ''}
+          </div>
+        </div>
+        <div class="text-slate-300 flex-shrink-0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      </a>`;
+  }
+
+  if (!groupBy) {
+    document.getElementById('member-list').innerHTML = list.map(cardHTML).join('');
+    return;
+  }
+
+  // Build groups
+  const groups = {};
+  list.forEach(c => {
+    const key = groupBy === 'segment' ? c.segment : (extractChapter(c) || 'No Chapter Assigned');
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(c);
+  });
+
+  const segOrder = ['Healthcare','AI / Tech','Industrial Automation','Other'];
+  const keys = groupBy === 'segment'
+    ? segOrder.filter(k => groups[k]).concat(Object.keys(groups).filter(k => !segOrder.includes(k)))
+    : Object.keys(groups).sort();
+
+  document.getElementById('member-list').innerHTML = keys.map(key => `
+    <div class="mt-4 mb-1">
+      <div class="group-header">
+        <span>${key}</span>
+        <span style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;padding:2px 8px;border-radius:20px;font-size:0.65rem;">${groups[key].length}</span>
+      </div>
+      ${groups[key].map(cardHTML).join('')}
+    </div>
+  `).join('');
+}
+
+render();
+syncContactsFromSupabase(); // pull fresh data from Supabase in background
+</script>
+  <script src="bni-sidebar.js"></script>
+</body>
+</html>

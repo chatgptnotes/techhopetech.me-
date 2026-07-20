@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dr. BK Murali — BNI 121 Card</title>
+  <meta property="og:title" content="Dr. BK Murali — BNI 121 Card" />
+  <meta property="og:description" content="AI Consulting · Hospital Management Software · AI-based Industrial Automation. BNI Diorite, Nagpur." />
+  <meta property="og:type" content="profile" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(1200px 600px at 0% 0%, rgba(99,102,241,0.08), transparent 60%),
+        radial-gradient(1000px 500px at 100% 100%, rgba(236,72,153,0.06), transparent 55%),
+        #0a0a0f;
+      color:#0f172a;
+      min-height:100vh;
+      margin:0;
+      padding:48px 20px;
+      -webkit-font-smoothing:antialiased;
+      letter-spacing:-0.011em;
+    }
+    .frame { max-width:760px; margin:0 auto; }
+    .top-strip {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:20px; color:#64748b; font-size:12px; font-weight:500;
+    }
+    .top-strip a { color:#94a3b8; text-decoration:none; transition:color 0.15s; }
+    .top-strip a:hover { color:#fff; }
+    .top-strip .url-tag {
+      font-family:'JetBrains Mono', monospace; font-size:11px; color:#64748b;
+      background:rgba(255,255,255,0.04); padding:4px 10px; border-radius:6px;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+
+    .card {
+      background:#ffffff;
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 20px 60px -10px rgba(0,0,0,0.5),
+        0 8px 24px -8px rgba(0,0,0,0.3);
+    }
+
+    /* Hero header */
+    .hero {
+      position:relative;
+      padding:44px 44px 36px;
+      background:
+        linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color:white;
+      overflow:hidden;
+    }
+    .hero::before {
+      content:''; position:absolute; inset:0;
+      background:
+        radial-gradient(600px 300px at 100% 0%, rgba(168,85,247,0.18), transparent 60%),
+        radial-gradient(500px 250px at 0% 100%, rgba(59,130,246,0.15), transparent 60%);
+      pointer-events:none;
+    }
+    .hero-row { position:relative; display:flex; justify-content:space-between; align-items:flex-start; gap:24px; flex-wrap:wrap; }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:10.5px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase;
+      color:#cbd5e1;
+      padding:6px 12px; border-radius:999px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.1);
+      backdrop-filter:blur(10px);
+    }
+    .eyebrow::before {
+      content:''; width:6px; height:6px; border-radius:50%;
+      background:linear-gradient(135deg, #a78bfa, #f472b6);
+      box-shadow:0 0 12px rgba(168,85,247,0.6);
+    }
+    .name {
+      font-size:42px; font-weight:800; line-height:1.05; letter-spacing:-0.035em;
+      margin:18px 0 10px;
+      background:linear-gradient(180deg, #ffffff, #cbd5e1);
+      -webkit-background-clip:text; background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .tagline {
+      font-size:14px; font-weight:400; color:#94a3b8;
+      max-width:480px; line-height:1.55;
+    }
+    .chapter-block {
+      text-align:right; flex-shrink:0;
+      padding:14px 18px;
+      border-radius:12px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .chapter-block .lbl { font-size:9.5px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:#64748b; margin-bottom:4px; }
+    .chapter-block .val { font-size:18px; font-weight:700; color:white; letter-spacing:-0.02em; }
+    .chapter-block .sub { font-size:11px; color:#94a3b8; margin-top:2px; font-weight:500; }
+
+    /* Body grid */
+    .body { padding:8px 0; }
+    .field {
+      display:grid;
+      grid-template-columns: 130px 1fr;
+      gap:32px;
+      padding:18px 44px;
+      border-bottom:1px solid #f1f5f9;
+      align-items:start;
+    }
+    .field:last-of-type { border-bottom:none; }
+    .field .lbl {
+      font-size:10.5px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
+      color:#94a3b8;
+      padding-top:3px;
+    }
+    .field .val { font-size:14.5px; line-height:1.6; color:#0f172a; font-weight:450; }
+    .field .val.lead { font-size:15.5px; font-weight:600; }
+    .field .val a { color:#0f172a; text-decoration:none; border-bottom:1px solid #cbd5e1; transition:border-color 0.15s, color 0.15s; }
+    .field .val a:hover { color:#6366f1; border-bottom-color:#6366f1; }
+    .field .val .sub { display:block; font-size:12.5px; color:#64748b; font-style:normal; font-weight:400; margin-top:5px; }
+
+    .web-list { display:flex; gap:6px; flex-wrap:wrap; }
+    .web-list a {
+      font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:500;
+      padding:5px 10px; border-radius:6px;
+      background:#f8fafc; border:1px solid #e2e8f0;
+      color:#475569 !important;
+      border-bottom:1px solid #e2e8f0 !important;
+    }
+    .web-list a:hover { background:#0f172a; color:#fff !important; border-color:#0f172a !important; }
+
+    .give-tags { display:flex; gap:8px; flex-wrap:wrap; }
+    .give-tag {
+      display:inline-flex; align-items:baseline; gap:8px;
+      padding:9px 14px;
+      border-radius:10px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      font-size:12.5px; font-weight:600;
+      color:#0f172a;
+      letter-spacing:-0.005em;
+      transition:all 0.15s;
+    }
+    .give-tag:hover { background:#0f172a; color:white; border-color:#0f172a; transform:translateY(-1px); }
+    .give-tag .tag-sub {
+      font-size:11px; font-weight:400; color:#64748b;
+      letter-spacing:0;
+    }
+    .give-tag:hover .tag-sub { color:#94a3b8; }
+
+    /* Action bar */
+    .actions {
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      padding:24px 44px;
+      background:#fafafa;
+      border-top:1px solid #f1f5f9;
+    }
+    .btn {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:10px 16px;
+      border-radius:9px;
+      font-size:13px; font-weight:600;
+      cursor:pointer; border:1px solid transparent;
+      transition:all 0.15s ease;
+      letter-spacing:-0.005em;
+      background:white;
+      color:#0f172a;
+      border-color:#e2e8f0;
+    }
+    .btn:hover { background:#0f172a; color:white; border-color:#0f172a; transform:translateY(-1px); }
+    .btn svg { width:14px; height:14px; }
+    .btn-primary { background:#0f172a; color:white; border-color:#0f172a; }
+    .btn-primary:hover { background:#000; }
+    .btn-wa { background:#25D366; color:white; border-color:#25D366; }
+    .btn-wa:hover { background:#1ea855; border-color:#1ea855; }
+    .actions-spacer { flex:1; min-width:1px; }
+    .saved-link {
+      font-family:'JetBrains Mono', monospace; font-size:11px;
+      color:#94a3b8; padding:6px 10px; border-radius:6px;
+      background:#f1f5f9; border:1px solid #e2e8f0;
+      cursor:pointer; user-select:all;
+    }
+    .saved-link:hover { color:#0f172a; }
+
+    .footer-note {
+      text-align:center; font-size:11.5px; color:#64748b; font-weight:500;
+      margin-top:18px;
+    }
+
+    .toast {
+      position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(8px);
+      background:#0f172a; color:white;
+      padding:11px 18px; border-radius:10px;
+      font-size:13px; font-weight:600;
+      box-shadow:0 12px 30px rgba(0,0,0,0.4);
+      opacity:0; pointer-events:none;
+      transition:opacity 0.2s, transform 0.2s;
+      z-index:100;
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    @media (max-width:640px) {
+      body { padding:24px 12px; }
+      .hero { padding:32px 24px 28px; }
+      .name { font-size:32px; }
+      .field { grid-template-columns:1fr; gap:6px; padding:16px 24px; }
+      .field .lbl { padding-top:0; }
+      .actions { padding:18px 24px; }
+      .chapter-block { width:100%; text-align:left; }
+    }
+
+    @media print {
+      body { background:white; padding:0; }
+      .top-strip, .actions, .footer-note { display:none !important; }
+      .card { box-shadow:none; border-radius:0; max-width:100%; }
+      .hero { background:#0f172a !important; color:white !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .give-tag { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="top-strip">
+    <a href="https://hopetech.me">← hopetech.me</a>
+    <span class="url-tag">/bni/my-card.html</span>
+  </div>
+
+  <article class="card" id="card">
+    <header class="hero">
+      <div class="hero-row">
+        <div>
+          <span class="eyebrow">BNI 121 · Introduction</span>
+          <h1 class="name">Dr. BK Murali</h1>
+          <p class="tagline">AI Consulting · Hospital Management Software · AI-based Industrial Automation. Healthcare-tech entrepreneur and practicing orthopaedic surgeon.</p>
+        </div>
+        <div class="chapter-block">
+          <div class="lbl">Chapter</div>
+          <div class="val">BNI Diorite</div>
+          <div class="sub">Nagpur · India</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="body">
+      <div class="field">
+        <div class="lbl">Category</div>
+        <div class="val lead">AI Consulting &amp; Hospital Management Software, AI-based Industrial Automation
+          <span class="sub">Healthcare-tech entrepreneur · practicing orthopaedic surgeon</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">Companies</div>
+        <div class="val">DrM Hope Softwares Pvt Ltd · Bettroi FZE · HopePhoenix · Hope Hospital · Ayushman Hospital</div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">Address</div>
+        <div class="val">Hope Hospital, Plot No. 9, Mahatma Mandir Marg, Dhantoli, Nagpur — 440012, Maharashtra, India</div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">Mobile</div>
+        <div class="val lead"><a href="tel:+919373111709">+91 93731 11709</a></div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">Email</div>
+        <div class="val lead"><a href="mailto:cmd@hopehospital.com">cmd@hopehospital.com</a></div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">Web</div>
+        <div class="val">
+          <div class="web-list">
+            <a href="https://hopetech.me" target="_blank" rel="noopener">hopetech.me</a>
+            <a href="https://drmhope.com" target="_blank" rel="noopener">drmhope.com</a>
+            <a href="https://bettroi.com" target="_blank" rel="noopener">bettroi.com</a>
+            <a href="https://hopehospital.com" target="_blank" rel="noopener">hopehospital.com</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">Ask</div>
+        <div class="val">Hospital owners, CEOs and CMDs of 50+ bed hospitals; industrial manufacturers ready to bring AI to the shop floor; education-technology founders; enterprise leaders evaluating AI for SOPs, alarm management, customer service, HR or document automation.</div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">Give</div>
+        <div class="val">
+          <div class="give-tags">
+            <span class="give-tag">Hope Hospital Nagpur</span>
+            <span class="give-tag">DrM Hope Softwares <span class="tag-sub">HMIS · OPD · IPD · ICU</span></span>
+            <span class="give-tag">HopePhoenix <span class="tag-sub">Multi-hospital network</span></span>
+            <span class="give-tag">Bettroi FZE <span class="tag-sub">Enterprise AI</span></span>
+            <span class="give-tag">Betser Life <span class="tag-sub">Preventive health</span></span>
+            <span class="give-tag">HopeTech.me <span class="tag-sub">AI products · SCADA</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-wa" onclick="shareWhatsApp()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        WhatsApp
+      </button>
+      <button class="btn btn-primary" onclick="downloadPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PDF
+      </button>
+      <button class="btn" onclick="copyText()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy text
+      </button>
+      <button class="btn" onclick="copyLink()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Copy link
+      </button>
+      <div class="actions-spacer"></div>
+      <button class="btn" onclick="window.print()" title="Print">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      </button>
+    </div>
+  </article>
+
+  <p class="footer-note">Share this URL — recipients see the same card and can download the PDF themselves.</p>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const CARD_TEXT = `Dr. BK Murali  —  BNI 121 Introduction
+
+Category : AI Consulting & Hospital Management Software, AI-based Industrial Automation
+            (Healthcare-tech entrepreneur · practicing orthopaedic surgeon)
+
+Companies : DrM Hope Softwares Pvt Ltd · Bettroi FZE · HopePhoenix · Hope Hospital · Ayushman Hospital
+
+Address  : Hope Hospital, Plot No. 9, Mahatma Mandir Marg, Dhantoli, Nagpur — 440012, Maharashtra, India
+
+Mobile   : +91 93731 11709
+Email    : cmd@hopehospital.com
+Web      : hopetech.me · drmhope.com · bettroi.com · hopehospital.com
+
+Chapter  : BNI Diorite, Nagpur
+
+Ask  : Hospital owners, CEOs and CMDs of 50+ bed hospitals; industrial manufacturers ready to bring AI to the shop floor; education-technology founders; enterprise leaders evaluating AI for SOPs, alarm management, customer service, HR or document automation.
+
+Give :
+  • Hope Hospital Nagpur
+  • DrM Hope Softwares (HMIS · OPD · IPD · ICU)
+  • HopePhoenix (multi-hospital network)
+  • Bettroi FZE (enterprise AI consulting)
+  • Betser Life (preventive health platform)
+  • HopeTech.me (AI products · SCADA · industrial automation)
+
+— Card link: https://hopetech.me/bni/my-card.html`;
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastT);
+  window.__toastT = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+async function copyText() {
+  try { await navigator.clipboard.writeText(CARD_TEXT); showToast('Card text copied'); }
+  catch { showToast('Copy failed'); }
+}
+async function copyLink() {
+  try { await navigator.clipboard.writeText(location.href); showToast('Link copied'); }
+  catch { showToast('Copy failed'); }
+}
+function shareWhatsApp() {
+  window.open('https://wa.me/?text=' + encodeURIComponent(CARD_TEXT), '_blank');
+}
+
+function downloadPDF() {
+  if (!window.jspdf || !window.jspdf.jsPDF) { showToast('PDF library still loading'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'pt', format:'a4' });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+  const M = 56;
+  const contentW = W - M * 2;
+
+  doc.setFillColor(15, 23, 42);
+  doc.rect(0, 0, W, 150, 'F');
+
+  doc.setTextColor(148, 163, 184);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('BNI 121  ·  INTRODUCTION', M, 44, { charSpace:1.2 });
+
+  doc.setTextColor(255);
+  doc.setFontSize(28);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Dr. BK Murali', M, 80);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10.5);
+  doc.setTextColor(203, 213, 225);
+  const tag = doc.splitTextToSize('AI Consulting · Hospital Management Software · AI-based Industrial Automation', contentW - 140);
+  doc.text(tag, M, 102);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  doc.text('CHAPTER', W - M, 60, { align:'right' });
+  doc.setFontSize(13);
+  doc.setTextColor(255);
+  doc.text('BNI Diorite', W - M, 80, { align:'right' });
+  doc.setFontSize(9);
+  doc.setTextColor(148, 163, 184);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Nagpur, India', W - M, 96, { align:'right' });
+
+  let y = 190;
+  doc.setTextColor(15, 23, 42);
+
+  function field(label, value, opts) {
+    opts = opts || {};
+    if (y > H - 100) { doc.addPage(); y = 60; }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text(label.toUpperCase(), M, y, { charSpace:1 });
+
+    doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+    doc.setFontSize(opts.bold ? 12 : 11);
+    doc.setTextColor(15, 23, 42);
+    const lines = doc.splitTextToSize(value, contentW);
+    doc.text(lines, M, y + 16);
+
+    y += 16 + lines.length * 14 + 16;
+    doc.setDrawColor(241, 245, 249);
+    doc.line(M, y - 8, W - M, y - 8);
+    y += 6;
+  }
+
+  field('Category', 'AI Consulting & Hospital Management Software, AI-based Industrial Automation. Healthcare-tech entrepreneur and practicing orthopaedic surgeon.', { bold:true });
+  field('Companies', 'DrM Hope Softwares Pvt Ltd  ·  Bettroi FZE  ·  HopePhoenix  ·  Hope Hospital  ·  Ayushman Hospital');
+  field('Address', 'Hope Hospital, Plot No. 9, Mahatma Mandir Marg, Dhantoli, Nagpur — 440012, Maharashtra, India');
+  field('Mobile', '+91 93731 11709');
+  field('Email', 'cmd@hopehospital.com');
+  field('Web', 'hopetech.me  ·  drmhope.com  ·  bettroi.com  ·  hopehospital.com');
+  field('Ask', 'Hospital owners, CEOs and CMDs of 50+ bed hospitals; industrial manufacturers ready to bring AI to the shop floor; education-technology founders; enterprise leaders evaluating AI for SOPs, alarm management, customer service, HR or document automation.');
+
+  if (y > H - 160) { doc.addPage(); y = 60; }
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184);
+  doc.text('GIVE', M, y, { charSpace:1 });
+  y += 14;
+
+  const gives = [
+    ['Hope Hospital Nagpur', ''],
+    ['DrM Hope Softwares', 'HMIS · OPD · IPD · ICU'],
+    ['HopePhoenix', 'Multi-hospital network'],
+    ['Bettroi FZE', 'Enterprise AI consulting'],
+    ['Betser Life', 'Preventive health platform'],
+    ['HopeTech.me', 'AI products · SCADA · industrial automation']
+  ];
+  gives.forEach(([name, sub]) => {
+    if (y > H - 60) { doc.addPage(); y = 60; }
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(M, y, contentW, 22, 4, 4, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    doc.text(name, M + 12, y + 14);
+    if (sub) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text(sub, M + 12 + doc.getTextWidth(name) + 10, y + 14);
+    }
+    y += 26;
+  });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184);
+  doc.text('hopetech.me/bni/my-card.html', M, H - 28);
+  doc.text(new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }), W - M, H - 28, { align:'right' });
+
+  doc.save('dr-bk-murali-bni-card.pdf');
+}
+</script>
+<!-- v2.0 — modern restyle, no emojis -->
+</body>
+</html>

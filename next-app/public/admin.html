@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HopeTech Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; }
+    .glass { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .glass-hover:hover { background: rgba(255,255,255,0.06); }
+    .tab-active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #60a5fa; }
+    .tab-inactive { color: #64748b; border-color: transparent; }
+    .tab-inactive:hover { color: #94a3b8; background: rgba(255,255,255,0.03); }
+    input, textarea, select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #f8fafc;
+      border-radius: 8px;
+      padding: 8px 12px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: rgba(59,130,246,0.5); }
+    input::placeholder, textarea::placeholder { color: #475569; }
+    .btn-primary { background: #3b82f6; color: white; border-radius: 8px; padding: 8px 16px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background 0.15s; border: none; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary { background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 16px; font-size: 0.875rem; cursor: pointer; transition: all 0.15s; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); color: #f1f5f9; }
+    .btn-danger { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+    .btn-danger:hover { background: rgba(239,68,68,0.25); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+    .badge-active { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+    .badge-stealth { background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+    .badge-building { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; padding: 12px 20px; border-radius: 10px; font-size: 0.875rem; font-weight: 500; animation: slideUp 0.2s ease; }
+    .toast-success { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4); color: #6ee7b7; }
+    .toast-error { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
+    @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    select option { background: #0f172a; }
+  </style>
+
+  <style id="bni-admin-light-override">
+    html, body { background: #f8fafc !important; color: #0f172a !important; }
+    body.bni-sidebar-applied { margin-left: 240px; }
+    .glass { background: #ffffff !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 1px 3px rgba(15,23,42,0.04); }
+    .glass-hover:hover { background: #f8fafc !important; }
+    input, textarea, select {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    input::placeholder, textarea::placeholder { color: #94a3b8 !important; }
+    select option { background: #ffffff !important; color: #0f172a !important; }
+    header.sticky { background: rgba(255,255,255,0.92) !important; border-bottom: 1px solid #e2e8f0 !important; }
+    .text-white { color: #0f172a !important; }
+    .text-slate-500 { color: #64748b !important; }
+    .text-slate-400 { color: #94a3b8 !important; }
+    .btn-secondary { background: #f1f5f9 !important; color: #475569 !important; border: 1px solid #e2e8f0 !important; }
+    .btn-secondary:hover { background: #e2e8f0 !important; color: #0f172a !important; }
+    .tab { color: #64748b !important; border-color: transparent !important; }
+    .tab-active { background: #eff6ff !important; color: #1d4ed8 !important; border-color: #bfdbfe !important; }
+    .tab-inactive:hover { background: #f1f5f9 !important; color: #0f172a !important; }
+    .badge-active  { background: #d1fae5 !important; color: #065f46 !important; border-color: #a7f3d0 !important; }
+    .badge-stealth { background: #f1f5f9 !important; color: #475569 !important; border-color: #e2e8f0 !important; }
+    .badge-building{ background: #fef3c7 !important; color: #92400e !important; border-color: #fde68a !important; }
+    .bg-black\/40, [class*="bg-black"] { background: #f1f5f9 !important; color: #475569 !important; }
+    .border-white\/5, [class*="border-white"] { border-color: #e2e8f0 !important; }
+    .toast-success { background: #d1fae5 !important; color: #065f46 !important; border: 1px solid #a7f3d0 !important; }
+    .toast-error { background: #fee2e2 !important; color: #991b1b !important; border: 1px solid #fecaca !important; }
+  </style>
+</head>
+<body class="min-h-screen">
+<!-- LOGIN GATE -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="glass rounded-3xl p-10 w-full max-w-sm text-center">
+      <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-6" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h1 class="text-xl font-bold text-white mb-1">HopeTech Admin</h1>
+      <p class="text-slate-500 text-sm mb-8">Enter password to continue</p>
+      <div class="relative mb-4">
+        <input type="password" id="passwordInput" placeholder="Password" class="text-center pr-10" onkeydown="if(event.key==='Enter')doLogin()" />
+        <button onclick="autofillPassword()" title="Autofill saved password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#475569;padding:4px;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5v3H7V7a5 5 0 0 1 5-5z"/><rect width="18" height="11" x="3" y="10" rx="2"/><circle cx="12" cy="16" r="1"/></svg>
+        </button>
+      </div>
+      <button class="btn-primary w-full" onclick="doLogin()">Sign In</button>
+      <p id="loginError" class="text-red-400 text-sm mt-3 hidden">Incorrect password</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="appScreen" class="hidden min-h-screen">
+
+    <!-- Top nav -->
+    <header class="sticky top-0 z-50 border-b border-white/5" style="background:rgba(2,8,23,0.95);backdrop-filter:blur(20px);">
+      <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="font-bold text-white text-sm">HopeTech Admin</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="/bni/hopetech-landing.html" target="_blank" class="btn-secondary text-xs">View Site ↗</a>
+          <button onclick="doLogout()" class="text-slate-500 hover:text-slate-300 text-sm transition-colors">Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+
+      <!-- Tab nav -->
+      <div class="flex gap-1 mb-8 border-b border-white/5 pb-0">
+        <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="contacts" onclick="switchTab('contacts')">Contacts</button>
+        <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="ventures" onclick="switchTab('ventures')">Ventures</button>
+        <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="content" onclick="switchTab('content')">Page Content</button>
+        <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="bookings" onclick="switchTab('bookings')">Bookings</button>
+        <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="settings" onclick="switchTab('settings')">Settings</button>
+      </div>
+
+      <!-- DASHBOARD TAB -->
+      <div id="tab-dashboard" class="tab-panel">
+        <h2 class="text-xl font-bold text-white mb-6">Overview</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div class="glass rounded-2xl p-5">
+            <p class="text-slate-500 text-xs uppercase tracking-widest mb-1">Contacts</p>
+            <p id="stat-contacts" class="text-3xl font-bold text-white">—</p>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <p class="text-slate-500 text-xs uppercase tracking-widest mb-1">Ventures</p>
+            <p class="text-3xl font-bold text-white">4</p>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <p class="text-slate-500 text-xs uppercase tracking-widest mb-1">Referred</p>
+            <p id="stat-referred" class="text-3xl font-bold text-emerald-400">—</p>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <p class="text-slate-500 text-xs uppercase tracking-widest mb-1">Met</p>
+            <p id="stat-met" class="text-3xl font-bold text-violet-400">—</p>
+          </div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="glass rounded-2xl p-6">
+            <h3 class="text-sm font-semibold text-slate-300 mb-4">Contact Pipeline</h3>
+            <div id="pipeline-chart" class="space-y-3"></div>
+          </div>
+          <div class="glass rounded-2xl p-6">
+            <h3 class="text-sm font-semibold text-slate-300 mb-4">Quick Actions</h3>
+            <div class="space-y-2">
+              <button onclick="switchTab('contacts')" class="w-full text-left glass-hover rounded-xl px-4 py-3 text-sm text-slate-300 hover:text-white transition-colors">+ Add Contact</button>
+              <button onclick="switchTab('ventures')" class="w-full text-left glass-hover rounded-xl px-4 py-3 text-sm text-slate-300 hover:text-white transition-colors">Edit Ventures</button>
+              <button onclick="switchTab('content')" class="w-full text-left glass-hover rounded-xl px-4 py-3 text-sm text-slate-300 hover:text-white transition-colors">Edit Page Content</button>
+              <a href="/bni/members.html" target="_blank" class="block glass-hover rounded-xl px-4 py-3 text-sm text-slate-300 hover:text-white transition-colors">BNI Members & Follow-ups ↗</a>
+              <a href="/bni/tracker.html" target="_blank" class="block glass-hover rounded-xl px-4 py-3 text-sm text-slate-300 hover:text-white transition-colors">Open Contact Tracker ↗</a>
+              <a href="/bni/book.html" target="_blank" class="block glass-hover rounded-xl px-4 py-3 text-sm text-slate-300 hover:text-white transition-colors">Open Booking Page ↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACTS TAB -->
+      <div id="tab-contacts" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-white">BNI Contacts</h2>
+          <div class="flex gap-2 items-center">
+            <button id="migrate-btn" onclick="migrateToSupabase()"
+              style="background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:8px;padding:6px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;">
+               Push to Supabase
+            </button>
+            <button onclick="exportJSON()"
+              style="background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:8px;padding:6px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;">
+              ↓ Export JSON
+            </button>
+            <button class="btn-primary" onclick="openContactModal()">+ Add Contact</button>
+          </div>
+        </div>
+        <p style="font-size:0.72rem;color:#475569;margin-bottom:16px;">
+          First time: click "Push to Supabase" to migrate all localStorage data to the cloud.
+          After that, all saves are automatic.
+        </p>
+        <div class="flex gap-3 mb-6 flex-wrap">
+          <input type="text" id="contactSearch" placeholder="Search name, company, city…" oninput="renderContacts()" style="max-width:280px;" />
+          <select id="contactStatusFilter" onchange="renderContacts()" style="max-width:160px;">
+            <option value="">All Status</option>
+            <option value="Identified">Identified</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Met">Met</option>
+            <option value="Referred">Referred</option>
+            <option value="Cold">Cold</option>
+          </select>
+          <select id="contactSegmentFilter" onchange="renderContacts()" style="max-width:220px;">
+            <option value="">All Segments</option>
+            <option value="AI / Tech">AI / Tech</option>
+            <option value="Industrial Automation">Industrial Automation</option>
+          </select>
+        </div>
+        <div id="contacts-list" class="space-y-2"></div>
+      </div>
+
+      <!-- VENTURES TAB -->
+      <div id="tab-ventures" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-white">Ventures</h2>
+          <button class="btn-primary" onclick="saveVentures()">Save Changes</button>
+        </div>
+        <div id="ventures-list" class="space-y-4"></div>
+      </div>
+
+      <!-- PAGE CONTENT TAB -->
+      <div id="tab-content" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-white">Page Content</h2>
+          <button class="btn-primary" onclick="saveContent()">Save Changes</button>
+        </div>
+        <p class="text-slate-500 text-sm mb-6">Changes are saved locally. Run the deploy command from your terminal to publish to all visitors.</p>
+
+        <div class="space-y-6">
+          <div class="glass rounded-2xl p-6">
+            <h3 class="text-sm font-semibold text-slate-300 mb-4">Hero Section</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="text-xs text-slate-500 uppercase tracking-widest mb-1.5 block">Headline Line 1</label>
+                <input type="text" id="content-hero-line1" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 uppercase tracking-widest mb-1.5 block">Headline Line 2 (accent color)</label>
+                <input type="text" id="content-hero-line2" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 uppercase tracking-widest mb-1.5 block">Headline Line 3</label>
+                <input type="text" id="content-hero-line3" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 uppercase tracking-widest mb-1.5 block">Hero Description</label>
+                <textarea id="content-hero-desc" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl p-6">
+            <h3 class="text-sm font-semibold text-slate-300 mb-4">Stats Bar</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label class="text-xs text-slate-500 mb-1.5 block">Stat 1 Number</label>
+                <input type="text" id="content-stat1-num" />
+                <label class="text-xs text-slate-500 mt-2 mb-1.5 block">Stat 1 Label</label>
+                <input type="text" id="content-stat1-lbl" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 mb-1.5 block">Stat 2 Number</label>
+                <input type="text" id="content-stat2-num" />
+                <label class="text-xs text-slate-500 mt-2 mb-1.5 block">Stat 2 Label</label>
+                <input type="text" id="content-stat2-lbl" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 mb-1.5 block">Stat 3 Number</label>
+                <input type="text" id="content-stat3-num" />
+                <label class="text-xs text-slate-500 mt-2 mb-1.5 block">Stat 3 Label</label>
+                <input type="text" id="content-stat3-lbl" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 mb-1.5 block">Stat 4 Number</label>
+                <input type="text" id="content-stat4-num" />
+                <label class="text-xs text-slate-500 mt-2 mb-1.5 block">Stat 4 Label</label>
+                <input type="text" id="content-stat4-lbl" />
+              </div>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl p-6">
+            <h3 class="text-sm font-semibold text-slate-300 mb-4">Meta / SEO</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="text-xs text-slate-500 uppercase tracking-widest mb-1.5 block">Page Title</label>
+                <input type="text" id="content-meta-title" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 uppercase tracking-widest mb-1.5 block">Meta Description</label>
+                <textarea id="content-meta-desc" rows="2"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl p-6">
+            <h3 class="text-sm font-semibold text-slate-300 mb-2">Deploy Command</h3>
+            <p class="text-slate-500 text-sm mb-3">Run from your terminal (Mac) to push changes live:</p>
+            <div class="bg-black/40 rounded-xl p-4 font-mono text-xs text-slate-400 select-all break-all">
+              scp ~/.openclaw/workspace/public/bni/hopetech-landing.html root@76.13.244.21:/var/www/bni/hopetech-landing.html
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOOKINGS TAB -->
+      <div id="tab-bookings" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-white">Booking Slots</h2>
+          <a href="/bni/book.html" target="_blank" class="btn-secondary text-xs">View Booking Page ↗</a>
+        </div>
+        <div class="glass rounded-2xl p-6 mb-6">
+          <label class="text-xs text-slate-500 uppercase tracking-widest mb-3 block">Select Date</label>
+          <input type="date" id="bookingDate" onchange="renderSlots()" style="max-width:200px;" />
+        </div>
+        <div id="slots-grid" class="glass rounded-2xl p-6">
+          <p class="text-slate-500 text-sm">Select a date to manage slots.</p>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="tab-settings" class="tab-panel hidden">
+        <h2 class="text-xl font-bold text-white mb-6">Settings</h2>
+        <div class="max-w-md space-y-6">
+          <div class="glass rounded-2xl p-6">
+            <h3 class="text-sm font-semibold text-slate-300 mb-4">Change Password</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="text-xs text-slate-500 mb-1.5 block">Current Password</label>
+                <input type="password" id="settingsCurrent" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 mb-1.5 block">New Password</label>
+                <input type="password" id="settingsNew" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 mb-1.5 block">Confirm New Password</label>
+                <input type="password" id="settingsConfirm" />
+              </div>
+              <button class="btn-primary" onclick="changePassword()">Update Password</button>
+            </div>
+          </div>
+          <div class="glass rounded-2xl p-6">
+            <h3 class="text-sm font-semibold text-slate-300 mb-3">All Pages</h3>
+            <div class="space-y-2 text-sm">
+              <a href="/bni/hopetech-landing.html" target="_blank" class="flex items-center justify-between glass-hover rounded-xl px-4 py-3 text-slate-300 hover:text-white transition-colors">Landing Page <span class="text-slate-600">↗</span></a>
+              <a href="/bni/members.html" target="_blank" class="flex items-center justify-between glass-hover rounded-xl px-4 py-3 text-slate-300 hover:text-white transition-colors">BNI Members <span class="text-slate-600">↗</span></a>
+              <a href="/bni/tracker.html" target="_blank" class="flex items-center justify-between glass-hover rounded-xl px-4 py-3 text-slate-300 hover:text-white transition-colors">Contact Tracker <span class="text-slate-600">↗</span></a>
+              <a href="/bni/book.html" target="_blank" class="flex items-center justify-between glass-hover rounded-xl px-4 py-3 text-slate-300 hover:text-white transition-colors">Booking Page <span class="text-slate-600">↗</span></a>
+              <a href="/bni/bettroi.html" target="_blank" class="flex items-center justify-between glass-hover rounded-xl px-4 py-3 text-slate-300 hover:text-white transition-colors">Bettroi <span class="text-slate-600">↗</span></a>
+              <a href="/bni/hopephoenix.html" target="_blank" class="flex items-center justify-between glass-hover rounded-xl px-4 py-3 text-slate-300 hover:text-white transition-colors">HopePhoenix <span class="text-slate-600">↗</span></a>
+              <a href="/bni/betser.html" target="_blank" class="flex items-center justify-between glass-hover rounded-xl px-4 py-3 text-slate-300 hover:text-white transition-colors">Betser Life <span class="text-slate-600">↗</span></a>
+              <a href="/bni/drmhope.html" target="_blank" class="flex items-center justify-between glass-hover rounded-xl px-4 py-3 text-slate-300 hover:text-white transition-colors">DrM Hope <span class="text-slate-600">↗</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT MODAL -->
+  <div id="contactModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);">
+    <div class="glass rounded-3xl p-8 w-full max-w-lg max-h-screen overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="modalTitle" class="text-lg font-bold text-white">Add Contact</h3>
+        <button onclick="closeContactModal()" class="text-slate-500 hover:text-white transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <input type="hidden" id="modal-id" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-500 mb-1.5 block">First Name *</label>
+            <input type="text" id="modal-first" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-500 mb-1.5 block">Last Name</label>
+            <input type="text" id="modal-last" />
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1.5 block">Company *</label>
+          <input type="text" id="modal-company" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-500 mb-1.5 block">City</label>
+            <input type="text" id="modal-city" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-500 mb-1.5 block">Phone</label>
+            <input type="text" id="modal-phone" />
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1.5 block">Email</label>
+          <input type="email" id="modal-email" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-500 mb-1.5 block">Segment</label>
+            <select id="modal-segment">
+              <option value="AI / Tech">AI / Tech</option>
+              <option value="Industrial Automation">Industrial Automation</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-500 mb-1.5 block">Status</label>
+            <select id="modal-status">
+              <option value="Identified">Identified</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Met">Met</option>
+              <option value="Referred">Referred</option>
+              <option value="Cold">Cold</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1.5 block">Notes</label>
+          <textarea id="modal-notes" rows="3" placeholder="Specialty, interests, 121 topics…"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button class="btn-primary flex-1" onclick="saveContact()">Save Contact</button>
+          <button class="btn-secondary" onclick="closeContactModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+<script>
+// ── SUPABASE ───────────────────────────────────────────────────────────────
+const SB_URL = 'https://bvaefzcsgtgqwftczixb.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2YWVmemNzZ3RncXdmdGN6aXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2ODU0ODIsImV4cCI6MjA4NzI2MTQ4Mn0.Q-AxSMpO6lKogtR_m0j2CvpzdRiDpZiKebR8XCPq1Nc';
+const _sb = supabase.createClient(SB_URL, SB_KEY);
+
+// Push every contact + its detail from localStorage to Supabase
+async function migrateToSupabase() {
+  const btn = document.getElementById('migrate-btn');
+  btn.textContent = 'Migrating…';
+  btn.disabled = true;
+  try {
+    const contacts = JSON.parse(localStorage.getItem('bni_contacts') || '[]');
+    if (!contacts.length) {
+      alert('No contacts in localStorage to migrate.\n\nOpen members.html first so the seed data loads into localStorage, then come back here.');
+      btn.textContent = ' Push to Supabase'; btn.disabled = false; return;
+    }
+
+    // Upsert contacts — explicit column list to avoid schema mismatch errors
+    const sbContacts = contacts.map(c => ({
+      id: c.id, first: c.first || '', last: c.last || '',
+      company: c.company || '', city: c.city || '',
+      phone: c.phone || '', email: c.email || '',
+      segment: c.segment || 'Other', status: c.status || 'Identified',
+      notes: c.notes || '', chapter: c.chapter || '',
+      hidden: c.hidden || false
+    }));
+    const { error: ce } = await _sb.from('bni_contacts').upsert(sbContacts);
+    if (ce) throw ce;
+
+    // Upsert details for each contact that has a detail entry
+    const details = contacts.map(c => {
+      const raw = localStorage.getItem('bni_detail_' + c.id);
+      if (!raw) return null;
+      const d = JSON.parse(raw);
+      return {
+        contact_id:   c.id,
+        followups:    d.followups    || [],
+        next_date:    d.nextDate     || null,
+        linkedin:     d.linkedin     || '',
+        website:      d.website      || '',
+        about:        d.about        || '',
+        priority:     d.priority     || 'Normal',
+        actions:      d.actions      || [],
+        photo:        d.photo        || '',
+        address:      d.address      || '',
+        meetmode:     d.meetmode     || '',
+        proposal:     d.proposal     || '',
+        conversation: d.conversation || '',
+        pdfs:         d.pdfs         || [],
+        updated_at:   new Date().toISOString()
+      };
+    }).filter(Boolean);
+
+    if (details.length) {
+      const { error: de } = await _sb.from('bni_contact_details').upsert(details, { onConflict: 'contact_id' });
+      if (de) throw de;
+    }
+
+    btn.textContent = ` Migrated ${contacts.length} contacts + ${details.length} detail records`;
+    btn.style.background = '#16a34a';
+    btn.style.color = 'white';
+  } catch(e) {
+    console.error('Migration error:', e);
+    btn.textContent = ' Error — check console';
+    btn.style.background = '#dc2626';
+    btn.style.color = 'white';
+  }
+}
+
+function exportJSON() {
+  const contacts = JSON.parse(localStorage.getItem('bni_contacts') || '[]');
+  const details  = {};
+  contacts.forEach(c => {
+    const d = localStorage.getItem('bni_detail_' + c.id);
+    if (d) details[c.id] = JSON.parse(d);
+  });
+  const backup = {
+    exportDate: new Date().toISOString(),
+    contactCount: contacts.length,
+    contacts,
+    details
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bni-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+}
+
+// ── AUTH ───────────────────────────────────────────────────────────────────
+const DEFAULT_PW = 'HopeTech@2026';
+
+function getPassword() {
+  return localStorage.getItem('ht_admin_pw') || DEFAULT_PW;
+}
+
+function autofillPassword() {
+  document.getElementById('passwordInput').value = getPassword();
+  document.getElementById('passwordInput').focus();
+}
+
+function doLogin() {
+  const val = document.getElementById('passwordInput').value;
+  if (val === getPassword()) {
+    localStorage.setItem('ht_admin_session', '1');
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('hidden');
+    initApp();
+  } else {
+    document.getElementById('loginError').classList.remove('hidden');
+    document.getElementById('passwordInput').value = '';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('ht_admin_session');
+  location.reload();
+}
+
+function changePassword() {
+  const cur = document.getElementById('settingsCurrent').value;
+  const nw  = document.getElementById('settingsNew').value;
+  const cnf = document.getElementById('settingsConfirm').value;
+  if (cur !== getPassword()) return toast('Current password is wrong', 'error');
+  if (!nw) return toast('New password is empty', 'error');
+  if (nw !== cnf) return toast("Passwords don't match", 'error');
+  localStorage.setItem('ht_admin_pw', nw);
+  ['settingsCurrent','settingsNew','settingsConfirm'].forEach(id => document.getElementById(id).value = '');
+  toast('Password updated');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('ht_admin_session')) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('hidden');
+    initApp();
+  }
+});
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+  document.getElementById('tab-' + name).classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('tab-active', t.dataset.tab === name);
+    t.classList.toggle('tab-inactive', t.dataset.tab !== name);
+  });
+  if (name === 'contacts') renderContacts();
+  if (name === 'ventures') renderVentures();
+  if (name === 'content')  loadContent();
+  if (name === 'bookings') { document.getElementById('bookingDate').valueAsDate = new Date(); renderSlots(); }
+  if (name === 'dashboard') renderDashboard();
+}
+
+function initApp() { switchTab('dashboard'); }
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (type === 'error' ? 'toast-error' : 'toast-success');
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 2500);
+}
+
+// ── CONTACTS ───────────────────────────────────────────────────────────────
+const SEED_VERSION = 6;
+const SEED = [
+  {id:'c1', first:'Kamlesh',    last:'Shewani',        company:'Savit Interactive',              city:'Pune',       phone:'+91 7823852090', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c2', first:'Diwakar',    last:'Reddy',           company:'Solvode',                        city:'Hyderabad',  phone:'+91 9652691508', email:'', segment:'AI / Tech',            status:'Identified', notes:'HIGH PRIORITY'},
+  {id:'c3', first:'Gunjan',     last:'Bhatia',          company:'Shivohini TechAI',               city:'Udaipur',    phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c4', first:'Pranjal',    last:'Srivastava',      company:'Smoketrees Digital',              city:'Bangalore',  phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c5', first:'Ramasundaram', last:'.S',            company:'Actionpackd',                    city:'Chennai',    phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c6', first:'Raghavendra', last:'Chandregowda',  company:'THEEKSHNA',                      city:'Mysore',     phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c7', first:'Mihir',      last:'Mehta',           company:'Royal Technosoft',               city:'Ahmedabad',  phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c8', first:'Sameer',     last:'Wadhwa',          company:'Excelerate Technologies',        city:'Bengaluru',  phone:'', email:'', segment:'AI / Tech',            status:'Identified', notes:''},
+  {id:'c9', first:'Harmeet',    last:'Singh',           company:'Air Masters',                    city:'Mohali',     phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c10',first:'Valthan',    last:'Industries',      company:'Valthan Industries',             city:'Sangli',     phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c11',first:'Pradeep',    last:'Easwarmoorthy',   company:'Nexus Automations',              city:'Coimbatore', phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c12',first:'Sathish Kumar', last:'K',            company:'Innovative Automation Solutions',city:'Bangalore',  phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c13',first:'Jamen',      last:'Shah',            company:'Neca Automation',                city:'Mumbai',     phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c14',first:'Praktat',    last:'Dhamu',           company:'DPhitech LLP',                   city:'Navi Mumbai',phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c15',first:'Rajkumar',   last:'Shanmugavel',     company:'KVPM Automation',                city:'Chennai',    phone:'', email:'', segment:'Industrial Automation', status:'Identified', notes:''},
+  {id:'c16',first:'Dhruv',      last:'Pandya',          company:'Intuitive Research & Development',city:'Hubli',    phone:'', email:'', segment:'Industrial Automation', status:'Identified',  notes:''},
+  {id:'c17',first:'Aishray',    last:'Srinivasa',       company:'SatiShiva Healthcare',            city:'Bangalore',phone:'', email:'', segment:'Healthcare',           status:'Met',         notes:'Meeting confirmed 22/04/26 1 PM. Long-term home care management for chronic ailments and elderly support.'},
+  {id:'c18',first:'Varlaxman',  last:'',                company:'APEX Electricals & Networks',     city:'',         phone:'', email:'', segment:'Industrial Automation', status:'Met',         notes:'Meeting confirmed 22/04/26 4 PM. 4K Grade Electrical Contractor 20+ years, Commercial Buildings, IT Parks.'},
+  {id:'c19',first:'Prabha',     last:'Sathuraman',      company:'Architecture & Engineering',      city:'',         phone:'', email:'', segment:'Industrial Automation', status:'Met',         notes:'Meeting confirmed 22/04/26 2 PM. Architecture & Engineering, Industrial Automation.'},
+  {id:'c20',first:'Roma',       last:'',                company:'Physiotherapy Practice',          city:'Delhi',    phone:'', email:'', segment:'Healthcare',           status:'Contacted',   notes:'Meeting confirmed tomorrow 9:30 AM zoom. BNI Physiotherapist 2023. With Dr. A Santosh Kumar.'},
+  {id:'c21',first:'Yousuf',     last:'Najmuddin',       company:'',                                city:'',         phone:'', email:'', segment:'Other',                status:'Contacted',   notes:'Meeting confirmed 12:00–12:30 PM.'},
+  {id:'c22',first:'Prakriti',   last:'Verma',           company:'Vardaan IVF Centre & Care N Cure Multi-speciality Hospital', city:'Bilaspur', phone:'9575731059', email:'prakrati_verma@gmail.com', segment:'Healthcare', status:'Contacted',  notes:'Doctor / Physician. BNI Chapter: BNI Collaborators. Proposal sent 21/04/26 (HMS + NABH AI Toolkit, Ref: BTR-2026-VRD-01).'},
+  {id:'c23',first:'Reshma',    last:'Dave',            company:'',                    city:'',    phone:'',           email:'ndivid_lab@gmail.com',   segment:'Healthcare', status:'Contacted',  notes:'Meeting confirmed 6:30 PM.'},
+  {id:'c24',first:'Rajani',    last:'TS',              company:'Thealth Solutions',   city:'',    phone:'9597415636', email:'gajc.contact@gmail.com', segment:'Healthcare', status:'Contacted',  notes:'Meeting confirmed 4:00–6:00 PM. Software: thealth.solutions'},
+  // --- BNI Outreach Report — Pharma/Pathology/Diagnostics (msgs sent 16/04/26 by Reha Kharwade) ---
+  {id:'c25',first:'Neha',       last:'Bedi',          company:'Pathocity Path Lab',           city:'Delhi',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Impetus. Lab Director, diagnostics, 31 testimonials. Outreach msg sent 16/04/26.'},
+  {id:'c26',first:'Bhaskar',    last:'Thakkar',        company:'Life Care Pathology Lab',      city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Helenus. Pathology, 3 branches. Outreach msg sent 16/04/26.'},
+  {id:'c27',first:'Abhijit',    last:'Ahire',          company:'DVA Pathology Lab',            city:'Mumbai',      phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Aura. Comprehensive diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c28',first:'Kaushal',    last:'Patel',          company:'EA Labs',                      city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Roxanne. Allergy Testing, India leader. Outreach msg sent 16/04/26.'},
+  {id:'c29',first:'Swapnil',    last:'Bhosale',        company:'PathCure Labs',                city:'Kolhapur',    phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Vaayu. Fastest-growing diagnostic chain. Outreach msg sent 16/04/26.'},
+  {id:'c30',first:'Mosey',      last:'Mohan P',        company:'Health Assure Clinical Lab',   city:'Sivakasi',    phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Pyros. Home services, genetic testing. Outreach msg sent 16/04/26.'},
+  {id:'c31',first:'Vipul',      last:'Rajput',         company:'Unipath Specialty Lab',        city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Nikolaus. Precision diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c32',first:'Mayank',     last:'Joshi',          company:'Sun Pathology Lab & Research', city:'Ahmedabad',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Raphael. Since 1997, 5 locations. Outreach msg sent 16/04/26.'},
+  {id:'c33',first:'Reshma',     last:'Dave',           company:'Thyrocare Krishnamil Ind Lab', city:'Surat',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BAHUBALI. Biopsy, FNAC, Ambassador. Outreach msg sent 16/04/26. (Different from c23 Reshma/NDIVID Lab)'},
+  {id:'c34',first:'Boskey',     last:'Gandhi',         company:'Mehkey Pathology Lab',         city:'Surat',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: FALCON. Biopsy, FNAC specialist. Outreach msg sent 16/04/26.'},
+  {id:'c35',first:'Asan',       last:'Akbar B',        company:'Fully Auto Medical Lab',       city:'Erode',       phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI VISION. X-ray, ECG, Chapter President. Outreach msg sent 16/04/26.'},
+  {id:'c36',first:'Rajani',     last:'T R',            company:'ILABZ Diagnostic Lab',         city:'Pondicherry', phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Gold. Full-service, home collection. Outreach msg sent 16/04/26. (Different from c24 Rajani TS/Thealth Solutions)'},
+  {id:'c37',first:'Kiran',      last:'B',              company:'Dr Remedies Labs',             city:'Trivandrum',  phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Mystics. Franchise, cutting-edge tech. Outreach msg sent 16/04/26.'},
+  {id:'c38',first:'Vaibhav',    last:'Girotra',        company:'Pathocity Path Lab & Imaging', city:'New Delhi',   phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Excellence. Automated lab, MBBS MD DNB. Outreach msg sent 16/04/26.'},
+  {id:'c39',first:'Narasimman', last:'B',              company:'Puduvai Labs',                 city:'Pondicherry', phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI KURAL. 15 years trusted diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c40',first:'Venkata',    last:'Lakshman',       company:'Global Diagnostics India',     city:'Guntur',      phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI ATOMS. Medical diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c41',first:'Seema',      last:'Satpute',        company:'DiagnoSpectra Pathology Lab',  city:'Pune',        phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: BNI Benevolent. Blood & urine diagnostics. Outreach msg sent 16/04/26.'},
+  {id:'c42',first:'Dipin',      last:'Abraham',        company:'Lab Equipment Stores',         city:'Cochin',      phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: TITANS. Lab equipment since 1966. Outreach msg sent 16/04/26.'},
+  {id:'c43',first:'Kavita',     last:'Chaukimath',     company:'Pathology Lab Services',       city:'Pune',        phone:'', email:'', segment:'Healthcare', status:'Contacted', notes:'BNI Chapter: Nitya. Ex-Manipal, Quality Manager. Outreach msg sent 16/04/26.'},
+  {id:'c44',first:'Gautham',   last:'Goswami',        company:'',                             city:'',            phone:'', email:'', segment:'Other',      status:'Identified', notes:''},
+];
+
+function loadContacts() {
+  const raw = localStorage.getItem('bni_contacts');
+  const ver = parseInt(localStorage.getItem('bni_contacts_ver') || '0', 10);
+  if (!raw) {
+    localStorage.setItem('bni_contacts', JSON.stringify(SEED));
+    localStorage.setItem('bni_contacts_ver', String(SEED_VERSION));
+    return JSON.parse(JSON.stringify(SEED));
+  }
+  let data = JSON.parse(raw);
+  if (ver < SEED_VERSION) {
+    const existingIds = new Set(data.map(c => c.id));
+    SEED.forEach(s => { if (!existingIds.has(s.id)) data.push(s); });
+    localStorage.setItem('bni_contacts', JSON.stringify(data));
+    localStorage.setItem('bni_contacts_ver', String(SEED_VERSION));
+  }
+  return data;
+}
+
+function saveContacts(data) {
+  localStorage.setItem('bni_contacts', JSON.stringify(data));
+  const sbData = data.map(c => ({
+    id: c.id, first: c.first || '', last: c.last || '',
+    company: c.company || '', city: c.city || '',
+    phone: c.phone || '', email: c.email || '',
+    segment: c.segment || 'Other', status: c.status || 'Identified',
+    notes: c.notes || '', chapter: c.chapter || '',
+    hidden: c.hidden || false
+  }));
+  _sb.from('bni_contacts').upsert(sbData).then(({error}) => {
+    if (error) console.error('SB contacts save:', error.message);
+  });
+}
+
+const STATUS_COLOR = {
+  'Identified':'#3b82f6','Contacted':'#f59e0b','Met':'#8b5cf6','Referred':'#10b981','Cold':'#64748b'
+};
+
+function renderContacts() {
+  const contacts  = loadContacts();
+  const search    = document.getElementById('contactSearch').value.toLowerCase();
+  const statusF   = document.getElementById('contactStatusFilter').value;
+  const segF      = document.getElementById('contactSegmentFilter').value;
+
+  const filtered = contacts.filter(c => {
+    const txt = (c.first + ' ' + c.last + ' ' + c.company + ' ' + c.city).toLowerCase();
+    if (search && !txt.includes(search)) return false;
+    if (statusF && c.status !== statusF) return false;
+    if (segF && c.segment !== segF) return false;
+    return true;
+  });
+
+  const list = document.getElementById('contacts-list');
+  if (!filtered.length) {
+    list.innerHTML = '<p class="text-slate-500 text-sm text-center py-10">No contacts found.</p>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(c => `
+    <div class="glass rounded-2xl px-5 py-4 flex items-center gap-4 glass-hover">
+      <span style="width:6px;height:6px;border-radius:50%;background:${STATUS_COLOR[c.status]||'#64748b'};flex-shrink:0;display:inline-block;"></span>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-semibold text-white text-sm">${c.first} ${c.last}</span>
+          <span class="text-slate-500 text-xs">${c.company}</span>
+          ${c.city ? `<span class="text-slate-600 text-xs">· ${c.city}</span>` : ''}
+        </div>
+        <div class="flex items-center gap-3 mt-1 flex-wrap">
+          <span class="badge" style="background:rgba(59,130,246,0.1);color:#93c5fd;border:1px solid rgba(59,130,246,0.2);">${c.segment}</span>
+          <span class="badge" style="background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);">${c.status}</span>
+          ${c.phone ? `<span class="text-slate-500 text-xs">${c.phone}</span>` : ''}
+          ${c.email ? `<span class="text-slate-500 text-xs">${c.email}</span>` : ''}
+        </div>
+        ${c.notes ? `<p class="text-slate-600 text-xs mt-1 truncate">${c.notes}</p>` : ''}
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="editContact('${c.id}')" class="btn-secondary" style="padding:5px 10px;font-size:0.75rem;">Edit</button>
+        <button onclick="deleteContact('${c.id}')" class="btn-danger">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+let editingId = null;
+
+function openContactModal(id=null) {
+  editingId = id;
+  document.getElementById('modalTitle').textContent = id ? 'Edit Contact' : 'Add Contact';
+  if (id) {
+    const c = loadContacts().find(x => x.id === id);
+    if (!c) return;
+    ['id','first','last','company','city','phone','email','notes'].forEach(f => {
+      document.getElementById('modal-' + f).value = c[f] || '';
+    });
+    document.getElementById('modal-segment').value = c.segment;
+    document.getElementById('modal-status').value  = c.status;
+  } else {
+    ['id','first','last','company','city','phone','email','notes'].forEach(f => {
+      document.getElementById('modal-' + f).value = '';
+    });
+    document.getElementById('modal-segment').value = 'AI / Tech';
+    document.getElementById('modal-status').value  = 'Identified';
+  }
+  const modal = document.getElementById('contactModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function editContact(id) { openContactModal(id); }
+
+function closeContactModal() {
+  document.getElementById('contactModal').classList.add('hidden');
+  document.getElementById('contactModal').classList.remove('flex');
+}
+
+function saveContact() {
+  const first   = document.getElementById('modal-first').value.trim();
+  const company = document.getElementById('modal-company').value.trim();
+  if (!first || !company) return toast('First name and company are required', 'error');
+
+  const contacts = loadContacts();
+  const entry = {
+    id:      editingId || ('c' + Date.now()),
+    first,
+    last:    document.getElementById('modal-last').value.trim(),
+    company,
+    city:    document.getElementById('modal-city').value.trim(),
+    phone:   document.getElementById('modal-phone').value.trim(),
+    email:   document.getElementById('modal-email').value.trim(),
+    segment: document.getElementById('modal-segment').value,
+    status:  document.getElementById('modal-status').value,
+    notes:   document.getElementById('modal-notes').value.trim(),
+  };
+
+  if (editingId) {
+    const idx = contacts.findIndex(c => c.id === editingId);
+    if (idx !== -1) contacts[idx] = entry;
+  } else {
+    contacts.push(entry);
+  }
+
+  saveContacts(contacts);
+  closeContactModal();
+  renderContacts();
+  renderDashboard();
+  toast(editingId ? 'Contact updated' : 'Contact added');
+  editingId = null;
+}
+
+function deleteContact(id) {
+  if (!confirm('Delete this contact?')) return;
+  saveContacts(loadContacts().filter(c => c.id !== id));
+  renderContacts();
+  renderDashboard();
+  toast('Contact deleted');
+}
+
+// ── VENTURES ───────────────────────────────────────────────────────────────
+const DEFAULT_VENTURES = [
+  { id:'bettroi',    name:'Bettroi',             location:'Dubai, UAE',  url:'https://bettroi.com',     color:'indigo',  status:'Active',   description:'AI-powered enterprise solutions bridging India and the UAE. The international arm of the HopeTech ecosystem, focused on cross-border B2B automation and intelligence.' },
+  { id:'drmhope',    name:'DrM Hope Softwares',  location:'Nagpur, India',url:'https://drmhope.com',    color:'emerald', status:'Active',   description:'Healthcare AI and hospital management software. Founded by Dr. BK Murali, bridging orthopedic medicine and machine intelligence for Indian hospitals.' },
+  { id:'hopephoenix',name:'HopePhoenix',         location:'India + UAE', url:'https://hopephoenix.in',  color:'amber',   status:'Active',   description:'Where Medicine Meets Machines. The joint venture bringing DrM Hope Softwares and Bettroi FZE together. 100+ team members, 30+ products across healthcare, automation, and enterprise.' },
+  { id:'betserlife', name:'Betser Life',          location:'Global',      url:'https://betserlife.com',  color:'violet',  status:'Stealth',  description:'Next-generation wellness and lifestyle platform. Global reach, AI-first, currently in stealth development.' },
+];
+
+function loadVentures() {
+  const raw = localStorage.getItem('ht_ventures');
+  return raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_VENTURES));
+}
+
+function saveVentures() {
+  const ventures = loadVentures().map(v => ({
+    ...v,
+    name:        document.getElementById('v-name-' + v.id)?.value.trim()    || v.name,
+    location:    document.getElementById('v-location-' + v.id)?.value.trim()|| v.location,
+    url:         document.getElementById('v-url-' + v.id)?.value.trim()     || v.url,
+    status:      document.getElementById('v-status-' + v.id)?.value         || v.status,
+    description: document.getElementById('v-desc-' + v.id)?.value.trim()   || v.description,
+  }));
+  localStorage.setItem('ht_ventures', JSON.stringify(ventures));
+  toast('Ventures saved');
+}
+
+const COLOR_MAP = { indigo:'#6366f1', emerald:'#10b981', amber:'#f59e0b', violet:'#8b5cf6' };
+const STATUS_BADGE = { 'Active':'badge-active', 'Stealth':'badge-stealth', 'Building':'badge-building' };
+
+function renderVentures() {
+  const ventures = loadVentures();
+  document.getElementById('ventures-list').innerHTML = ventures.map(v => `
+    <div class="glass rounded-2xl p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-2 h-8 rounded-full flex-shrink-0" style="background:${COLOR_MAP[v.color]||'#3b82f6'};"></div>
+        <div>
+          <h3 class="font-semibold text-white">${v.name}</h3>
+          <p class="text-slate-500 text-xs">${v.location}</p>
+        </div>
+        <span class="badge ${STATUS_BADGE[v.status]||'badge-stealth'} ml-auto">${v.status}</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs text-slate-500 mb-1.5 block">Name</label>
+          <input type="text" id="v-name-${v.id}" value="${v.name}" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1.5 block">Location</label>
+          <input type="text" id="v-location-${v.id}" value="${v.location}" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1.5 block">Website URL</label>
+          <input type="url" id="v-url-${v.id}" value="${v.url}" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1.5 block">Status</label>
+          <select id="v-status-${v.id}">
+            <option value="Active"    ${v.status==='Active'   ?'selected':''}>Active</option>
+            <option value="Building"  ${v.status==='Building' ?'selected':''}>Building</option>
+            <option value="Stealth"   ${v.status==='Stealth'  ?'selected':''}>Stealth</option>
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-xs text-slate-500 mb-1.5 block">Description</label>
+          <textarea id="v-desc-${v.id}" rows="3">${v.description}</textarea>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── PAGE CONTENT ───────────────────────────────────────────────────────────
+const DEFAULT_CONTENT = {
+  heroLine1: 'Two Founders.',
+  heroLine2: 'Four Ventures.',
+  heroLine3: 'One Vision.',
+  heroDesc:  'Dr. BK Murali from Nagpur and Biji Thomas from Dubai — two BNI members who turned a referral into a cross-region AI partnership.',
+  stat1Num: '4',          stat1Lbl: 'Active Ventures',
+  stat2Num: '100+',       stat2Lbl: 'AI Projects Built',
+  stat3Num: '2',          stat3Lbl: 'BNI Chapters',
+  stat4Num: 'India × UAE',stat4Lbl: 'Cross-Region Reach',
+  metaTitle: 'HopeTech — Two Founders, Four Ventures, One Vision',
+  metaDesc:  'Two BNI members from India and UAE building AI-powered ventures across healthcare, automation, and enterprise.',
+};
+
+// maps camelCase key → input element id suffix
+const CONTENT_ID_MAP = {
+  heroLine1:'hero-line1', heroLine2:'hero-line2', heroLine3:'hero-line3', heroDesc:'hero-desc',
+  stat1Num:'stat1-num', stat1Lbl:'stat1-lbl', stat2Num:'stat2-num', stat2Lbl:'stat2-lbl',
+  stat3Num:'stat3-num', stat3Lbl:'stat3-lbl', stat4Num:'stat4-num', stat4Lbl:'stat4-lbl',
+  metaTitle:'meta-title', metaDesc:'meta-desc',
+};
+
+function loadContent() {
+  const saved = JSON.parse(localStorage.getItem('ht_content') || '{}');
+  const data  = Object.assign({}, DEFAULT_CONTENT, saved);
+  Object.entries(CONTENT_ID_MAP).forEach(([k, suffix]) => {
+    const el = document.getElementById('content-' + suffix);
+    if (el) el.value = data[k] || '';
+  });
+}
+
+function saveContent() {
+  const data = {};
+  Object.entries(CONTENT_ID_MAP).forEach(([k, suffix]) => {
+    const el = document.getElementById('content-' + suffix);
+    if (el) data[k] = el.value;
+  });
+  localStorage.setItem('ht_content', JSON.stringify(data));
+  toast('Content saved — deploy to publish changes');
+}
+
+// ── BOOKINGS ───────────────────────────────────────────────────────────────
+const SLOTS = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30',
+               '13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30'];
+
+function renderSlots() {
+  const date = document.getElementById('bookingDate').value;
+  if (!date) return;
+  const blocked = JSON.parse(localStorage.getItem('blocked_slots') || '{}')[date] || [];
+  const booked  = JSON.parse(localStorage.getItem('hopetech_bookings') || '{}')[date] || [];
+
+  document.getElementById('slots-grid').innerHTML = `
+    <h3 class="text-sm font-semibold text-slate-300 mb-4">
+      ${new Date(date + 'T12:00:00').toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
+    </h3>
+    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+      ${SLOTS.map(slot => {
+        const isBooked  = booked.includes(slot);
+        const isBlocked = blocked.includes(slot);
+        const cls = isBooked
+          ? 'cursor-default'
+          : 'cursor-pointer hover:opacity-80';
+        const style = isBooked
+          ? 'background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);color:#93c5fd;'
+          : isBlocked
+            ? 'background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;text-decoration:line-through;'
+            : 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;';
+        return `<button onclick="${isBooked ? '' : `toggleSlot('${date}','${slot}')`}"
+          class="rounded-lg px-3 py-2 text-xs font-medium transition-all ${cls}"
+          style="${style}" ${isBooked ? 'disabled' : ''}>${slot}${isBooked ? ' ' : ''}</button>`;
+      }).join('')}
+    </div>
+    <p class="text-slate-600 text-xs mt-4">Click a slot to block/unblock. Blue = visitor booked (cannot change).</p>
+  `;
+}
+
+function toggleSlot(date, slot) {
+  const all = JSON.parse(localStorage.getItem('blocked_slots') || '{}');
+  if (!all[date]) all[date] = [];
+  const idx = all[date].indexOf(slot);
+  if (idx === -1) all[date].push(slot); else all[date].splice(idx, 1);
+  localStorage.setItem('blocked_slots', JSON.stringify(all));
+  renderSlots();
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const contacts = loadContacts();
+  document.getElementById('stat-contacts').textContent = contacts.length;
+  document.getElementById('stat-referred').textContent = contacts.filter(c => c.status === 'Referred').length;
+  document.getElementById('stat-met').textContent      = contacts.filter(c => c.status === 'Met').length;
+
+  const pipeline = {};
+  contacts.forEach(c => { pipeline[c.status] = (pipeline[c.status] || 0) + 1; });
+  const max = Math.max(...Object.values(pipeline), 1);
+
+  document.getElementById('pipeline-chart').innerHTML =
+    ['Identified','Contacted','Met','Referred','Cold'].map(s => {
+      const count = pipeline[s] || 0;
+      return `
+        <div class="flex items-center gap-3">
+          <span class="text-slate-500 text-xs w-20 flex-shrink-0">${s}</span>
+          <div class="flex-1 bg-white/5 rounded-full h-1.5 overflow-hidden">
+            <div class="h-full rounded-full" style="width:${Math.round(count/max*100)}%;background:${STATUS_COLOR[s]};"></div>
+          </div>
+          <span class="text-slate-400 text-xs w-6 text-right">${count}</span>
+        </div>`;
+    }).join('');
+}
+
+// Set initial tab styles
+document.querySelectorAll('.tab').forEach(t => t.classList.add('tab-inactive'));
+</script>
+  <script src="bni-sidebar.js"></script>
+</body>
+</html>
