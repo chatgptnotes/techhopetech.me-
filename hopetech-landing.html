@@ -162,6 +162,15 @@
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
     }
 
+    /* ── Toggle Switch ── */
+    .toggle-active {
+      background: linear-gradient(135deg, #3b82f6, #10b981) !important;
+      border-color: rgba(59,130,246,0.5) !important;
+    }
+    .toggle-active #toggleIndicator {
+      transform: translateX(24px) !important;
+    }
+
     /* ── Scrollbar ── */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: #020817; }
@@ -175,7 +184,7 @@
 ══════════════════════════════════════════ -->
 <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 border-b border-transparent">
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-4">
       <!-- Logo mark -->
       <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -183,7 +192,18 @@
         </svg>
       </div>
       <span class="font-bold text-white text-lg tracking-tight">HopeTech</span>
+
+      <!-- System Toggle Switch -->
+      <div class="flex items-center gap-2 ml-2">
+        <span class="text-xs text-slate-400 uppercase tracking-wide font-medium">BNI</span>
+        <button id="systemToggle" onclick="toggleSystem()" class="relative w-12 h-6 rounded-full bg-slate-700 border-2 border-slate-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+          <span id="toggleIndicator" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-md transition-all duration-300 transform translate-x-0"></span>
+        </button>
+        <span class="text-xs text-blue-400 uppercase tracking-wide font-medium">Marketing</span>
+      </div>
     </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <div class="hidden md:flex items-center gap-6 text-sm text-slate-400 font-medium">
       <a href="#founders" class="hover:text-white transition-colors">Founders</a>
@@ -220,6 +240,9 @@
       </div>
 
       <a href="#bni" class="hover:text-white transition-colors">BNI</a>
+      <a href="/hopetech-marketing-automation.html" class="hover:text-white transition-colors">Marketing Hub</a>
+      <a href="/hopetech-analytics-reporting.html" class="hover:text-white transition-colors">Data & Reporting</a>
+      <a href="/hopetech-content-management.html" class="hover:text-white transition-colors">Content Hub</a>
       <a href="#contact" class="hover:text-white transition-colors">Contact</a>
       <a href="/bni/admin.html" class="hover:text-white transition-colors text-slate-400 flex items-center gap-1">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -274,6 +297,18 @@
       <a href="#companies" class="cta-primary text-white font-semibold px-7 py-3.5 rounded-xl text-sm flex items-center gap-2">
         Explore Ventures
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="/hopetech-marketing-automation.html" class="cta-secondary text-white font-semibold px-7 py-3.5 rounded-xl text-sm flex items-center gap-2">
+        Marketing Hub
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/><path d="M9 20V9"/></svg>
+      </a>
+      <a href="/hopetech-analytics-reporting.html" class="cta-secondary text-white font-semibold px-7 py-3.5 rounded-xl text-sm flex items-center gap-2">
+        Data & Reporting
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-3 4 4 6-8"/></svg>
+      </a>
+      <a href="/hopetech-content-management.html" class="cta-secondary text-white font-semibold px-7 py-3.5 rounded-xl text-sm flex items-center gap-2">
+        Content Hub
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 4v16"/><path d="M4 8h16"/></svg>
       </a>
       <a href="/bni/book.html" class="cta-secondary text-white font-semibold px-7 py-3.5 rounded-xl text-sm flex items-center gap-2">
         Schedule BNI 121
@@ -1012,6 +1047,52 @@
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
   revealEls.forEach(el => observer.observe(el));
+
+  // ── System Toggle Functionality
+  let currentSystem = 'bni'; // 'bni' or 'hopetech'
+
+  function toggleSystem() {
+    const toggle = document.getElementById('systemToggle');
+    const indicator = document.getElementById('toggleIndicator');
+
+    if (currentSystem === 'bni') {
+      // Switch to HopeTech system
+      currentSystem = 'hopetech';
+      toggle.classList.add('toggle-active');
+
+      // Redirect to HopeTech CRM system after a brief delay
+      setTimeout(() => {
+        window.location.href = '/next-app/public/hopetech-tablet-crm-complete.html';
+      }, 300);
+    } else {
+      // Switch to BNI system
+      currentSystem = 'bni';
+      toggle.classList.remove('toggle-active');
+
+      // Stay on current BNI landing page
+      setTimeout(() => {
+        window.location.href = '/hopetech-landing.html';
+      }, 300);
+    }
+  }
+
+  // Initialize toggle state based on current page
+  function initializeToggleState() {
+    const currentPath = window.location.pathname;
+
+    if (currentPath.includes('hopetech-tablet-crm-complete') ||
+        currentPath.includes('hopetech-tablet-crm') ||
+        currentPath.includes('hopetech-management-dashboard')) {
+      currentSystem = 'hopetech';
+      document.getElementById('systemToggle').classList.add('toggle-active');
+    } else {
+      currentSystem = 'bni';
+      document.getElementById('systemToggle').classList.remove('toggle-active');
+    }
+  }
+
+  // Initialize on page load
+  initializeToggleState();
 </script>
 
 </body>
