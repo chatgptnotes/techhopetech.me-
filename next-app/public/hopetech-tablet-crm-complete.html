@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HopeTech Tablet CRM - Field Marketing System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dashboard-tile {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dashboard-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .visit-card {
+            transition: all 0.3s ease;
+        }
+
+        .visit-card:hover {
+            transform: scale(1.02);
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .status-planned {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .recording-active {
+            animation: recording-pulse 1s infinite;
+        }
+
+        @keyframes recording-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+
+        .camera-active {
+            border: 3px solid #3b82f6;
+        }
+
+        .tablet-optimized {
+            max-width: 1024px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .tablet-optimized {
+                padding: 1rem;
+            }
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        @media (min-width: 769px) {
+            .bottom-nav {
+                position: static;
+            }
+        }
+
+        .lead-stage-new { background: #3b82f6; }
+        .lead-stage-contacted { background: #8b5cf6; }
+        .lead-stage-meeting-scheduled { background: #f59e0b; }
+        .lead-stage-opportunity { background: #10b981; }
+        .lead-stage-converted { background: #059669; }
+        .lead-stage-lost { background: #ef4444; }
+
+        /* Camera and Recording Styles */
+        .camera-preview {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .camera-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-thumbnail {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .media-thumbnail:hover {
+            transform: scale(1.1);
+        }
+
+        .voice-wave {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+        }
+
+        .voice-bar {
+            width: 3px;
+            margin: 0 2px;
+            background: #3b82f6;
+            border-radius: 2px;
+            animation: voice-wave 0.5s ease-in-out infinite;
+        }
+
+        @keyframes voice-wave {
+            0%, 100% { height: 10px; }
+            50% { height: 30px; }
+        }
+
+        .voice-bar:nth-child(1) { animation-delay: 0s; }
+        .voice-bar:nth-child(2) { animation-delay: 0.1s; }
+        .voice-bar:nth-child(3) { animation-delay: 0.2s; }
+        .voice-bar:nth-child(4) { animation-delay: 0.3s; }
+        .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Auth Modal -->
+    <div id="authModal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">HopeTech Tablet CRM</h2>
+                <p class="text-gray-600 mt-2">Field Marketing & CRM System</p>
+            </div>
+            <form id="authForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="authEmail" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Enter your email">
+                </div>
+                <button type="submit"
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-medium">
+                    Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="mainApp">
+        <!-- Header -->
+        <header class="bg-white shadow-md sticky top-0 z-40">
+            <div class="tablet-optimized px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">HopeTech Tablet CRM</h1>
+                        <p id="welcomeMessage" class="text-sm text-gray-600">Welcome back!</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="notificationsBtn" class="relative p-2 text-gray-600 hover:text-blue-600 transition">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span id="notificationBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center notification-badge">0</span>
+                        </button>
+                        <button id="refreshBtn" class="p-2 text-gray-600 hover:text-blue-600 transition">
+                            <i class="fas fa-sync-alt text-xl"></i>
+                        </button>
+                        <div id="currentTime" class="text-sm text-gray-600"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="tablet-optimized px-4 py-6 pb-24">
+            <!-- Dashboard Section -->
+            <section id="dashboardSection">
+                <!-- Quick Stats Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="dashboard-tile bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-80">Planned Visits</p>
+                                <p id="plannedVisits" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-calendar-check text-3xl opacity-50"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-tile bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-80">Completed</p>
+                                <p id="completedVisits" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-check-circle text-3xl opacity-50"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-tile bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-80">Additional</p>
+                                <p id="additionalVisits" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-plus-circle text-3xl opacity-50"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-tile bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-80">Pending</p>
+                                <p id="pendingVisits" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-clock text-3xl opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Tiles -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <button onclick="showSection('todayPlan')" class="dashboard-tile bg-white rounded-xl p-6 shadow-md text-left">
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-800">Today's Plan</h3>
+                                <p class="text-xs text-gray-500">View daily schedule</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span id="todayVisitsCount" class="text-2xl font-bold text-blue-600">0</span>
+                            <span class="text-sm text-gray-500">visits</span>
+                        </div>
+                    </button>
+
+                    <button onclick="showSection('myLeads')" class="dashboard-tile bg-white rounded-xl p-6 shadow-md text-left">
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-user-plus text-green-600 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-800">My Leads</h3>
+                                <p class="text-xs text-gray-500">Manage leads</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span id="leadsCount" class="text-2xl font-bold text-green-600">0</span>
+                            <span class="text-sm text-gray-500">leads</span>
+                        </div>
+                    </button>
+
+                    <button onclick="showSection('opportunities')" class="dashboard-tile bg-white rounded-xl p-6 shadow-md text-left">
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-handshake text-purple-600 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-800">Opportunities</h3>
+                                <p class="text-xs text-gray-500">Track deals</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span id="opportunitiesCount" class="text-2xl font-bold text-purple-600">0</span>
+                            <span class="text-sm text-gray-500">deals</span>
+                        </div>
+                    </button>
+
+                    <button onclick="showSection('followUps')" class="dashboard-tile bg-white rounded-xl p-6 shadow-md text-left">
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-tasks text-yellow-600 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-800">Follow-ups</h3>
+                                <p class="text-xs text-gray-500">Pending tasks</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span id="followUpsCount" class="text-2xl font-bold text-yellow-600">0</span>
+                            <span class="text-sm text-gray-500">tasks</span>
+                        </div>
+                    </button>
+
+                    <button onclick="showSection('allVisits')" class="dashboard-tile bg-white rounded-xl p-6 shadow-md text-left">
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-history text-red-600 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-800">Visit History</h3>
+                                <p class="text-xs text-gray-500">All visits</p>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button onclick="showSection('mediaGallery')" class="dashboard-tile bg-white rounded-xl p-6 shadow-md text-left">
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-photo-video text-indigo-600 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-800">Media Gallery</h3>
+                                <p class="text-xs text-gray-500">Photos & videos</p>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button onclick="showModal('newVisitModal')" class="flex items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                            <i class="fas fa-plus text-blue-600 mr-2"></i>
+                            <span class="text-sm font-medium text-blue-600">New Visit</span>
+                        </button>
+                        <button onclick="showModal('newLeadModal')" class="flex items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
+                            <i class="fas fa-user-plus text-green-600 mr-2"></i>
+                            <span class="text-sm font-medium text-green-600">New Lead</span>
+                        </button>
+                        <button onclick="showModal('voiceNoteModal')" class="flex items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
+                            <i class="fas fa-microphone text-purple-600 mr-2"></i>
+                            <span class="text-sm font-medium text-purple-600">Voice Note</span>
+                        </button>
+                        <button onclick="showModal('cameraModal')" class="flex items-center justify-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
+                            <i class="fas fa-camera text-orange-600 mr-2"></i>
+                            <span class="text-sm font-medium text-orange-600">Capture Photo</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Today's Visits List on Dashboard -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Today's Doctor Visits</h3>
+                            <p class="text-sm text-gray-500">Your scheduled visits for today</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span id="dashboardVisitCount" class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                                0 visits
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="dashboardTodayVisitsList" class="space-y-3">
+                        <!-- Visit cards will be loaded here -->
+                    </div>
+
+                    <div id="noVisitsMessage" class="hidden text-center py-8">
+                        <i class="fas fa-calendar-plus text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500 mb-2">No visits planned for today</p>
+                        <p class="text-sm text-gray-400">Click the blue + button above to add your first visit</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Today's Plan Section -->
+            <section id="todayPlanSection" class="hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="showSection('dashboard')" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-800">Today's Visit Plan</h2>
+                    <div></div>
+                </div>
+
+                <div id="todayVisitsList" class="space-y-4">
+                    <!-- Visit cards will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Media Gallery Section -->
+            <section id="mediaGallerySection" class="hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="showSection('dashboard')" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-800">Media Gallery</h2>
+                    <div></div>
+                </div>
+
+                <div id="mediaGalleryContent" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Media thumbnails will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Leads Section -->
+            <section id="leadsSection" class="hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="showSection('dashboard')" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-800">My Leads</h2>
+                    <button onclick="showModal('newLeadModal')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-plus mr-2"></i>New Lead
+                    </button>
+                </div>
+
+                <div id="leadsList" class="space-y-4">
+                    <!-- Lead cards will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Opportunities Section -->
+            <section id="opportunitiesSection" class="hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="showSection('dashboard')" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-800">Opportunities</h2>
+                    <div></div>
+                </div>
+
+                <div id="opportunitiesList" class="space-y-4">
+                    <!-- Opportunity cards will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Follow-ups Section -->
+            <section id="followUpsSection" class="hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="showSection('dashboard')" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-800">Follow-up Tasks</h2>
+                    <div></div>
+                </div>
+
+                <div id="followUpsList" class="space-y-4">
+                    <!-- Follow-up cards will be loaded here -->
+                </div>
+            </section>
+
+            <!-- All Visits Section -->
+            <section id="allVisitsSection" class="hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="showSection('dashboard')" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-800">Visit History</h2>
+                    <div></div>
+                </div>
+
+                <div id="allVisitsList" class="space-y-4">
+                    <!-- All visit cards will be loaded here -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation (Mobile/Tablet) -->
+        <nav class="bottom-nav bg-white border-t border-gray-200 shadow-lg">
+            <div class="tablet-optimized px-4 py-3">
+                <div class="flex justify-around">
+                    <button onclick="showSection('dashboard')" class="flex flex-col items-center text-gray-600 hover:text-blue-600 transition">
+                        <i class="fas fa-home text-xl"></i>
+                        <span class="text-xs mt-1">Home</span>
+                    </button>
+                    <button onclick="showSection('todayPlan')" class="flex flex-col items-center text-gray-600 hover:text-blue-600 transition">
+                        <i class="fas fa-calendar-day text-xl"></i>
+                        <span class="text-xs mt-1">Today</span>
+                    </button>
+                    <button onclick="showModal('newVisitModal')" class="flex flex-col items-center text-blue-600">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center -mt-6 shadow-lg">
+                            <i class="fas fa-plus text-white text-xl"></i>
+                        </div>
+                        <span class="text-xs mt-1">Add</span>
+                    </button>
+                    <button onclick="showSection('myLeads')" class="flex flex-col items-center text-gray-600 hover:text-blue-600 transition">
+                        <i class="fas fa-users text-xl"></i>
+                        <span class="text-xs mt-1">Leads</span>
+                    </button>
+                    <button id="navNotifications" onclick="showNotifications()" class="flex flex-col items-center text-gray-600 hover:text-blue-600 transition relative">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span id="navNotificationBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                        <span class="text-xs mt-1">Alerts</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Voice Recording Modal -->
+    <div id="voiceNoteModal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Voice Note</h3>
+                    <button onclick="hideModal('voiceNoteModal')" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Recording Status -->
+                    <div class="text-center py-8">
+                        <div id="recordingStatus" class="mb-4">
+                            <div id="notRecordingState">
+                                <i class="fas fa-microphone text-6xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-600">Ready to record</p>
+                            </div>
+                            <div id="recordingState" class="hidden">
+                                <div class="voice-wave mb-4">
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                </div>
+                                <p class="text-red-600 font-semibold">Recording...</p>
+                                <p id="recordingTimer" class="text-gray-600 text-sm">00:00</p>
+                            </div>
+                            <div id="processingState" class="hidden">
+                                <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+                                <p class="text-gray-600">Processing audio...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recording Controls -->
+                    <div class="flex space-x-3">
+                        <button id="startRecordingBtn" onclick="startRecording()"
+                                class="flex-1 bg-red-500 text-white py-4 rounded-xl hover:bg-red-600 transition font-medium">
+                            <i class="fas fa-circle mr-2"></i>Start Recording
+                        </button>
+                        <button id="stopRecordingBtn" onclick="stopRecording()"
+                                class="flex-1 bg-gray-500 text-white py-4 rounded-xl hover:bg-gray-600 transition font-medium hidden">
+                            <i class="fas fa-stop mr-2"></i>Stop Recording
+                        </button>
+                    </div>
+
+                    <!-- Visit Selection -->
+                    <div id="visitSelection" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Associate with visit</label>
+                        <select id="voiceVisitSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select a visit (optional)</option>
+                        </select>
+                    </div>
+
+                    <!-- Transcription Result -->
+                    <div id="transcriptionResult" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Transcription</label>
+                        <textarea id="transcriptionText" rows="4"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                  placeholder="Transcription will appear here..."></textarea>
+                        <button onclick="saveVoiceNote()" class="w-full mt-3 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-save mr-2"></i>Save Voice Note
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="cameraModal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Capture Photo/Video</h3>
+                    <button onclick="closeCameraModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Camera Preview -->
+                    <div id="cameraPreview" class="camera-preview">
+                        <video id="cameraVideo" autoplay playsinline></video>
+                        <canvas id="cameraCanvas" class="hidden"></canvas>
+                    </div>
+
+                    <!-- Camera Controls -->
+                    <div class="flex space-x-3">
+                        <button id="startCameraBtn" onclick="startCamera()"
+                                class="flex-1 bg-blue-500 text-white py-4 rounded-xl hover:bg-blue-600 transition font-medium">
+                            <i class="fas fa-camera mr-2"></i>Start Camera
+                        </button>
+                        <button id="captureBtn" onclick="capturePhoto()"
+                                class="flex-1 bg-green-500 text-white py-4 rounded-xl hover:bg-green-600 transition font-medium hidden">
+                            <i class="fas fa-camera mr-2"></i>Capture Photo
+                        </button>
+                        <button id="switchCameraBtn" onclick="switchCamera()"
+                                class="bg-gray-200 text-gray-700 py-4 px-6 rounded-xl hover:bg-gray-300 transition hidden">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+
+                    <!-- Captured Image Preview -->
+                    <div id="capturedPreview" class="hidden">
+                        <img id="capturedImage" class="w-full rounded-lg" alt="Captured photo">
+                    </div>
+
+                    <!-- Visit Selection -->
+                    <div id="cameraVisitSelection" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Associate with visit</label>
+                        <select id="cameraVisitSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select a visit (optional)</option>
+                        </select>
+                    </div>
+
+                    <!-- Caption -->
+                    <div id="captionInput" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Caption (optional)</label>
+                        <input type="text" id="photoCaption" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               placeholder="Add a caption...">
+                    </div>
+
+                    <!-- Save Button -->
+                    <button id="savePhotoBtn" onclick="savePhoto()" class="hidden w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-save mr-2"></i>Save Photo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Visit Modal -->
+    <div id="newVisitModal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Add New Visit</h3>
+                    <button onclick="hideModal('newVisitModal')" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="newVisitForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Doctor Name *</label>
+                        <input type="text" id="visitDoctorName" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hospital/Clinic Name *</label>
+                        <input type="text" id="visitHospitalName" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                        <input type="text" id="visitLocation"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Meeting Time</label>
+                            <input type="datetime-local" id="visitMeetingTime"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                            <select id="visitPriority"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit"
+                                class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-medium">
+                            Add Visit
+                        </button>
+                        <button type="button" onclick="hideModal('newVisitModal')"
+                                class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition font-medium">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Lead Modal -->
+    <div id="newLeadModal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Add New Lead</h3>
+                    <button onclick="hideModal('newLeadModal')" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="newLeadForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Lead Name *</label>
+                        <input type="text" id="leadName" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Organization Name</label>
+                        <input type="text" id="leadOrganization"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                            <input type="tel" id="leadMobile"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="leadEmail"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Lead Type</label>
+                            <select id="leadType"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                <option value="">Select type...</option>
+                                <option value="Doctor">Doctor</option>
+                                <option value="Hospital">Hospital</option>
+                                <option value="Clinic">Clinic</option>
+                                <option value="Corporate">Corporate</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Lead Source</label>
+                            <select id="leadSource"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                <option value="">Select source...</option>
+                                <option value="Cold Call">Cold Call</option>
+                                <option value="Referral">Referral</option>
+                                <option value="Website">Website</option>
+                                <option value="Event">Event</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit"
+                                class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-medium">
+                            Add Lead
+                        </button>
+                        <button type="button" onclick="hideModal('newLeadModal')"
+                                class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition font-medium">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div id="notificationsPanel" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Notifications</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="markAllNotificationsRead()" class="text-sm text-blue-600 hover:text-blue-800">
+                            Mark all read
+                        </button>
+                        <button onclick="hideNotifications()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="notificationsList" class="space-y-3 max-h-[calc(100vh-150px)] overflow-y-auto">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let currentEmployeeId = null;
+        let apiBase = '/api/tablet-crm';
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordedAudioUrl = null;
+        let cameraStream = null;
+        let recordingTimer = null;
+        let recordingSeconds = 0;
+        let facingMode = 'environment'; // Start with back camera
+
+        // Auth handling
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+
+            try {
+                // Get employee by email
+                const response = await fetch(`${apiBase}/employees?email=${email}`);
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    currentUser = result.data[0];
+                    currentEmployeeId = currentUser.id;
+
+                    // Save to localStorage
+                    localStorage.setItem('tabletCRMUser', JSON.stringify(currentUser));
+
+                    // Show main app
+                    document.getElementById('authModal').classList.add('hidden');
+                    document.getElementById('mainApp').classList.remove('hidden');
+
+                    // Update UI
+                    document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUser.full_name}!`;
+
+                    // Load initial data
+                    await loadDashboardData();
+                    await loadDashboardVisits();
+                } else {
+                    showToast('User not found. Please contact your administrator.');
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                showToast('Authentication failed. Please try again.');
+            }
+        });
+
+        // Auto-login for local testing
+        window.addEventListener('load', () => {
+            // Auto-login as Abhishek for local testing
+            currentUser = {
+                id: 'auto-test-user-id',
+                full_name: 'Abhishek Kumar',
+                email: 'abhishek@hopetech.me',
+                designation: 'Marketing Executive',
+                department: 'Sales & Marketing',
+                status: 'active'
+            };
+            currentEmployeeId = currentUser.id;
+
+            document.getElementById('authModal').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUser.full_name}!`;
+
+            loadDashboardData();
+
+            // Update time
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+
+        // Time update
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString();
+        }
+
+        // Dashboard data loading
+        async function loadDashboardData() {
+            try {
+                const response = await fetch(`${apiBase}/dashboard?employeeId=${currentEmployeeId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const stats = result.data.todayStats;
+                    document.getElementById('plannedVisits').textContent = stats.planned_visits || 0;
+                    document.getElementById('completedVisits').textContent = stats.completed_planned_visits || 0;
+                    document.getElementById('additionalVisits').textContent = stats.additional_visits || 0;
+                    document.getElementById('pendingVisits').textContent =
+                        (stats.planned_visits - stats.completed_planned_visits) || 0;
+
+                    document.getElementById('todayVisitsCount').textContent = stats.total_visits || 0;
+                    document.getElementById('leadsCount').textContent = result.data.activeLeads || 0;
+                    document.getElementById('opportunitiesCount').textContent = result.data.openOpportunities || 0;
+                    document.getElementById('followUpsCount').textContent = result.data.pendingFollowUps || 0;
+
+                    // Update notification badge
+                    const unreadCount = result.data.unreadNotifications || 0;
+                    if (unreadCount > 0) {
+                        document.getElementById('notificationBadge').textContent = unreadCount;
+                        document.getElementById('notificationBadge').classList.remove('hidden');
+                        document.getElementById('navNotificationBadge').textContent = unreadCount;
+                        document.getElementById('navNotificationBadge').classList.remove('hidden');
+                    }
+                } else {
+                    // Use mock data for local testing
+                    useMockDashboardData();
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                // Use mock data for local testing
+                useMockDashboardData();
+            }
+        }
+
+        // Mock dashboard data for local testing
+        function useMockDashboardData() {
+            // Add sample visits if none exist
+            let localVisits = JSON.parse(localStorage.getItem('localVisits') || '[]');
+            let allEmployeeVisits = JSON.parse(localStorage.getItem('allEmployeeVisits') || '[]');
+
+            if (localVisits.length === 0) {
+                const sampleVisits = [
+                    {
+                        id: 'sample-1',
+                        employee_id: currentEmployeeId,
+                        doctor_name: 'Dr. Rajesh Kumar',
+                        hospital_clinic_name: 'City Hospital',
+                        location: 'Nagpur',
+                        meeting_time: new Date().toISOString(),
+                        priority_level: 'high',
+                        status: 'planned',
+                        contact_phone: '+91-9876543210',
+                        contact_email: 'rajesh@cityhospital.com',
+                        remarks: 'Regular follow-up visit',
+                        completion_time: null,
+                        visit_notes: '',
+                        outcome_summary: '',
+                        is_additional_visit: false,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    },
+                    {
+                        id: 'sample-2',
+                        employee_id: currentEmployeeId,
+                        doctor_name: 'Dr. Priya Sharma',
+                        hospital_clinic_name: 'Apex Clinic',
+                        location: 'Nagpur',
+                        meeting_time: new Date(Date.now() + 3600000).toISOString(),
+                        priority_level: 'medium',
+                        status: 'planned',
+                        contact_phone: '+91-9876543211',
+                        contact_email: 'priya@apexclinic.com',
+                        remarks: 'New product demo',
+                        completion_time: null,
+                        visit_notes: '',
+                        outcome_summary: '',
+                        is_additional_visit: false,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    },
+                    {
+                        id: 'sample-3',
+                        employee_id: currentEmployeeId,
+                        doctor_name: 'Dr. Amit Patel',
+                        hospital_clinic_name: 'Shree Nursing Home',
+                        location: 'Nagpur',
+                        meeting_time: new Date(Date.now() - 7200000).toISOString(),
+                        priority_level: 'low',
+                        status: 'completed',
+                        contact_phone: '+91-9876543212',
+                        contact_email: 'amit@shreenursing.com',
+                        remarks: 'Discussion about partnership',
+                        completion_time: new Date(Date.now() - 3600000).toISOString(),
+                        visit_notes: 'Meeting went well, interested in collaboration',
+                        outcome_summary: 'Positive response, will follow up next week',
+                        is_additional_visit: false,
+                        created_at: new Date(Date.now() - 10800000).toISOString(),
+                        updated_at: new Date(Date.now() - 3600000).toISOString()
+                    }
+                ];
+                localStorage.setItem('localVisits', JSON.stringify(sampleVisits));
+                localVisits = sampleVisits;
+
+                // Also add to shared pool for management dashboard
+                sampleVisits.forEach(visit => {
+                    allEmployeeVisits.push({
+                        ...visit,
+                        employee_name: currentUser.full_name,
+                        employee_designation: currentUser.designation
+                    });
+                });
+                localStorage.setItem('allEmployeeVisits', JSON.stringify(allEmployeeVisits));
+            }
+
+            // Calculate stats from actual local visits
+            const plannedVisits = localVisits.length;
+            const completedVisits = localVisits.filter(v => v.status === 'completed').length;
+            const additionalVisits = localVisits.filter(v => v.is_additional_visit).length;
+
+            document.getElementById('plannedVisits').textContent = plannedVisits;
+            document.getElementById('completedVisits').textContent = completedVisits;
+            document.getElementById('additionalVisits').textContent = additionalVisits;
+            document.getElementById('pendingVisits').textContent = plannedVisits - completedVisits;
+
+            document.getElementById('todayVisitsCount').textContent = localVisits.length;
+            document.getElementById('leadsCount').textContent = 12;
+            document.getElementById('opportunitiesCount').textContent = 5;
+            document.getElementById('followUpsCount').textContent = 3;
+        }
+
+        // Section navigation
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+
+            // Show selected section
+            switch (section) {
+                case 'dashboard':
+                    document.getElementById('dashboardSection').classList.remove('hidden');
+                    loadDashboardData();
+                    loadDashboardVisits(); // Load the compact visit list
+                    break;
+                case 'todayPlan':
+                    document.getElementById('todayPlanSection').classList.remove('hidden');
+                    loadTodayVisits();
+                    break;
+                case 'mediaGallery':
+                    document.getElementById('mediaGallerySection').classList.remove('hidden');
+                    loadMediaGallery();
+                    break;
+                case 'myLeads':
+                    document.getElementById('leadsSection').classList.remove('hidden');
+                    loadLeads();
+                    break;
+                case 'opportunities':
+                    document.getElementById('opportunitiesSection').classList.remove('hidden');
+                    loadOpportunities();
+                    break;
+                case 'followUps':
+                    document.getElementById('followUpsSection').classList.remove('hidden');
+                    loadFollowUps();
+                    break;
+                case 'allVisits':
+                    document.getElementById('allVisitsSection').classList.remove('hidden');
+                    loadAllVisits();
+                    break;
+            }
+        }
+
+        // Load today's visits
+        async function loadTodayVisits() {
+            console.log('Loading today visits...');
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const response = await fetch(`${apiBase}/visits?employeeId=${currentEmployeeId}&date=${today}`);
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    console.log('Found API visits:', result.data);
+                    renderVisits(result.data, 'todayVisitsList');
+                    populateVisitSelects(result.data);
+                } else {
+                    // Load from local storage for testing
+                    const localVisits = JSON.parse(localStorage.getItem('localVisits') || '[]');
+                    console.log('Found local visits:', localVisits);
+                    // Show all local visits for testing, not just today's
+                    renderVisits(localVisits, 'todayVisitsList');
+                    populateVisitSelects(localVisits);
+                }
+            } catch (error) {
+                console.error('Error loading visits:', error);
+                // Load from local storage for testing
+                const localVisits = JSON.parse(localStorage.getItem('localVisits') || '[]');
+                console.log('Error fallback - local visits:', localVisits);
+                // Show all local visits for testing, not just today's
+                renderVisits(localVisits, 'todayVisitsList');
+                populateVisitSelects(localVisits);
+            }
+        }
+
+        // Load dashboard visits (compact view)
+        async function loadDashboardVisits() {
+            console.log('Loading dashboard visits...');
+            try {
+                const localVisits = JSON.parse(localStorage.getItem('localVisits') || '[]');
+                console.log('Loading visits to dashboard:', localVisits);
+                renderVisits(localVisits, 'dashboardTodayVisitsList');
+            } catch (error) {
+                console.error('Error loading dashboard visits:', error);
+            }
+        }
+
+        // Populate visit select dropdowns
+        function populateVisitSelects(visits) {
+            const selects = ['voiceVisitSelect', 'cameraVisitSelect'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    select.innerHTML = '<option value="">Select a visit (optional)</option>';
+                    visits.forEach(visit => {
+                        const option = document.createElement('option');
+                        option.value = visit.id;
+                        option.textContent = `${visit.doctor_name} - ${visit.hospital_clinic_name}`;
+                        select.appendChild(option);
+                    });
+                }
+            });
+        }
+
+        // Load media gallery
+        async function loadMediaGallery() {
+            try {
+                // For demo purposes, show placeholder content
+                const container = document.getElementById('mediaGalleryContent');
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-photo-video text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No media captured yet</p>
+                        <p class="text-sm text-gray-400 mt-2">Use the camera or voice recording features to capture media</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading media gallery:', error);
+            }
+        }
+
+        // Voice Recording Functions
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                    recordedAudioUrl = URL.createObjectURL(blob);
+
+                    // Update UI
+                    document.getElementById('notRecordingState').classList.add('hidden');
+                    document.getElementById('recordingState').classList.add('hidden');
+                    document.getElementById('processingState').classList.remove('hidden');
+
+                    // Upload audio
+                    await uploadAndTranscribeAudio(blob);
+                };
+
+                mediaRecorder.start();
+                recordingSeconds = 0;
+
+                // Update UI
+                document.getElementById('notRecordingState').classList.add('hidden');
+                document.getElementById('recordingState').classList.remove('hidden');
+                document.getElementById('startRecordingBtn').classList.add('hidden');
+                document.getElementById('stopRecordingBtn').classList.remove('hidden');
+                document.getElementById('visitSelection').classList.remove('hidden');
+
+                // Start timer
+                recordingTimer = setInterval(() => {
+                    recordingSeconds++;
+                    const minutes = Math.floor(recordingSeconds / 60);
+                    const seconds = recordingSeconds % 60;
+                    document.getElementById('recordingTimer').textContent =
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+
+                showToast('Recording started...');
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                showToast('Failed to access microphone. Please grant permissions.');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+
+            // Stop timer
+            if (recordingTimer) {
+                clearInterval(recordingTimer);
+            }
+
+            // Update UI
+            document.getElementById('startRecordingBtn').classList.remove('hidden');
+            document.getElementById('stopRecordingBtn').classList.add('hidden');
+        }
+
+        async function uploadAndTranscribeAudio(blob) {
+            try {
+                // Create FormData for upload
+                const formData = new FormData();
+                formData.append('file', blob, 'voice-note.webm');
+                formData.append('type', 'voice');
+                formData.append('employeeId', currentEmployeeId);
+
+                // Upload audio
+                const uploadResponse = await fetch(`${apiBase}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const uploadResult = await uploadResponse.json();
+
+                if (uploadResult.success) {
+                    const audioUrl = uploadResult.data.url;
+
+                    // Transcribe audio
+                    const transcribeResponse = await fetch(`${apiBase}/transcribe`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            audioUrl,
+                            duration: recordingSeconds
+                        })
+                    });
+
+                    const transcribeResult = await transcribeResponse.json();
+
+                    if (transcribeResult.success) {
+                        // Show transcription
+                        document.getElementById('processingState').classList.add('hidden');
+                        document.getElementById('transcriptionResult').classList.remove('hidden');
+                        document.getElementById('transcriptionText').value = transcribeResult.data.transcription;
+
+                        // Store audio URL for saving
+                        recordedAudioUrl = audioUrl;
+
+                        showToast('Voice note processed successfully!');
+                    }
+                }
+            } catch (error) {
+                console.error('Error processing audio:', error);
+                document.getElementById('processingState').classList.add('hidden');
+                showToast('Failed to process audio. Please try again.');
+            }
+        }
+
+        async function saveVoiceNote() {
+            try {
+                const transcription = document.getElementById('transcriptionText').value;
+                const visitId = document.getElementById('voiceVisitSelect').value;
+
+                const voiceNoteData = {
+                    employee_id: currentEmployeeId,
+                    visit_id: visitId || null,
+                    audio_url: recordedAudioUrl,
+                    transcription: transcription,
+                    duration: recordingSeconds,
+                    recorded_at: new Date().toISOString()
+                };
+
+                const response = await fetch(`${apiBase}/voice-notes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(voiceNoteData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Voice note saved successfully!');
+                    hideModal('voiceNoteModal');
+                    resetVoiceRecording();
+                }
+            } catch (error) {
+                console.error('Error saving voice note:', error);
+                showToast('Failed to save voice note');
+            }
+        }
+
+        function resetVoiceRecording() {
+            document.getElementById('notRecordingState').classList.remove('hidden');
+            document.getElementById('recordingState').classList.add('hidden');
+            document.getElementById('processingState').classList.add('hidden');
+            document.getElementById('transcriptionResult').classList.add('hidden');
+            document.getElementById('visitSelection').classList.add('hidden');
+            document.getElementById('transcriptionText').value = '';
+            document.getElementById('recordingTimer').textContent = '00:00';
+            recordedChunks = [];
+            recordedAudioUrl = null;
+            recordingSeconds = 0;
+        }
+
+        // Camera Functions
+        async function startCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: facingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('cameraVideo');
+                videoElement.srcObject = cameraStream;
+
+                // Update UI
+                document.getElementById('startCameraBtn').classList.add('hidden');
+                document.getElementById('captureBtn').classList.remove('hidden');
+                document.getElementById('switchCameraBtn').classList.remove('hidden');
+                document.getElementById('cameraPreview').classList.add('camera-active');
+
+                showToast('Camera started successfully');
+            } catch (error) {
+                console.error('Error starting camera:', error);
+                showToast('Failed to access camera. Please grant permissions.');
+            }
+        }
+
+        function switchCamera() {
+            facingMode = facingMode === 'environment' ? 'user' : 'environment';
+
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+
+            startCamera();
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById('cameraCanvas');
+            const context = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert to image
+            const imageData = canvas.toDataURL('image/jpeg');
+
+            // Show preview
+            const previewImage = document.getElementById('capturedImage');
+            previewImage.src = imageData;
+            document.getElementById('capturedPreview').classList.remove('hidden');
+
+            // Update UI
+            document.getElementById('cameraPreview').classList.add('hidden');
+            document.getElementById('captureBtn').classList.add('hidden');
+            document.getElementById('switchCameraBtn').classList.add('hidden');
+            document.getElementById('cameraVisitSelection').classList.remove('hidden');
+            document.getElementById('captionInput').classList.remove('hidden');
+            document.getElementById('savePhotoBtn').classList.remove('hidden');
+
+            showToast('Photo captured successfully');
+        }
+
+        async function savePhoto() {
+            try {
+                const canvas = document.getElementById('cameraCanvas');
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+
+                const formData = new FormData();
+                formData.append('file', blob, 'photo.jpg');
+                formData.append('type', 'photo');
+                formData.append('employeeId', currentEmployeeId);
+
+                const uploadResponse = await fetch(`${apiBase}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const uploadResult = await uploadResponse.json();
+
+                if (uploadResult.success) {
+                    const photoUrl = uploadResult.data.url;
+                    const visitId = document.getElementById('cameraVisitSelect').value;
+                    const caption = document.getElementById('photoCaption').value;
+
+                    // Save media record
+                    const mediaData = {
+                        employee_id: currentEmployeeId,
+                        visit_id: visitId || null,
+                        media_type: 'photo',
+                        file_url: photoUrl,
+                        caption: caption || null
+                    };
+
+                    const saveResponse = await fetch(`${apiBase}/media`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(mediaData)
+                    });
+
+                    const saveResult = await saveResponse.json();
+
+                    if (saveResult.success) {
+                        showToast('Photo saved successfully!');
+                        closeCameraModal();
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving photo:', error);
+                showToast('Failed to save photo');
+            }
+        }
+
+        function closeCameraModal() {
+            // Stop camera stream
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+
+            // Reset UI
+            document.getElementById('cameraPreview').classList.remove('hidden', 'camera-active');
+            document.getElementById('capturedPreview').classList.add('hidden');
+            document.getElementById('startCameraBtn').classList.remove('hidden');
+            document.getElementById('captureBtn').classList.add('hidden');
+            document.getElementById('switchCameraBtn').classList.add('hidden');
+            document.getElementById('cameraVisitSelection').classList.add('hidden');
+            document.getElementById('captionInput').classList.add('hidden');
+            document.getElementById('savePhotoBtn').classList.add('hidden');
+            document.getElementById('photoCaption').value = '';
+
+            hideModal('cameraModal');
+        }
+
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+
+            // Load visits for voice/camera modals
+            if (modalId === 'voiceNoteModal' || modalId === 'cameraModal') {
+                loadTodayVisits();
+            }
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+
+            // Reset modal-specific state
+            if (modalId === 'voiceNoteModal') {
+                resetVoiceRecording();
+            }
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Additional functions (loadTodayVisits, loadLeads, etc. remain the same as before)
+        async function loadTodayVisits() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const response = await fetch(`${apiBase}/visits?employeeId=${currentEmployeeId}&date=${today}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderVisits(result.data, 'todayVisitsList');
+                    populateVisitSelects(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading visits:', error);
+            }
+        }
+
+        // Continue with other functions from the previous implementation...
+        async function loadLeads() {
+            try {
+                const response = await fetch(`${apiBase}/leads?employeeId=${currentEmployeeId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderLeads(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading leads:', error);
+            }
+        }
+
+        async function loadOpportunities() {
+            try {
+                const response = await fetch(`${apiBase}/opportunities?employeeId=${currentEmployeeId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderOpportunities(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading opportunities:', error);
+            }
+        }
+
+        async function loadFollowUps() {
+            try {
+                const response = await fetch(`${apiBase}/follow-ups?employeeId=${currentEmployeeId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderFollowUps(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading follow-ups:', error);
+            }
+        }
+
+        function renderVisits(visits, containerId) {
+            console.log('Rendering visits to container:', containerId, 'Visits:', visits);
+            const container = document.getElementById(containerId);
+
+            if (!container) {
+                console.error('Container not found:', containerId);
+                return;
+            }
+
+            container.innerHTML = '';
+
+            if (visits.length === 0) {
+                if (containerId === 'dashboardTodayVisitsList') {
+                    document.getElementById('noVisitsMessage').classList.remove('hidden');
+                    container.classList.add('hidden');
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-calendar-times text-4xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500">No visits found</p>
+                            <p class="text-sm text-gray-400 mt-2">Add your first visit using the + button</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            if (containerId === 'dashboardTodayVisitsList') {
+                document.getElementById('noVisitsMessage').classList.add('hidden');
+                container.classList.remove('hidden');
+
+                // Update visit count
+                document.getElementById('dashboardVisitCount').textContent = `${visits.length} visit${visits.length !== 1 ? 's' : ''}`;
+            }
+
+            console.log('Rendering', visits.length, 'visits');
+
+            visits.forEach((visit, index) => {
+                console.log(`Visit ${index}:`, visit);
+
+                // Check if this is the dashboard compact view
+                const isDashboard = containerId === 'dashboardTodayVisitsList';
+
+                const card = document.createElement('div');
+                if (isDashboard) {
+                    // Compact card for dashboard
+                    card.className = `flex items-center justify-between p-3 rounded-lg border-l-4 ${
+                        visit.status === 'completed' ? 'bg-green-50 border-green-500' : 'bg-blue-50 border-blue-500'
+                    }`;
+
+                    const statusIcon = visit.status === 'completed' ?
+                        '<i class="fas fa-check-circle text-green-600"></i>' :
+                        '<i class="fas fa-clock text-blue-600"></i>';
+
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center ${
+                                visit.status === 'completed' ? 'bg-green-100' : 'bg-blue-100'
+                            }">
+                                ${statusIcon}
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-800 text-sm">${visit.doctor_name}</h4>
+                                <p class="text-xs text-gray-600">${visit.hospital_clinic_name}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="text-right">
+                                <p class="text-xs text-gray-500">${visit.meeting_time ? new Date(visit.meeting_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'No time'}</p>
+                                <p class="text-xs text-gray-400">${visit.location || 'No location'}</p>
+                            </div>
+                            ${visit.status !== 'completed' ? `
+                                <button onclick="completeVisit('${visit.id}')" class="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    // Full card for Today's Plan section
+                    card.className = `visit-card bg-white rounded-xl shadow-md p-4 border-l-4 ${
+                        visit.status === 'completed' ? 'border-green-500' : 'border-blue-500'
+                    }`;
+
+                    const statusClass = visit.status === 'completed' ? 'status-completed' :
+                                       visit.status === 'pending' ? 'status-pending' : 'status-planned';
+
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-800">${visit.doctor_name}</h4>
+                                <p class="text-sm text-gray-600">${visit.hospital_clinic_name}</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>${visit.location || 'Location not specified'}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <span class="${statusClass} text-white text-xs px-2 py-1 rounded-full">
+                                    ${visit.status}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-600">
+                                <i class="fas fa-clock mr-1"></i>
+                                ${visit.meeting_time ? new Date(visit.meeting_time).toLocaleString() : 'Time not set'}
+                            </div>
+                            <div class="flex space-x-2">
+                                ${visit.status !== 'completed' ? `
+                                    <button onclick="completeVisit('${visit.id}')" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-600">
+                                        <i class="fas fa-check mr-1"></i>Complete
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.appendChild(card);
+            });
+
+            console.log('Finished rendering visits');
+        }
+
+        // Complete visit function
+        async function completeVisit(visitId) {
+            try {
+                const response = await fetch(`${apiBase}/visits?visitId=${visitId}&action=complete`, {
+                    method: 'PATCH'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast('Visit marked as completed!');
+                        loadTodayVisits();
+                        loadDashboardData();
+                    } else {
+                        // Fallback to local storage
+                        completeLocalVisit(visitId);
+                    }
+                } else {
+                    // Fallback to local storage
+                    completeLocalVisit(visitId);
+                }
+            } catch (error) {
+                console.error('Error completing visit:', error);
+                // Fallback to local storage for local testing
+                completeLocalVisit(visitId);
+            }
+        }
+
+        // Complete visit in local storage
+        function completeLocalVisit(visitId) {
+            let localVisits = JSON.parse(localStorage.getItem('localVisits') || '[]');
+            const visit = localVisits.find(v => v.id === visitId);
+            if (visit) {
+                visit.status = 'completed';
+                visit.completion_time = new Date().toISOString();
+                visit.updated_at = new Date().toISOString();
+                localStorage.setItem('localVisits', JSON.stringify(localVisits));
+                showToast('Visit marked as completed (local mode)!');
+                loadTodayVisits();
+                loadDashboardData();
+            }
+        }
+
+        function renderLeads(leads) {
+            const container = document.getElementById('leadsList');
+            container.innerHTML = '';
+
+            if (leads.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No leads found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            leads.forEach(lead => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-md p-4';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">${lead.lead_name}</h4>
+                            <p class="text-sm text-gray-600">${lead.organization_name || 'No organization'}</p>
+                        </div>
+                        <span class="lead-stage-${lead.status.replace('_', '-')} text-white text-xs px-2 py-1 rounded-full">
+                            ${lead.status}
+                        </span>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function renderOpportunities(opportunities) {
+            const container = document.getElementById('opportunitiesList');
+            container.innerHTML = '';
+
+            if (opportunities.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-handshake text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No opportunities found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            opportunities.forEach(opp => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-md p-4';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">${opp.opportunity_name}</h4>
+                            <p class="text-sm text-gray-600">${opp.organization || 'No organization'}</p>
+                        </div>
+                        <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                            ${opp.status}
+                        </span>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function renderFollowUps(followUps) {
+            const container = document.getElementById('followUpsList');
+            container.innerHTML = '';
+
+            if (followUps.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-tasks text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No follow-ups found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            followUps.forEach(task => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-md p-4';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">${task.title}</h4>
+                            <p class="text-sm text-gray-600">${task.description || 'No description'}</p>
+                        </div>
+                        <span class="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+                            ${task.status}
+                        </span>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Notifications
+        function showNotifications() {
+            document.getElementById('notificationsPanel').classList.remove('hidden');
+        }
+
+        function hideNotifications() {
+            document.getElementById('notificationsPanel').classList.add('hidden');
+        }
+
+        // Form submissions (same as before)
+        document.getElementById('newVisitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const visitData = {
+                id: 'local-' + Date.now(),
+                employee_id: currentEmployeeId,
+                doctor_name: document.getElementById('visitDoctorName').value,
+                hospital_clinic_name: document.getElementById('visitHospitalName').value,
+                location: document.getElementById('visitLocation').value || 'Not specified',
+                meeting_time: document.getElementById('visitMeetingTime').value || new Date().toISOString(),
+                priority_level: document.getElementById('visitPriority').value,
+                status: 'planned',
+                contact_phone: '',
+                contact_email: '',
+                remarks: '',
+                completion_time: null,
+                visit_notes: '',
+                outcome_summary: '',
+                is_additional_visit: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch(`${apiBase}/visits`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(visitData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast('Visit added successfully!');
+                        hideModal('newVisitModal');
+                        document.getElementById('newVisitForm').reset();
+                        loadTodayVisits();
+                        loadDashboardData();
+                    } else {
+                        // Fallback to local storage
+                        addLocalVisit(visitData);
+                    }
+                } else {
+                    // Fallback to local storage
+                    addLocalVisit(visitData);
+                }
+            } catch (error) {
+                console.error('Error adding visit:', error);
+                // Fallback to local storage for local testing
+                addLocalVisit(visitData);
+            }
+        });
+
+        // Add visit to local storage for testing
+        function addLocalVisit(visit) {
+            console.log('Adding visit:', visit);
+            let localVisits = JSON.parse(localStorage.getItem('localVisits') || '[]');
+            localVisits.push(visit);
+            localStorage.setItem('localVisits', JSON.stringify(localVisits));
+
+            // Also add to the shared pool for management dashboard
+            let allEmployeeVisits = JSON.parse(localStorage.getItem('allEmployeeVisits') || '[]');
+            const managementVisit = {
+                ...visit,
+                employee_name: currentUser.full_name,
+                employee_designation: currentUser.designation
+            };
+            allEmployeeVisits.push(managementVisit);
+            localStorage.setItem('allEmployeeVisits', JSON.stringify(allEmployeeVisits));
+
+            console.log('Total visits after adding:', localVisits);
+            console.log('Shared pool visits:', allEmployeeVisits);
+
+            // Hide modal and reset form
+            hideModal('newVisitModal');
+            document.getElementById('newVisitForm').reset();
+
+            // Show success message
+            showToast(`Visit added for ${visit.doctor_name}! Visible to management.`);
+
+            // Stay on dashboard and update the visits list
+            loadDashboardVisits();
+            useMockDashboardData();
+        }
+
+        // Debug function to check visits
+        function debugVisits() {
+            const localVisits = JSON.parse(localStorage.getItem('localVisits') || '[]');
+            console.log('Current visits in storage:', localVisits);
+            console.log('Number of visits:', localVisits.length);
+            return localVisits;
+        }
+
+        document.getElementById('newLeadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const leadData = {
+                employee_id: currentEmployeeId,
+                lead_name: document.getElementById('leadName').value,
+                organization_name: document.getElementById('leadOrganization').value,
+                mobile_number: document.getElementById('leadMobile').value,
+                email_address: document.getElementById('leadEmail').value,
+                lead_type: document.getElementById('leadType').value,
+                lead_source: document.getElementById('leadSource').value,
+                status: 'new',
+                assigned_to: currentEmployeeId
+            };
+
+            try {
+                const response = await fetch(`${apiBase}/leads`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(leadData)
+                });
+
+                if (response.ok) {
+                    showToast('Lead added successfully!');
+                    hideModal('newLeadModal');
+                    document.getElementById('newLeadForm').reset();
+                    loadLeads();
+                    loadDashboardData();
+                }
+            } catch (error) {
+                console.error('Error adding lead:', error);
+                showToast('Failed to add lead');
+            }
+        });
+
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            loadDashboardData();
+            showToast('Data refreshed!');
+        });
+
+        // Notifications button
+        document.getElementById('notificationsBtn').addEventListener('click', showNotifications);
+    </script>
+</body>
+</html>

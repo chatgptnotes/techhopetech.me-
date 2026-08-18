@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HopeTech Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .employee-row {
+            transition: all 0.2s ease;
+        }
+
+        .employee-row:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .live-indicator {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">HopeTech Management Dashboard</h1>
+                    <p class="text-sm text-gray-600">Real-time Field Marketing & CRM Analytics</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full live-indicator"></div>
+                        <span class="text-sm text-gray-600">Live</span>
+                    </div>
+                    <div id="currentTime" class="text-sm text-gray-600"></div>
+                    <button id="refreshBtn" class="p-2 text-gray-600 hover:text-blue-600 transition">
+                        <i class="fas fa-sync-alt text-xl"></i>
+                    </button>
+                    <select id="dateFilter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="metric-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">Total Visits Today</p>
+                        <p id="totalVisits" class="text-4xl font-bold">0</p>
+                        <p class="text-xs mt-2 opacity-70">
+                            <i class="fas fa-arrow-up mr-1"></i>
+                            <span id="visitsTrend">+0%</span> from yesterday
+                        </p>
+                    </div>
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-md text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">Leads Generated</p>
+                        <p id="totalLeads" class="text-4xl font-bold">0</p>
+                        <p class="text-xs mt-2 opacity-70">
+                            <i class="fas fa-chart-line mr-1"></i>
+                            <span id="leadsTrend">+0%</span> this week
+                        </p>
+                    </div>
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-users text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">Active Opportunities</p>
+                        <p id="totalOpportunities" class="text-4xl font-bold">0</p>
+                        <p class="text-xs mt-2 opacity-70">
+                            <i class="fas fa-rupee-sign mr-1"></i>
+                            <span id="revenueValue">₹0</span> pipeline value
+                        </p>
+                    </div>
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-handshake text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">Conversion Rate</p>
+                        <p id="conversionRate" class="text-4xl font-bold">0%</p>
+                        <p class="text-xs mt-2 opacity-70">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            <span id="conversionsCount">0</span> conversions
+                        </p>
+                    </div>
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-percentage text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Daily Performance Trends</h3>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Revenue Pipeline</h3>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Field Activity Feed -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full live-indicator"></div>
+                        <span class="text-sm text-gray-600">Live</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Field Team Activity</h3>
+                        <p class="text-sm text-gray-500">Real-time doctor visits from all marketing executives</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="refreshActivityBtn" class="p-2 text-gray-600 hover:text-blue-600 transition">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <span id="activityCount" class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                        0 visits
+                    </span>
+                </div>
+            </div>
+
+            <div id="fieldActivityList" class="space-y-3 max-h-96 overflow-y-auto">
+                <!-- Activity cards will be loaded here -->
+            </div>
+
+            <div id="noActivityMessage" class="text-center py-8">
+                <i class="fas fa-users text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500 mb-2">No field activity yet</p>
+                <p class="text-sm text-gray-400">Waiting for marketing executives to add visits</p>
+            </div>
+        </div>
+
+        <!-- Employee Performance Table -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">Employee Performance</h3>
+                    <div class="flex space-x-2">
+                        <input type="text" id="employeeSearch" placeholder="Search employees..."
+                               class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <select id="sortBy" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="name">Sort by Name</option>
+                            <option value="visits">Sort by Visits</option>
+                            <option value="leads">Sort by Leads</option>
+                            <option value="productivity">Sort by Productivity</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Planned Visits</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completed</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Additional</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leads</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opportunities</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Productivity</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Employee rows will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Lead Analytics -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Lead Sources</h3>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="leadSourcesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Lead Types</h3>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="leadTypesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Conversion Funnel</h3>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="funnelChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-8 flex items-center space-x-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p class="text-gray-700">Loading dashboard data...</p>
+        </div>
+    </div>
+
+    <script>
+        // API base URL
+        const apiBase = '/api/tablet-crm';
+        let managementData = [];
+        let charts = {};
+
+        // Initialize dashboard
+        window.addEventListener('load', async () => {
+            await loadDashboardData();
+            initializeCharts();
+            await loadFieldActivity();
+            hideLoading();
+
+            // Auto-refresh field activity every 10 seconds
+            setInterval(loadFieldActivity, 10000);
+        });
+
+        // Time update
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const response = await fetch(`${apiBase}/management?date=${today}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    managementData = result.data;
+                    updateMetrics();
+                    updateEmployeeTable();
+                    updateCharts();
+                } else {
+                    // Use mock data for local testing
+                    useMockData();
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                // Use mock data for local testing
+                useMockData();
+            }
+        }
+
+        // Mock data for local testing
+        function useMockData() {
+            managementData = [
+                {
+                    id: '1',
+                    employee: {
+                        full_name: 'Abhishek Kumar',
+                        designation: 'Marketing Executive'
+                    },
+                    planned_visits: 12,
+                    completed_planned_visits: 10,
+                    additional_visits: 3,
+                    total_visits: 13,
+                    leads_generated: 8,
+                    opportunities_created: 4,
+                    follow_ups_pending: 2,
+                    follow_ups_completed: 6,
+                    productivity_score: 85.5
+                },
+                {
+                    id: '2',
+                    employee: {
+                        full_name: 'Priya Sharma',
+                        designation: 'Senior Marketing Executive'
+                    },
+                    planned_visits: 15,
+                    completed_planned_visits: 14,
+                    additional_visits: 2,
+                    total_visits: 16,
+                    leads_generated: 12,
+                    opportunities_created: 6,
+                    follow_ups_pending: 1,
+                    follow_ups_completed: 8,
+                    productivity_score: 92.3
+                },
+                {
+                    id: '3',
+                    employee: {
+                        full_name: 'Rajesh Verma',
+                        designation: 'Marketing Manager'
+                    },
+                    planned_visits: 8,
+                    completed_planned_visits: 8,
+                    additional_visits: 1,
+                    total_visits: 9,
+                    leads_generated: 6,
+                    opportunities_created: 3,
+                    follow_ups_pending: 3,
+                    follow_ups_completed: 4,
+                    productivity_score: 78.9
+                }
+            ];
+            updateMetrics();
+            updateEmployeeTable();
+            updateCharts();
+        }
+
+        // Update key metrics
+        function updateMetrics() {
+            const totalVisits = managementData.reduce((sum, emp) => sum + (emp.total_visits || 0), 0);
+            const totalLeads = managementData.reduce((sum, emp) => sum + (emp.leads_generated || 0), 0);
+            const totalOpps = managementData.reduce((sum, emp) => sum + (emp.opportunities_created || 0), 0);
+            const avgProductivity = managementData.length > 0 ?
+                managementData.reduce((sum, emp) => sum + (emp.productivity_score || 0), 0) / managementData.length : 0;
+
+            document.getElementById('totalVisits').textContent = totalVisits;
+            document.getElementById('totalLeads').textContent = totalLeads;
+            document.getElementById('totalOpportunities').textContent = totalOpps;
+            document.getElementById('conversionRate').textContent = avgProductivity.toFixed(1) + '%';
+
+            // Simulated trends
+            document.getElementById('visitsTrend').textContent = '+12%';
+            document.getElementById('leadsTrend').textContent = '+8%';
+            document.getElementById('revenueValue').textContent = '₹' + (totalOpps * 500000).toLocaleString();
+            document.getElementById('conversionsCount').textContent = Math.floor(totalOpps * 0.3);
+        }
+
+        // Update employee table
+        function updateEmployeeTable() {
+            const tbody = document.getElementById('employeeTableBody');
+            tbody.innerHTML = '';
+
+            if (managementData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="px-6 py-4 text-center text-gray-500">
+                            No employee data available
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            managementData.forEach(emp => {
+                const row = document.createElement('tr');
+                row.className = 'employee-row';
+
+                const productivity = emp.productivity_score || 0;
+                const statusClass = productivity >= 80 ? 'bg-green-100 text-green-800' :
+                                  productivity >= 60 ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800';
+
+                const status = productivity >= 80 ? 'Excellent' :
+                              productivity >= 60 ? 'Good' : 'Needs Improvement';
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                ${emp.employee?.full_name?.charAt(0) || 'U'}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${emp.employee?.full_name || 'Unknown'}</div>
+                                <div class="text-sm text-gray-500">${emp.employee?.designation || 'Marketing Executive'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${emp.planned_visits || 0}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">${emp.completed_planned_visits || 0}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">${emp.additional_visits || 0}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${emp.total_visits || 0}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${emp.leads_generated || 0}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${emp.opportunities_created || 0}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-${productivity >= 80 ? 'green' : productivity >= 60 ? 'yellow' : 'red'}-500 h-2 rounded-full" style="width: ${productivity}%"></div>
+                            </div>
+                            <span class="text-sm font-medium">${productivity.toFixed(0)}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge ${statusClass}">${status}</span>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Performance Chart
+            const perfCtx = document.getElementById('performanceChart').getContext('2d');
+            charts.performance = new Chart(perfCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Completed Visits',
+                        data: [12, 15, 18, 14, 20, 16, 8],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Leads Generated',
+                        data: [8, 12, 10, 15, 18, 12, 6],
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Revenue Chart
+            const revCtx = document.getElementById('revenueChart').getContext('2d');
+            charts.revenue = new Chart(revCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Expected Revenue (₹ Lakhs)',
+                        data: [45, 52, 38, 65, 78, 82],
+                        backgroundColor: 'rgba(139, 92, 246, 0.7)',
+                        borderColor: 'rgb(139, 92, 246)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Actual Revenue (₹ Lakhs)',
+                        data: [38, 45, 42, 58, 72, 75],
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: 'rgb(16, 185, 129)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Lead Sources Chart
+            const sourcesCtx = document.getElementById('leadSourcesChart').getContext('2d');
+            charts.sources = new Chart(sourcesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cold Call', 'Referral', 'Website', 'Event', 'Social Media'],
+                    datasets: [{
+                        data: [35, 25, 20, 12, 8],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(139, 92, 246, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(236, 72, 153, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Lead Types Chart
+            const typesCtx = document.getElementById('leadTypesChart').getContext('2d');
+            charts.types = new Chart(typesCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Doctors', 'Hospitals', 'Clinics', 'Corporate', 'Insurance'],
+                    datasets: [{
+                        data: [40, 25, 18, 12, 5],
+                        backgroundColor: [
+                            'rgba(236, 72, 153, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Funnel Chart
+            const funnelCtx = document.getElementById('funnelChart').getContext('2d');
+            charts.funnel = new Chart(funnelCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Leads', 'Contacted', 'Meetings', 'Opportunities', 'Closed'],
+                    datasets: [{
+                        label: 'Conversion Funnel',
+                        data: [100, 75, 50, 30, 18],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(139, 92, 246, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(236, 72, 153, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update charts with real data
+        function updateCharts() {
+            // Update charts with actual data from managementData
+            if (managementData.length > 0) {
+                const totalLeads = managementData.reduce((sum, emp) => sum + (emp.leads_generated || 0), 0);
+                const totalVisits = managementData.reduce((sum, emp) => sum + (emp.total_visits || 0), 0);
+
+                // Update performance chart with real data
+                charts.performance.data.datasets[0].data = managementData.map(emp => emp.completed_planned_visits || 0);
+                charts.performance.data.datasets[1].data = managementData.map(emp => emp.leads_generated || 0);
+                charts.performance.data.labels = managementData.map(emp => emp.employee?.full_name?.split(' ')[0] || 'Unknown');
+                charts.performance.update();
+            }
+        }
+
+        // Search functionality
+        document.getElementById('employeeSearch').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredData = managementData.filter(emp =>
+                emp.employee?.full_name?.toLowerCase().includes(searchTerm) ||
+                emp.employee?.designation?.toLowerCase().includes(searchTerm)
+            );
+            // Re-render table with filtered data
+            renderFilteredEmployees(filteredData);
+        });
+
+        // Sort functionality
+        document.getElementById('sortBy').addEventListener('change', (e) => {
+            const sortBy = e.target.value;
+            let sortedData = [...managementData];
+
+            switch (sortBy) {
+                case 'name':
+                    sortedData.sort((a, b) => a.employee?.full_name?.localeCompare(b.employee?.full_name) || 0);
+                    break;
+                case 'visits':
+                    sortedData.sort((a, b) => (b.total_visits || 0) - (a.total_visits || 0));
+                    break;
+                case 'leads':
+                    sortedData.sort((a, b) => (b.leads_generated || 0) - (a.leads_generated || 0));
+                    break;
+                case 'productivity':
+                    sortedData.sort((a, b) => (b.productivity_score || 0) - (a.productivity_score || 0));
+                    break;
+            }
+
+            managementData = sortedData;
+            updateEmployeeTable();
+        });
+
+        // Render filtered employees
+        function renderFilteredEmployees(filteredData) {
+            const originalData = managementData;
+            managementData = filteredData;
+            updateEmployeeTable();
+            managementData = originalData;
+        }
+
+        // Date filter
+        document.getElementById('dateFilter').addEventListener('change', async (e) => {
+            showLoading();
+            // In a real implementation, you would fetch data for different date ranges
+            await loadDashboardData();
+            hideLoading();
+        });
+
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', async () => {
+            showLoading();
+            await loadDashboardData();
+            await loadFieldActivity();
+            hideLoading();
+        });
+
+        // Loading functions
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        // Load field activity from all employees
+        async function loadFieldActivity() {
+            try {
+                // Try to get real visits from API
+                const response = await fetch(`${apiBase}/visits?all=true`);
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    renderFieldActivity(result.data);
+                } else {
+                    // Fallback to local storage simulation
+                    loadSimulatedFieldActivity();
+                }
+            } catch (error) {
+                console.error('Error loading field activity:', error);
+                // Fallback to local storage simulation
+                loadSimulatedFieldActivity();
+            }
+        }
+
+        // Simulate field activity for demo purposes
+        function loadSimulatedFieldActivity() {
+            // Get all visits from local storage (simulating multiple users)
+            const allVisits = JSON.parse(localStorage.getItem('allEmployeeVisits') || '[]');
+
+            if (allVisits.length === 0) {
+                // Create sample field activity if none exists
+                const sampleActivity = generateSampleFieldActivity();
+                localStorage.setItem('allEmployeeVisits', JSON.stringify(sampleActivity));
+                renderFieldActivity(sampleActivity);
+            } else {
+                renderFieldActivity(allVisits);
+            }
+        }
+
+        // Generate sample field activity
+        function generateSampleFieldActivity() {
+            const employees = [
+                { id: 'abhishek', name: 'Abhishek Kumar', designation: 'Marketing Executive' },
+                { id: 'priya', name: 'Priya Sharma', designation: 'Senior Marketing Executive' },
+                { id: 'rajesh', name: 'Rajesh Verma', designation: 'Marketing Manager' }
+            ];
+
+            const hospitals = [
+                { name: 'City Hospital', location: 'Nagpur' },
+                { name: 'Apex Clinic', location: 'Nagpur' },
+                { name: 'Shree Nursing Home', location: 'Nagpur' },
+                { name: 'Metro Hospital', location: 'Nagpur' },
+                { name: 'Care Clinic', location: 'Nagpur' }
+            ];
+
+            const activities = [];
+            const now = new Date();
+
+            // Generate some recent activities
+            for (let i = 0; i < 8; i++) {
+                const employee = employees[Math.floor(Math.random() * employees.length)];
+                const hospital = hospitals[Math.floor(Math.random() * hospitals.length)];
+                const doctorName = `Dr. ${['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'][Math.floor(Math.random() * 8)]}`;
+                const status = Math.random() > 0.6 ? 'completed' : 'planned';
+                const timeOffset = Math.floor(Math.random() * 120) - 60; // -60 to +60 minutes
+                const activityTime = new Date(now.getTime() + timeOffset * 60000);
+
+                activities.push({
+                    id: `activity-${i}`,
+                    employee_id: employee.id,
+                    employee_name: employee.name,
+                    employee_designation: employee.designation,
+                    doctor_name: doctorName,
+                    hospital_name: hospital.name,
+                    location: hospital.location,
+                    status: status,
+                    meeting_time: activityTime.toISOString(),
+                    priority: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)],
+                    created_at: activityTime.toISOString()
+                });
+            }
+
+            // Sort by time (most recent first)
+            activities.sort((a, b) => new Date(b.meeting_time) - new Date(a.meeting_time));
+
+            return activities;
+        }
+
+        // Render field activity
+        function renderFieldActivity(activities) {
+            const container = document.getElementById('fieldActivityList');
+            const noActivityMessage = document.getElementById('noActivityMessage');
+            const activityCount = document.getElementById('activityCount');
+
+            if (!activities || activities.length === 0) {
+                container.innerHTML = '';
+                container.classList.add('hidden');
+                noActivityMessage.classList.remove('hidden');
+                activityCount.textContent = '0 visits';
+                return;
+            }
+
+            container.classList.remove('hidden');
+            noActivityMessage.classList.add('hidden');
+            activityCount.textContent = `${activities.length} visit${activities.length !== 1 ? 's' : ''}`;
+
+            container.innerHTML = '';
+
+            activities.forEach(activity => {
+                const card = document.createElement('div');
+                const timeAgo = getTimeAgo(new Date(activity.meeting_time));
+
+                card.className = `flex items-center justify-between p-3 rounded-lg border-l-4 ${
+                    activity.status === 'completed' ? 'bg-green-50 border-green-500' : 'bg-blue-50 border-blue-500'
+                }`;
+
+                const statusIcon = activity.status === 'completed' ?
+                    '<i class="fas fa-check-circle text-green-600"></i>' :
+                    '<i class="fas fa-clock text-blue-600"></i>';
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center ${
+                            activity.status === 'completed' ? 'bg-green-100' : 'bg-blue-100'
+                        }">
+                            ${statusIcon}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-semibold text-gray-800 text-sm">${activity.doctor_name}</h4>
+                                <span class="text-xs text-gray-400">•</span>
+                                <p class="text-xs text-gray-600">${activity.hospital_name}</p>
+                            </div>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-user mr-1"></i>${activity.employee_name}
+                                </span>
+                                <span class="text-xs text-gray-400">•</span>
+                                <span class="text-xs text-gray-500">${timeAgo}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        ${activity.priority === 'high' ? '<i class="fas fa-star text-yellow-500 text-sm"></i>' : ''}
+                        <span class="text-xs text-gray-500">${activity.location}</span>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Get time ago string
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Auto-refresh every 5 minutes
+        setInterval(async () => {
+            await loadDashboardData();
+        }, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
