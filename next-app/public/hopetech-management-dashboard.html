@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HopeTech Management Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -271,7 +272,73 @@
         </div>
     </div>
 
+    <script src="/bni/supabase-config.js"></script>
     <script>
+        // Authentication check
+        async function checkAuthentication() {
+            try {
+                const session = await window.sb.auth.getSession();
+                if (!session.data.session) {
+                    location.replace('/hopetech-login.html');
+                    return false;
+                }
+
+                // Get user role and profile
+                const response = await fetch('/api/hopetech/auth/role', {
+                    headers: { Authorization: 'Bearer ' + session.data.session.access_token },
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to authenticate');
+                }
+
+                const userData = await response.json();
+
+                // Check if user has access to this dashboard (managers and admins only)
+                if (userData.user.role !== 'manager' && userData.user.role !== 'admin') {
+                    alert('This dashboard is only accessible to Managers and Administrators');
+                    // Redirect to appropriate dashboard
+                    if (userData.user.role === 'marketing_executive') {
+                        location.replace('/hopetech-marketing-dashboard.html');
+                    } else {
+                        location.replace('/hopetech-login.html');
+                    }
+                    return false;
+                }
+
+                // Update user info in header
+                const userInfoHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-700">Welcome, ${userData.fullName || 'User'}</span>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${userData.user.role === 'admin' ? 'Admin' : 'Manager'}</span>
+                    </div>
+                `;
+
+                // Add user info and logout button to header
+                const headerDiv = document.querySelector('header .max-w-7xl .flex.items-center.justify-between');
+                if (headerDiv) {
+                    headerDiv.insertAdjacentHTML('beforeend', userInfoHTML);
+                    headerDiv.insertAdjacentHTML('beforeend', `
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600 transition">
+                            <i class="fas fa-sign-out-alt text-xl"></i>
+                        </button>
+                    `);
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Authentication failed:', error);
+                location.replace('/hopetech-login.html');
+                return false;
+            }
+        }
+
+        async function logout() {
+            await window.sb.auth.signOut();
+            location.replace('/hopetech-login.html');
+        }
+
         // API base URL
         const apiBase = '/api/tablet-crm';
         let managementData = [];
@@ -279,6 +346,10 @@
 
         // Initialize dashboard
         window.addEventListener('load', async () => {
+            // Check authentication first
+            const isAuthenticated = await checkAuthentication();
+            if (!isAuthenticated) return;
+
             await loadDashboardData();
             initializeCharts();
             await loadFieldActivity();

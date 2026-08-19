@@ -246,13 +246,21 @@
 <script src="supabase-config.js"></script>
 <script>
 let _contacts = [];
+let _contactLoadError = '';
+const trackerEsc = value => String(value || '')
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;');
 
 async function fetchContacts() {
+  _contactLoadError = '';
   const { data, error } = await window.sb
     .from('bni_contacts')
     .select('*')
     .order('id');
   if (error) {
+    _contactLoadError = error.message;
     window.bniToast('Failed to load contacts: ' + error.message, 'error');
     return [];
   }
@@ -325,6 +333,14 @@ function renderTable() {
   if (filtered.length === 0) {
     tbody.innerHTML = '';
     empty.classList.remove('hidden');
+    empty.innerHTML = _contactLoadError
+      ? `<div class="text-4xl mb-4 text-red-400">!</div>
+         <p class="font-semibold text-red-600">Contacts could not be loaded</p>
+         <p class="text-sm mt-2 text-gray-500">${trackerEsc(_contactLoadError)}</p>
+         <button onclick="refreshContacts()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">Try again</button>`
+      : `<div class="text-4xl mb-4 text-gray-300">0</div>
+         <p class="font-medium">No contacts match the current filters</p>
+         <p class="text-sm mt-1">Clear the filters or click "+ Add Contact".</p>`;
     renderStats(contacts);
     return;
   }

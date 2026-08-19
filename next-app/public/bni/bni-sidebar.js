@@ -72,6 +72,9 @@
       { href: '/bni/templates.html',      icon: 'mail',           label: 'Templates',       desc: 'Ready-to-send WhatsApp & email messages — personalise once, copy for any contact' },
       { href: '/bni/settings.html',       icon: 'settings',       label: 'Settings',        desc: 'Configure WhatsApp API, AI, and other integrations for this CRM' },
     ]},
+    { title: 'Growth',     items: [
+      { href: '/bni/social-campaign.html', icon: 'megaphone', label: 'Marketing Ops', desc: 'LinkedIn publishing, response inbox, CRM handoff, and attribution' },
+    ]},
   ];
   const LINKS = NAV_GROUPS.flatMap(g => g.items);
 
@@ -252,7 +255,7 @@
       -webkit-backdrop-filter:saturate(1.3) blur(10px);
       border-bottom:1px solid var(--bni-border);
       z-index:65;
-      align-items:center; justify-content:space-between;
+      align-items:center; justify-content:flex-start; gap:12px;
       padding:0 14px;
       transition:left 0.22s ease;
     }
@@ -267,6 +270,7 @@
       display:flex; align-items:center; justify-content:center;
       box-shadow:0 2px 8px rgba(37,99,235,0.3);
       flex-shrink:0;
+      order:-1;
     }
     /* On desktop with the sidebar visible, the BK logo is redundant — hide it. */
     body.bni-sidebar-applied:not(.bni-sidebar-collapsed) #bni-mobile-bar .mb-logo { display:none; }
@@ -392,10 +396,10 @@
     const activeLabel = (LINKS.find(l => current.endsWith(l.href.toLowerCase())) || {}).label || 'BNI 121';
     return `
       <div id="bni-mobile-bar">
-        <div class="mb-title"><span class="mb-logo">BK</span><span>${activeLabel}</span></div>
         <button id="bni-hamburger" aria-label="Open menu">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
+        <div class="mb-title"><span class="mb-logo">BK</span><span>${activeLabel}</span></div>
       </div>
       <div id="bni-sidebar-backdrop"></div>
       <aside id="bni-sidebar-root">
@@ -491,6 +495,20 @@
   }
 
   function apply() {
+    // Some admin tools are embedded inside another authenticated BNI page.
+    // Let those pages opt out of a duplicate inner navigation while preserving
+    // the sidebar when the same tool is opened directly or in full-screen mode.
+    if (
+      (window.self !== window.top ||
+        new URLSearchParams(window.location.search).get('embedded') === '1') &&
+      document.documentElement.dataset.hideEmbeddedSidebar === 'true'
+    ) {
+      const mount = document.getElementById('bni-sidebar-mount');
+      if (mount) mount.remove();
+      document.body.classList.add('bni-embedded');
+      return;
+    }
+
     // Public-facing scheduler page should NOT get the admin sidebar injected.
     // (bni-sidebar.js is loaded on every BNI page but scheduler is customer-facing.)
     if (location.pathname.endsWith('/bni/scheduler.html') || location.pathname === '/bni/scheduler') {

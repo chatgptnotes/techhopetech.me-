@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HopeTech Admin</title>
+  <script src="auth-guard.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     body { font-family: 'Inter', sans-serif; background: #020817; color: #f8fafc; }
@@ -75,7 +77,7 @@
 </head>
 <body class="min-h-screen">
 <!-- LOGIN GATE -->
-  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+  <div id="loginScreen" class="hidden" style="display:none">
     <div class="glass rounded-3xl p-10 w-full max-w-sm text-center">
       <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-6" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -91,7 +93,7 @@
   </div>
 
   <!-- MAIN APP -->
-  <div id="appScreen" class="hidden min-h-screen">
+  <div id="appScreen" class="min-h-screen">
 
     <!-- Top nav -->
     <header class="sticky top-0 z-50 border-b border-white/5" style="background:rgba(2,8,23,0.95);backdrop-filter:blur(20px);">
@@ -112,9 +114,10 @@
     <div class="max-w-7xl mx-auto px-6 py-8">
 
       <!-- Tab nav -->
-      <div class="flex gap-1 mb-8 border-b border-white/5 pb-0">
+      <div class="flex gap-1 mb-8 border-b border-white/5 pb-0 overflow-x-auto">
         <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
         <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="contacts" onclick="switchTab('contacts')">Contacts</button>
+        <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="marketing" onclick="switchTab('marketing')">Marketing</button>
         <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="ventures" onclick="switchTab('ventures')">Ventures</button>
         <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="content" onclick="switchTab('content')">Page Content</button>
         <button class="tab px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 transition-all" data-tab="bookings" onclick="switchTab('bookings')">Bookings</button>
@@ -285,12 +288,104 @@
           </div>
 
           <div class="glass rounded-2xl p-6">
-            <h3 class="text-sm font-semibold text-slate-300 mb-2">Deploy Command</h3>
-            <p class="text-slate-500 text-sm mb-3">Run from your terminal (Mac) to push changes live:</p>
-            <div class="bg-black/40 rounded-xl p-4 font-mono text-xs text-slate-400 select-all break-all">
-              scp ~/.openclaw/workspace/public/bni/hopetech-landing.html root@76.13.244.21:/var/www/bni/hopetech-landing.html
+            <div class="flex items-start justify-between gap-4 flex-wrap mb-4">
+              <div>
+                <h3 class="text-sm font-semibold text-slate-300 mb-1">HopeTech Demo Data</h3>
+                <p class="text-slate-500 text-sm max-w-3xl">
+                  Edit the sample records used on the marketing, content, and reporting pages. Save them here, then refresh the module pages to test the full data pipeline.
+                </p>
+              </div>
+              <button class="btn-primary" onclick="saveHopeTechDemoData()">Save Demo Data</button>
+            </div>
+
+            <div class="space-y-5">
+              <div>
+                <div class="flex items-center justify-between gap-3 mb-2">
+                  <label class="text-xs text-slate-500 uppercase tracking-widest block">Marketing Hub demo fields</label>
+                  <span class="text-xs text-slate-600">Normal form inputs</span>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-xs text-slate-500 mb-1.5 block">Intro label</label>
+                    <input type="text" id="demo-marketing-introLabel" />
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-500 mb-1.5 block">Section title</label>
+                    <input type="text" id="demo-marketing-title" />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="text-xs text-slate-500 mb-1.5 block">Section description</label>
+                    <textarea id="demo-marketing-description" rows="2"></textarea>
+                  </div>
+                </div>
+
+                <div class="mt-5">
+                  <div class="text-xs text-slate-500 uppercase tracking-widest mb-3">Metrics</div>
+                  <div class="grid md:grid-cols-2 gap-4">
+                    <div class="space-y-3 glass rounded-2xl p-4">
+                      <div class="text-xs text-slate-400 font-semibold uppercase tracking-widest">Metric 1</div>
+                      <input type="text" id="demo-marketing-m1-label" placeholder="Label" />
+                      <input type="text" id="demo-marketing-m1-value" placeholder="Value" />
+                      <input type="text" id="demo-marketing-m1-note" placeholder="Note" />
+                    </div>
+                    <div class="space-y-3 glass rounded-2xl p-4">
+                      <div class="text-xs text-slate-400 font-semibold uppercase tracking-widest">Metric 2</div>
+                      <input type="text" id="demo-marketing-m2-label" placeholder="Label" />
+                      <input type="text" id="demo-marketing-m2-value" placeholder="Value" />
+                      <input type="text" id="demo-marketing-m2-note" placeholder="Note" />
+                    </div>
+                    <div class="space-y-3 glass rounded-2xl p-4">
+                      <div class="text-xs text-slate-400 font-semibold uppercase tracking-widest">Metric 3</div>
+                      <input type="text" id="demo-marketing-m3-label" placeholder="Label" />
+                      <input type="text" id="demo-marketing-m3-value" placeholder="Value" />
+                      <input type="text" id="demo-marketing-m3-note" placeholder="Note" />
+                    </div>
+                    <div class="space-y-3 glass rounded-2xl p-4">
+                      <div class="text-xs text-slate-400 font-semibold uppercase tracking-widest">Metric 4</div>
+                      <input type="text" id="demo-marketing-m4-label" placeholder="Label" />
+                      <input type="text" id="demo-marketing-m4-value" placeholder="Value" />
+                      <input type="text" id="demo-marketing-m4-note" placeholder="Note" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-5">
+                  <div class="text-xs text-slate-500 uppercase tracking-widest mb-3">Lead cards</div>
+                  <div class="grid gap-4">
+                    <div class="glass rounded-2xl p-4 space-y-3">
+                      <div class="text-xs text-slate-400 font-semibold uppercase tracking-widest">Lead Card 1</div>
+                      <input type="text" id="demo-marketing-c1-title" placeholder="Title" />
+                      <input type="text" id="demo-marketing-c1-subtitle" placeholder="Subtitle" />
+                      <input type="text" id="demo-marketing-c1-tag" placeholder="Tag" />
+                      <input type="text" id="demo-marketing-c1-tagClass" placeholder="Tag class" />
+                      <textarea id="demo-marketing-c1-body" rows="2" placeholder="Body"></textarea>
+                    </div>
+                    <div class="glass rounded-2xl p-4 space-y-3">
+                      <div class="text-xs text-slate-400 font-semibold uppercase tracking-widest">Lead Card 2</div>
+                      <input type="text" id="demo-marketing-c2-title" placeholder="Title" />
+                      <input type="text" id="demo-marketing-c2-subtitle" placeholder="Subtitle" />
+                      <input type="text" id="demo-marketing-c2-tag" placeholder="Tag" />
+                      <input type="text" id="demo-marketing-c2-tagClass" placeholder="Tag class" />
+                      <textarea id="demo-marketing-c2-body" rows="2" placeholder="Body"></textarea>
+                    </div>
+                    <div class="glass rounded-2xl p-4 space-y-3">
+                      <div class="text-xs text-slate-400 font-semibold uppercase tracking-widest">Lead Card 3</div>
+                      <input type="text" id="demo-marketing-c3-title" placeholder="Title" />
+                      <input type="text" id="demo-marketing-c3-subtitle" placeholder="Subtitle" />
+                      <input type="text" id="demo-marketing-c3-tag" placeholder="Tag" />
+                      <input type="text" id="demo-marketing-c3-tagClass" placeholder="Tag class" />
+                      <textarea id="demo-marketing-c3-body" rows="2" placeholder="Body"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <button class="btn-secondary" onclick="resetHopeTechDemoData()">Reset Demo Data</button>
+              <button class="btn-secondary" onclick="loadHopeTechDemoData()">Reload Saved Demo Data</button>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -307,6 +402,16 @@
         <div id="slots-grid" class="glass rounded-2xl p-6">
           <p class="text-slate-500 text-sm">Select a date to manage slots.</p>
         </div>
+      </div>
+
+      <!-- MARKETING TAB -->
+      <div id="tab-marketing" class="tab-panel hidden">
+        <iframe
+          id="marketing-workspace-frame"
+          src="/bni/marketing-workspace.html?v=20260727-menu-left"
+          title="HopeTech Marketing Workspace"
+          style="width:100%;height:1500px;border:0;border-radius:24px;background:#f5f4ef;"
+        ></iframe>
       </div>
 
       <!-- SETTINGS TAB -->
@@ -495,14 +600,6 @@ function exportJSON() {
 }
 
 // ── AUTH ───────────────────────────────────────────────────────────────────
-const ADMIN_PW = 'HopeTech@2026';
-const SESSION_MS = 12 * 60 * 60 * 1000; // 12-hour session, same scheme as login.html
-
-function hasSession() {
-  const exp = Number(localStorage.getItem('ht_admin_session'));
-  return !!exp && Date.now() < exp;
-}
-
 function showApp() {
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('appScreen').classList.remove('hidden');
@@ -513,28 +610,16 @@ function showApp() {
   initApp();
 }
 
-function doLogin() {
-  const val = document.getElementById('passwordInput').value;
-  if (val === ADMIN_PW) {
-    const exp = String(Date.now() + SESSION_MS);
-    localStorage.setItem('ht_admin_session', exp);
-    localStorage.setItem('bni_crm_auth', exp); // single sign-on: also unlocks the CRM pages (auth-guard.js)
-    showApp();
-  } else {
-    document.getElementById('loginError').classList.remove('hidden');
-    document.getElementById('passwordInput').value = '';
-  }
-}
-
-function doLogout() {
-  localStorage.removeItem('ht_admin_session');
-  localStorage.removeItem('bni_crm_auth'); // single sign-out with the CRM pages
-  location.reload();
+async function doLogout() {
+  await window.sb.auth.signOut();
+  location.replace('login.html');
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  localStorage.removeItem('ht_admin_pw'); // retire the old per-browser password override
-  if (hasSession()) showApp();
+  localStorage.removeItem('ht_admin_pw');
+  localStorage.removeItem('ht_admin_session');
+  localStorage.removeItem('bni_crm_auth');
+  showApp();
 });
 
 // ── TABS ───────────────────────────────────────────────────────────────────
@@ -952,6 +1037,185 @@ function renderDashboard() {
 
 // Set initial tab styles
 document.querySelectorAll('.tab').forEach(t => t.classList.add('tab-inactive'));
+
+const HOPETECH_DEMO_DEFAULTS = {
+  marketing: {
+    introLabel: 'Demo data',
+    title: 'Sample leads and nurture results',
+    description: 'These are fake records for presentation. They show how forms, emails, and workflows would behave.',
+    metrics: [
+      { label: 'Demo requests', value: '42', note: 'Captured from product pages this month' },
+      { label: 'Trial activations', value: '18', note: 'Users who started a trial after landing' },
+      { label: 'Open rate', value: '31%', note: 'Sample email performance for nurture series' },
+      { label: 'Re-engaged', value: '7 days', note: 'Auto email when a user goes inactive' },
+    ],
+    cards: [
+      { title: 'Asha Verma', subtitle: 'Clinical Director · Demo requested', tag: 'Hot lead', tagClass: 'tag-emerald', body: 'Trigger: filled product demo form after pricing visit.' },
+      { title: 'Rohit Mehta', subtitle: 'Ops Head · Trial active', tag: 'Nurture', tagClass: 'tag-blue', body: 'Trigger: opened email 2 and clicked feature overview.' },
+      { title: 'Mira Khan', subtitle: 'Founder · Re-engaged', tag: 'Resume', tagClass: 'tag-gold', body: 'Trigger: inactive for 7 days, then reopened the product email.' },
+    ],
+  },
+  reporting: {
+    introLabel: 'Demo dashboard',
+    title: 'Sample numbers for a live presentation',
+    description: 'These values are dummy data. They show the shape of the dashboard without exposing real customer information.',
+    metrics: [
+      { label: 'Website visits', value: '312', note: 'From SEO, social, and referrals' },
+      { label: 'Qualified leads', value: '46', note: 'Captured from forms and landing pages' },
+      { label: 'Demos booked', value: '18', note: 'Leads that converted to calls' },
+      { label: 'Pipeline value', value: '1.8M', note: 'Sample revenue influenced by campaigns' },
+    ],
+    cards: [
+      { title: 'Organic search', subtitle: 'Keyword: hospital management software', tag: 'Top source', tagClass: 'tag-cyan', body: '92 visits, 14 leads, 4 demos, 2 closed deals.' },
+      { title: 'Product launch email', subtitle: 'Campaign: Q3 release announcement', tag: 'High ROI', tagClass: 'tag-emerald', body: '54 clicks, 11 conversions, 3 demo bookings.' },
+      { title: 'In-app event', subtitle: 'Event: feature_clicked', tag: 'Behavioral', tagClass: 'tag-blue', body: 'Triggered 9 nurture emails and 5 sales follow-ups.' },
+    ],
+  },
+  content: {
+    introLabel: 'Demo content',
+    title: 'Sample publishing calendar',
+    description: 'These are fake content assets for demos. They show how content, SEO, and landing pages would look on HopeTech.',
+    cards: [
+      { tag: 'Blog', tagClass: 'tag-cyan', title: 'How to choose software for hospitals', meta: 'SEO article · Published today' },
+      { tag: 'Launch page', tagClass: 'tag-blue', title: 'ClinicFlow feature overview', meta: 'Landing page · In review' },
+      { tag: 'Release note', tagClass: 'tag-emerald', title: 'Version 2.4: scheduling improvements', meta: 'Product update · Ready to send' },
+      { tag: 'Docs', tagClass: 'tag-gold', title: 'Feature setup guide for admins', meta: 'Knowledge base · Draft' },
+    ],
+    metrics: [
+      { label: 'Pages published', value: '12' },
+      { label: 'Keywords ranking', value: '4' },
+      { label: 'Organic visits', value: '860' },
+      { label: 'CTA clicks', value: '28' },
+    ],
+  },
+};
+
+function safeParseJSON(raw, fallback) {
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : fallback;
+  } catch (err) {
+    return fallback;
+  }
+}
+
+function getHopeTechDemoDefaults(name) {
+  return JSON.parse(JSON.stringify(HOPETECH_DEMO_DEFAULTS[name]));
+}
+
+function readHopeTechDemo(name) {
+  const fallback = getHopeTechDemoDefaults(name);
+  return safeParseJSON(localStorage.getItem('ht_demo_' + name) || '', fallback);
+}
+
+function readMarketingDemoForm() {
+  const metrics = [1, 2, 3, 4].map(n => ({
+    label: document.getElementById(`demo-marketing-m${n}-label`)?.value || '',
+    value: document.getElementById(`demo-marketing-m${n}-value`)?.value || '',
+    note: document.getElementById(`demo-marketing-m${n}-note`)?.value || '',
+  }));
+  const cards = [1, 2, 3].map(n => ({
+    title: document.getElementById(`demo-marketing-c${n}-title`)?.value || '',
+    subtitle: document.getElementById(`demo-marketing-c${n}-subtitle`)?.value || '',
+    tag: document.getElementById(`demo-marketing-c${n}-tag`)?.value || '',
+    tagClass: document.getElementById(`demo-marketing-c${n}-tagClass`)?.value || '',
+    body: document.getElementById(`demo-marketing-c${n}-body`)?.value || '',
+  }));
+  return {
+    introLabel: document.getElementById('demo-marketing-introLabel')?.value || '',
+    title: document.getElementById('demo-marketing-title')?.value || '',
+    description: document.getElementById('demo-marketing-description')?.value || '',
+    metrics,
+    cards,
+  };
+}
+
+function writeMarketingDemoForm(data) {
+  const fallback = getHopeTechDemoDefaults('marketing');
+  const source = Object.assign({}, fallback, data || {});
+  document.getElementById('demo-marketing-introLabel').value = source.introLabel || '';
+  document.getElementById('demo-marketing-title').value = source.title || '';
+  document.getElementById('demo-marketing-description').value = source.description || '';
+  [1, 2, 3, 4].forEach((n, index) => {
+    const metric = source.metrics?.[index] || {};
+    document.getElementById(`demo-marketing-m${n}-label`).value = metric.label || '';
+    document.getElementById(`demo-marketing-m${n}-value`).value = metric.value || '';
+    document.getElementById(`demo-marketing-m${n}-note`).value = metric.note || '';
+  });
+  [1, 2, 3].forEach((n, index) => {
+    const card = source.cards?.[index] || {};
+    document.getElementById(`demo-marketing-c${n}-title`).value = card.title || '';
+    document.getElementById(`demo-marketing-c${n}-subtitle`).value = card.subtitle || '';
+    document.getElementById(`demo-marketing-c${n}-tag`).value = card.tag || '';
+    document.getElementById(`demo-marketing-c${n}-tagClass`).value = card.tagClass || '';
+    document.getElementById(`demo-marketing-c${n}-body`).value = card.body || '';
+  });
+}
+
+function loadHopeTechDemoData() {
+  writeMarketingDemoForm(readHopeTechDemo('marketing'));
+  ['reporting', 'content'].forEach(name => {
+    const el = document.getElementById('demo-' + name + '-json');
+    if (el) el.value = JSON.stringify(readHopeTechDemo(name), null, 2);
+  });
+}
+
+function saveHopeTechDemoData(silent=false) {
+  const names = ['reporting', 'content'];
+  const invalid = [];
+  localStorage.setItem('ht_demo_marketing', JSON.stringify(readMarketingDemoForm()));
+  names.forEach(name => {
+    const el = document.getElementById('demo-' + name + '-json');
+    if (!el) return;
+    const fallback = getHopeTechDemoDefaults(name);
+    const parsed = safeParseJSON(el.value, null);
+    if (!parsed) {
+      invalid.push(name);
+      localStorage.setItem('ht_demo_' + name, JSON.stringify(fallback));
+      el.value = JSON.stringify(fallback, null, 2);
+      return;
+    }
+    localStorage.setItem('ht_demo_' + name, JSON.stringify(parsed));
+    el.value = JSON.stringify(parsed, null, 2);
+  });
+  if (!silent) {
+    if (invalid.length) {
+      toast('Some demo JSON was invalid and reset to defaults', 'error');
+    } else {
+      toast('HopeTech demo data saved');
+    }
+  }
+}
+
+function resetHopeTechDemoData() {
+  ['marketing', 'reporting', 'content'].forEach(name => {
+    const fallback = getHopeTechDemoDefaults(name);
+    localStorage.setItem('ht_demo_' + name, JSON.stringify(fallback));
+  });
+  loadHopeTechDemoData();
+  toast('HopeTech demo data reset to defaults');
+}
+
+function loadContent() {
+  const saved = safeParseJSON(localStorage.getItem('ht_content') || '{}', {});
+  const data = Object.assign({}, DEFAULT_CONTENT, saved);
+  Object.entries(CONTENT_ID_MAP).forEach(([k, suffix]) => {
+    const el = document.getElementById('content-' + suffix);
+    if (el) el.value = data[k] || '';
+  });
+  loadHopeTechDemoData();
+}
+
+function saveContent() {
+  const data = {};
+  Object.entries(CONTENT_ID_MAP).forEach(([k, suffix]) => {
+    const el = document.getElementById('content-' + suffix);
+    if (el) data[k] = el.value;
+  });
+  localStorage.setItem('ht_content', JSON.stringify(data));
+  saveHopeTechDemoData(true);
+  toast('Content saved â€” deploy to publish changes');
+}
 </script>
 </body>
 </html>
