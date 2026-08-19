@@ -3,10 +3,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --no-lint",
     "start": "next start",
     "lint": "next lint",
-    "migrate:contacts": "node scripts/migrate-contacts.mjs"
+    "migrate:contacts": "node scripts/migrate-contacts.mjs",
+    "test:marketing-pipeline": "node scripts/test-marketing-pipeline.mjs",
+    "test:full-marketing-pipeline": "node scripts/test-full-marketing-pipeline.mjs",
+    "invite:marketing-admin": "node scripts/invite-marketing-admin.mjs",
+    "link:marketing-admin": "node scripts/create-marketing-setup-link.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.0",
