@@ -1,12 +1,7 @@
 // Target Management Library for HopeTech Hospital Marketing CRM
 // Handles target CRUD operations, progress tracking, and validation
 
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { db } from '@/lib/supabase-admin';
 
 // ============================================================================
 // TYPES AND INTERFACES
@@ -60,6 +55,7 @@ export interface CreateTargetRequest {
   target_period: Target['target_period'];
   period_start_date: string;
   period_end_date: string;
+  assigned_by: string;
   assignment_notes?: string;
   priority_level?: Target['priority_level'];
 }
@@ -80,11 +76,8 @@ export interface UpdateTargetRequest {
  * Create a new target for a marketing executive
  */
 export async function createTarget(request: CreateTargetRequest): Promise<TargetWithProgress> {
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error('Authentication required');
-  }
+  // Remove authentication logic - this should be handled by the calling route
+  // This function now just performs the database operations
 
   // Validate dates
   const startDate = new Date(request.period_start_date);
@@ -100,7 +93,7 @@ export async function createTarget(request: CreateTargetRequest): Promise<Target
   }
 
   // Check if executive exists
-  const { data: executive, error: execError } = await supabase
+  const { data: executive, error: execError } = await db
     .from('hospital_marketing_executives')
     .select('id, name, status')
     .eq('id', request.executive_id)
@@ -115,7 +108,7 @@ export async function createTarget(request: CreateTargetRequest): Promise<Target
   }
 
   // Create target
-  const { data: target, error: targetError } = await supabase
+  const { data: target, error: targetError } = await db
     .from('hospital_marketing_targets')
     .insert({
       executive_id: request.executive_id,
@@ -125,7 +118,7 @@ export async function createTarget(request: CreateTargetRequest): Promise<Target
       target_period: request.target_period,
       period_start_date: request.period_start_date,
       period_end_date: request.period_end_date,
-      assigned_by: user.id,
+      assigned_by: request.assigned_by,
       assignment_notes: request.assignment_notes,
       priority_level: request.priority_level || 'medium',
       status: 'active'
@@ -162,7 +155,7 @@ export async function getTargets(filters: {
   period_end?: string;
   include_progress?: boolean;
 } = {}): Promise<TargetWithProgress[]> {
-  let query = supabase
+  let query = db
     .from('hospital_marketing_targets')
     .select(`
       *,
@@ -246,7 +239,7 @@ export async function getTargets(filters: {
  * Get a single target by ID
  */
 export async function getTarget(targetId: string): Promise<TargetWithProgress> {
-  const { data: target, error } = await supabase
+  const { data: target, error } = await db
     .from('hospital_marketing_targets')
     .select(`
       *,
@@ -321,7 +314,7 @@ export async function updateTarget(targetId: string, updates: UpdateTargetReques
   }
 
   // Perform update
-  const { data: target, error } = await supabase
+  const { data: target, error } = await db
     .from('hospital_marketing_targets')
     .update(updateData)
     .eq('id', targetId)
@@ -355,7 +348,7 @@ export async function updateTarget(targetId: string, updates: UpdateTargetReques
  * Delete/cancel a target
  */
 export async function deleteTarget(targetId: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await db
     .from('hospital_marketing_targets')
     .update({ status: 'cancelled' })
     .eq('id', targetId);
@@ -378,7 +371,7 @@ export async function getTargetProgress(targetId: string): Promise<{
   achievement_percentage: number;
   remaining_value: number;
 }> {
-  const { data: progress, error } = await supabase
+  const { data: progress, error } = await db
     .from('hospital_marketing_target_progress')
     .select('*')
     .eq('target_id', targetId)
@@ -414,7 +407,7 @@ export async function getTargetProgressHistory(targetId: string, days: number = 
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
 
-  const { data: history, error } = await supabase
+  const { data: history, error } = await db
     .from('hospital_marketing_target_progress')
     .select('*')
     .eq('target_id', targetId)
@@ -455,7 +448,7 @@ export async function getExecutiveProgressOverview(executiveId: string): Promise
   }>;
 }> {
   // Get executive details
-  const { data: executive, error: execError } = await supabase
+  const { data: executive, error: execError } = await db
     .from('hospital_marketing_executives')
     .select('id, name')
     .eq('id', executiveId)
@@ -548,7 +541,7 @@ async function getDailyProgress(executiveId: string, startDate: Date, endDate: D
   total_achievements: number;
   target_achievement: number;
 }>> {
-  const { data: dailyData, error } = await supabase
+  const { data: dailyData, error } = await db
     .from('hospital_marketing_target_progress')
     .select('progress_date, achieved_value')
     .eq('executive_id', executiveId)

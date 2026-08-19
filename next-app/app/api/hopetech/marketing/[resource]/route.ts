@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/supabase-admin';
-import { routeError } from '@/lib/api';
+import { apiError } from '@/lib/api';
 import { HttpError, requireMarketingAdmin } from '@/lib/marketing-auth';
 import {
   marketingTables,
@@ -40,7 +40,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ res
       steps: (steps || []).filter(step => step.workflow_id === workflow.id),
     })));
   } catch (error) {
-    return routeError(error);
+    const message = error instanceof Error ? error.message : 'An error occurred';
+    return apiError(message);
   }
 }
 
@@ -67,7 +68,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ re
     }
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    return routeError(error);
+    const message = error instanceof Error ? error.message : 'An error occurred';
+    return apiError(message);
   }
 }
 
@@ -94,7 +96,8 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ r
     }
     return NextResponse.json(data);
   } catch (error) {
-    return routeError(error);
+    const message = error instanceof Error ? error.message : 'An error occurred';
+    return apiError(message);
   }
 }
 
@@ -115,6 +118,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     }
     return NextResponse.json({ deleted: true });
   } catch (error) {
-    return routeError(error);
+    const message = error instanceof Error ? error.message : 'An error occurred';
+    return apiError(message);
   }
 }

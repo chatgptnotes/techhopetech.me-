@@ -87,7 +87,9 @@ export const notificationRules: NotificationRule[] = [
       message: `You've achieved ${data.targetProgress.achievement_percentage.toFixed(1)}% of your target, but you should be at ${((data.daysElapsed / data.totalDays) * 100).toFixed(1)}%. Catch up to stay on track!`,
       priority_level: 'high',
       channels: ['in_app', 'whatsapp']
-    })
+    }),
+    priority_level: 'high',
+    channels: ['in_app', 'whatsapp']
   },
 
   // Rule 2: Mid-Month Alert (if <50% achieved)
@@ -105,7 +107,9 @@ export const notificationRules: NotificationRule[] = [
       message: `You're halfway through the month with ${data.targetProgress.achievement_percentage.toFixed(1)}% achievement. Push harder to reach your ${data.target.target_value} target!`,
       priority_level: 'medium',
       channels: ['in_app', 'email']
-    })
+    }),
+    priority_level: 'medium',
+    channels: ['in_app', 'email']
   },
 
   // Rule 3: Deadline Approaching (3 days before)
@@ -119,7 +123,9 @@ export const notificationRules: NotificationRule[] = [
       message: `Only ${data.targetProgress.days_remaining} days left! You've achieved ${data.targetProgress.achievement_percentage.toFixed(1)}% of your target. ${data.targetProgress.remaining_value} more to go!`,
       priority_level: 'high',
       channels: ['in_app', 'sms', 'whatsapp']
-    })
+    }),
+    priority_level: 'high',
+    channels: ['in_app', 'sms', 'whatsapp']
   },
 
   // Rule 4: Monthly Completion Report
@@ -135,7 +141,9 @@ export const notificationRules: NotificationRule[] = [
       message: `Congratulations! You've achieved ${data.target.target_value} ${data.target.target_type === 'hospital_visits' ? 'visits' : 'referrals'} this month. Great work!`,
       priority_level: 'medium',
       channels: ['in_app', 'email']
-    })
+    }),
+    priority_level: 'medium',
+    channels: ['in_app', 'email']
   },
 
   // Rule 5: Underperformer Alert (Management only)
@@ -149,7 +157,9 @@ export const notificationRules: NotificationRule[] = [
       message: `${data.executive.name} has a performance score of ${data.performanceScore.total_performance_score.toFixed(1)}/100 (${data.performanceScore.performance_category}). Consider intervention and support.`,
       priority_level: 'high',
       channels: ['in_app', 'email']
-    })
+    }),
+    priority_level: 'high',
+    channels: ['in_app', 'email']
   }
 ];
 

@@ -11,14 +11,15 @@ import * as targetManagement from '@/lib/target-management';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { targetId: string } }
+  { params }: { params: Promise<{ targetId: string }> }
 ) {
   try {
     // Authenticate user
     const user = await authenticateUser(request);
 
     // Get target
-    const target = await targetManagement.getTarget(params.targetId);
+    const { targetId } = await params;
+    const target = await targetManagement.getTarget(targetId);
 
     // Check access permissions
     if (user.role === 'marketing_executive') {
@@ -51,7 +52,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { targetId: string } }
+  { params }: { params: Promise<{ targetId: string }> }
 ) {
   try {
     // Authenticate and authorize
@@ -75,8 +76,9 @@ export async function PUT(
       }, { status: 400 });
     }
 
+    const { targetId } = await params;
     if (body.period_end_date !== undefined) {
-      const existingTarget = await targetManagement.getTarget(params.targetId);
+      const existingTarget = await targetManagement.getTarget(targetId);
       if (!targetManagement.validateTargetPeriod(existingTarget.period_start_date, body.period_end_date)) {
         return NextResponse.json({
           success: false,
@@ -86,7 +88,7 @@ export async function PUT(
     }
 
     // Update target
-    const updatedTarget = await targetManagement.updateTarget(params.targetId, body);
+    const updatedTarget = await targetManagement.updateTarget(targetId, body);
 
     return NextResponse.json({
       success: true,
@@ -109,7 +111,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { targetId: string } }
+  { params }: { params: Promise<{ targetId: string }> }
 ) {
   try {
     // Authenticate and authorize
@@ -123,7 +125,8 @@ export async function DELETE(
     }
 
     // Delete (cancel) target
-    await targetManagement.deleteTarget(params.targetId);
+    const { targetId } = await params;
+    await targetManagement.deleteTarget(targetId);
 
     return NextResponse.json({
       success: true,

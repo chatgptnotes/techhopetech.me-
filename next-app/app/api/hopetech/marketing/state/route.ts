@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/supabase-admin';
-import { routeError } from '@/lib/api';
+import { apiError } from '@/lib/api';
 import { requireMarketingAdmin } from '@/lib/marketing-auth';
 import { metricKpis } from '@/lib/marketing-platform';
 
@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    return routeError(error);
+    const message = error instanceof Error ? error.message : 'An error occurred';
+    return apiError(message);
   }
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/supabase-admin';
-import { routeError } from '@/lib/api';
+import { apiError } from '@/lib/api';
 import { requireMarketingAdmin } from '@/lib/marketing-auth';
 import { hubSpotConfigured, syncHubSpotContacts } from '@/lib/hubspot';
 
@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
       logs: data || [],
     });
   } catch (error) {
-    return routeError(error);
+    const message = error instanceof Error ? error.message : 'An error occurred';
+    return apiError(message);
   }
 }
 
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
     const counts = await syncHubSpotContacts();
     return NextResponse.json({ synced: true, counts });
   } catch (error) {
-    return routeError(error);
+    const message = error instanceof Error ? error.message : 'An error occurred';
+    return apiError(message);
   }
 }
