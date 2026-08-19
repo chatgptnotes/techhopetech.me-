@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+.firecrawl/
 
 # Environment variables (NEVER commit these!)
 .env
@@ -48,3 +49,4 @@ supabase/.temp/
 uploads/
 *.ai-solutions-20260430
 *.bni-app-backup-20260430
+.deploy-bni121/

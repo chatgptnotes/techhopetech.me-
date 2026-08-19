@@ -72,6 +72,9 @@
       { href: '/bni/templates.html',      icon: 'mail',           label: 'Templates',       desc: 'Ready-to-send WhatsApp & email messages — personalise once, copy for any contact' },
       { href: '/bni/settings.html',       icon: 'settings',       label: 'Settings',        desc: 'Configure WhatsApp API, AI, and other integrations for this CRM' },
     ]},
+    { title: 'Growth',     items: [
+      { href: '/bni/social-campaign.html', icon: 'megaphone',      label: 'Marketing Ops',    desc: 'Social publishing, campaign folders, mentions monitoring, and attribution' },
+    ]},
   ];
   const LINKS = NAV_GROUPS.flatMap(g => g.items);
 
