@@ -1,12 +1,7 @@
 // Performance Calculation Library for HopeTech Hospital Marketing CRM
 // Handles performance scoring, rankings, and leaderboard calculations
 
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { db } from '@/lib/supabase-admin';
 
 // ============================================================================
 // TYPES AND INTERFACES
@@ -197,7 +192,7 @@ export async function calculateAllExecutiveScores(
   periodEnd: string
 ): Promise<PerformanceScore[]> {
   // Get all active executives
-  const { data: executives, error: execError } = await supabase
+  const { data: executives, error: execError } = await db
     .from('hospital_marketing_executives')
     .select('id')
     .eq('status', 'Active');
@@ -260,7 +255,7 @@ export async function generateLeaderboard(
   // Get executive details for leaderboard
   const leaderboardPromises = scores.map(async (score) => {
     // Get executive name
-    const { data: executive } = await supabase
+    const { data: executive } = await db
       .from('hospital_marketing_executives')
       .select('name')
       .eq('id', score.executive_id)
@@ -278,7 +273,7 @@ export async function generateLeaderboard(
     const pointsTotal = Object.values(pointsBreakdown).reduce((sum, val) => sum + val, 0);
 
     // Get additional metrics
-    const { data: visits } = await supabase
+    const { data: visits } = await db
       .from('hospital_marketing_visits')
       .select('id')
       .eq('executive_id', score.executive_id)
@@ -286,7 +281,7 @@ export async function generateLeaderboard(
       .lte('visit_date', periodEnd)
       .in('status', ['completed', 'verified']);
 
-    const { data: referrals } = await supabase
+    const { data: referrals } = await db
       .from('hospital_marketing_referrals')
       .select('id')
       .eq('executive_id', score.executive_id)
@@ -295,7 +290,7 @@ export async function generateLeaderboard(
       .neq('status', 'cancelled');
 
     // Calculate target achievement percentage
-    const { data: targetProgress } = await supabase
+    const { data: targetProgress } = await db
       .from('hospital_marketing_target_progress')
       .select('achievement_percentage')
       .eq('executive_id', score.executive_id)
@@ -468,7 +463,7 @@ async function getPerformanceMetrics(
   periodEnd: string
 ): Promise<PerformanceMetrics> {
   // Get visit metrics
-  const { data: visits } = await supabase
+  const { data: visits } = await db
     .from('hospital_marketing_visits')
     .select('status, visit_date')
     .eq('executive_id', executiveId)
@@ -480,7 +475,7 @@ async function getPerformanceMetrics(
   const verifiedVisits = visits?.filter(v => v.status === 'verified').length || 0;
 
   // Get referral metrics
-  const { data: referrals } = await supabase
+  const { data: referrals } = await db
     .from('hospital_marketing_referrals')
     .select('status')
     .eq('executive_id', executiveId)
@@ -494,7 +489,7 @@ async function getPerformanceMetrics(
   const convertedReferrals = referrals?.filter(r => r.status === 'discharged').length || 0;
 
   // Get target referrals
-  const { data: targetReferrals } = await supabase
+  const { data: targetReferrals } = await db
     .from('hospital_marketing_targets')
     .select('target_value')
     .eq('executive_id', executiveId)
@@ -506,7 +501,7 @@ async function getPerformanceMetrics(
   const targetReferralValue = targetReferrals?.target_value || totalReferrals;
 
   // Get task metrics
-  const { data: tasks } = await supabase
+  const { data: tasks } = await db
     .from('hospital_marketing_tasks')
     .select('status, due_date, completed_date')
     .eq('executive_id', executiveId)

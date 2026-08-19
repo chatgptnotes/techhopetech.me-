@@ -1,12 +1,7 @@
 // Smart Notification System for HopeTech Hospital Marketing CRM
 // Generates and delivers target-based performance notifications
 
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { db } from '@/lib/supabase-admin';
 
 // ============================================================================
 // TYPES AND INTERFACES
@@ -176,7 +171,7 @@ export async function generateTargetNotifications(
   const generatedNotifications: Notification[] = [];
 
   // Get all active targets
-  let targetsQuery = supabase
+  let targetsQuery = db
     .from('hospital_marketing_targets')
     .select('*, hospital_marketing_executives(id, name)')
     .eq('status', 'active');
@@ -268,7 +263,7 @@ export async function generateManagementNotifications(
   }
 
   // Get all management users
-  const { data: managementUsers, error: mgmtError } = await supabase
+  const { data: managementUsers, error: mgmtError } = await db
     .from('user_roles')
     .select('user_id')
     .in('role', ['admin', 'manager']);
@@ -278,7 +273,7 @@ export async function generateManagementNotifications(
   }
 
   // Get executive profiles for underperformers
-  const { data: underperformers, error: perfError } = await supabase
+  const { data: underperformers, error: perfError } = await db
     .from('hospital_marketing_performance_scores')
     .select(`
       executive_id,
@@ -341,7 +336,7 @@ export async function getNotifications(
   notifications: Notification[];
   unread_count: number;
 }> {
-  let query = supabase
+  let query = db
     .from('hospital_marketing_target_notifications')
     .select('*')
     .eq('executive_id', executiveId);
@@ -367,7 +362,7 @@ export async function getNotifications(
   }
 
   // Get unread count
-  const { count: unreadCount } = await supabase
+  const { count: unreadCount } = await db
     .from('hospital_marketing_target_notifications')
     .select('*', { count: 'exact', head: true })
     .eq('executive_id', executiveId)
@@ -383,7 +378,7 @@ export async function getNotifications(
  * Mark notification as read
  */
 export async function markNotificationAsRead(notificationId: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await db
     .from('hospital_marketing_target_notifications')
     .update({
       status: 'read',
@@ -400,7 +395,7 @@ export async function markNotificationAsRead(notificationId: string): Promise<vo
  * Mark all notifications as read for an executive
  */
 export async function markAllNotificationsAsRead(executiveId: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await db
     .from('hospital_marketing_target_notifications')
     .update({
       status: 'read',
@@ -447,7 +442,7 @@ export async function deliverNotification(notification: Notification): Promise<b
   }
 
   // Update notification status
-  await supabase
+  await db
     .from('hospital_marketing_target_notifications')
     .update({
       status: deliverySuccess ? 'sent' : 'failed',
@@ -476,7 +471,7 @@ async function deliverInAppNotification(notification: Notification): Promise<voi
  */
 async function deliverEmailNotification(notification: Notification): Promise<void> {
   // Get executive details
-  const { data: executive } = await supabase
+  const { data: executive } = await db
     .from('hospital_marketing_executives')
     .select('email, phone')
     .eq('id', notification.executive_id)
@@ -507,7 +502,7 @@ async function deliverEmailNotification(notification: Notification): Promise<voi
  */
 async function deliverSMSNotification(notification: Notification): Promise<void> {
   // Get executive details
-  const { data: executive } = await supabase
+  const { data: executive } = await db
     .from('hospital_marketing_executives')
     .select('phone')
     .eq('id', notification.executive_id)
@@ -531,7 +526,7 @@ async function deliverSMSNotification(notification: Notification): Promise<void>
  */
 async function deliverWhatsAppNotification(notification: Notification): Promise<void> {
   // Get executive details
-  const { data: executive } = await supabase
+  const { data: executive } = await db
     .from('hospital_marketing_executives')
     .select('phone, whatsapp_enabled')
     .eq('id', notification.executive_id)
@@ -563,7 +558,7 @@ async function getTargetProgress(targetId: string): Promise<{
   remaining_value: number;
   days_remaining: number;
 }> {
-  const { data: progress, error } = await supabase
+  const { data: progress, error } = await db
     .from('hospital_marketing_target_progress')
     .select('*')
     .eq('target_id', targetId)
@@ -581,7 +576,7 @@ async function getTargetProgress(targetId: string): Promise<{
   }
 
   // Get target to calculate days remaining
-  const { data: target } = await supabase
+  const { data: target } = await db
     .from('hospital_marketing_targets')
     .select('period_end_date')
     .eq('id', targetId)
@@ -611,7 +606,7 @@ async function createNotification(data: {
   priority_level: string;
   notification_channels: Array<'in_app' | 'email' | 'sms' | 'whatsapp'>;
 }): Promise<Notification> {
-  const { data: notification, error } = await supabase
+  const { data: notification, error } = await db
     .from('hospital_marketing_target_notifications')
     .insert({
       executive_id: data.executive_id,
