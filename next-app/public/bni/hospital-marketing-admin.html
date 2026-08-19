@@ -48,6 +48,9 @@
     }
     .tab:hover{border-color:#9db6da;color:var(--blue)}
     .tab.active{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 8px 20px rgba(16,35,63,.18)}
+    .tab-highlight{background:linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);border-color:#8b5cf6;color:#fff;font-weight:800;box-shadow:0 8px 20px rgba(139,92,246,.3);position:relative;}
+    .tab-highlight:hover{background:linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);border-color:#7c3aed;transform:translateY(-1px);}
+    .tab-badge{background:rgba(255,255,255,.3);border-radius:999px;padding:2px 6px;font-size:9px;font-weight:800;text-transform:uppercase;margin-left:4px;}
     .view{display:none;padding-top:18px;animation:rise .26s ease}
     .view.active{display:block}
     @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
@@ -125,7 +128,7 @@
       <button class="tab" data-view="doctors">Doctors</button>
       <button class="tab" data-view="referrals">Referrals</button>
       <button class="tab" data-view="analytics">Advanced Analytics</button>
-      <button class="tab" onclick="window.location.href='hospital-marketing-performance.html'">📊 Performance Analytics</button>
+      <button class="tab tab-highlight" onclick="window.location.href='hospital-marketing-performance.html'">📊 Performance Analytics <span class="tab-badge">NEW</span></button>
     </nav>
 
     <!-- Overview View -->
