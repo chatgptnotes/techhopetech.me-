@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospital Marketing | HopeTech</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root{
+      --ink:#10233f;
+      --muted:#64748b;
+      --paper:#f5f4ef;
+      --panel:#ffffff;
+      --line:#dfe4ea;
+      --blue:#1458d4;
+      --red:#e43b39;
+      --teal:#087f74;
+      --gold:#d3971d;
+      --green:#10b981;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--ink);
+      font-family:'DM Sans',sans-serif;
+      background:
+        linear-gradient(rgba(16,35,63,.035) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(16,35,63,.035) 1px,transparent 1px),
+        radial-gradient(700px 360px at 90% -10%,rgba(228,59,57,.12),transparent 60%),
+        radial-gradient(700px 420px at 0 0,rgba(20,88,212,.12),transparent 62%),
+        var(--paper);
+      background-size:28px 28px,28px 28px,auto,auto,auto;
+    }
+    h1,h2,h3,.display{font-family:'Manrope',sans-serif}
+    .shell{max-width:1480px;margin:auto;padding:26px}
+    .top{
+      background:linear-gradient(120deg,#10233f 0%,#14396f 64%,#a62e32 145%);
+      color:#fff;border-radius:26px;padding:26px 28px;position:relative;overflow:hidden;
+      box-shadow:0 22px 60px rgba(16,35,63,.2);
+    }
+    .top:after{content:'';position:absolute;width:230px;height:230px;border:50px solid rgba(255,255,255,.06);border-radius:50%;right:-60px;top:-100px}
+    .eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:10px;font-weight:800}
+    .tabs{display:flex;gap:8px;overflow:auto;padding:18px 2px 4px}
+    .tab{
+      flex:0 0 auto;border:1px solid var(--line);background:rgba(255,255,255,.72);color:#52637a;
+      border-radius:999px;padding:10px 15px;font-size:13px;font-weight:700;cursor:pointer;
+      transition:.18s ease;
+    }
+    .tab:hover{border-color:#9db6da;color:var(--blue)}
+    .tab.active{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 8px 20px rgba(16,35,63,.18)}
+    .view{display:none;padding-top:18px;animation:rise .26s ease}
+    .view.active{display:block}
+    @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+    .panel{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 30px rgba(16,35,63,.055)}
+    .panel-pad{padding:22px}
+    .metric{padding:20px;min-height:132px;position:relative;overflow:hidden}
+    .metric:after{content:'';position:absolute;right:-34px;bottom:-42px;width:110px;height:110px;border-radius:50%;background:var(--wash,rgba(20,88,212,.08))}
+    .metric-value{font-family:'Manrope',sans-serif;font-size:30px;line-height:1;font-weight:800;margin-top:18px;letter-spacing:-.04em}
+    .metric-label{color:var(--muted);font-size:12px;font-weight:700}
+    .layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr);gap:18px}
+    .list{display:grid;gap:10px}
+    .record{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff;transition:.16s;cursor:pointer}
+    .record:hover{border-color:#9bb7e4;transform:translateY(-1px);box-shadow:0 8px 18px rgba(16,35,63,.07)}
+    .record-title{font-weight:800;color:var(--ink)}
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    .chip{display:inline-flex;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:#eef3fb;color:#315f9d}
+    .chip.green{background:#e8f7f1;color:#08765e}.chip.red{background:#ffeded;color:#b62e31}.chip.gold{background:#fff5d8;color:#916710}
+    label{display:block;font-size:11px;font-weight:800;color:#53647b;margin:0 0 6px;text-transform:uppercase;letter-spacing:.055em}
+    input,select,textarea{
+      width:100%;border:1px solid #cfd8e4;background:#fff;border-radius:11px;padding:10px 11px;
+      color:var(--ink);font:inherit;font-size:13px;outline:none;transition:.15s;
+    }
+    input:focus,select:focus,textarea:focus{border-color:#4d83dd;box-shadow:0 0 0 3px rgba(20,88,212,.1)}
+    textarea{resize:vertical;min-height:82px}
+    .field{margin-bottom:13px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+    .btn{border:0;border-radius:11px;padding:10px 14px;font-size:12px;font-weight:800;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--blue);color:#fff;box-shadow:0 8px 18px rgba(20,88,212,.2)}
+    .btn-dark{background:var(--ink);color:#fff}
+    .btn-soft{background:#eef3f8;color:#334a67;border:1px solid #dce4ed}
+    .btn-danger{background:#fff0f0;color:#b52c30}
+    .btn-success{background:var(--green);color:#fff}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
+    .section-head h2{font-size:21px;margin:0;letter-spacing:-.025em}
+    .section-head p{margin:5px 0 0;font-size:13px;color:var(--muted)}
+    .empty{border:1px dashed #bec9d6;border-radius:15px;padding:25px;text-align:center;color:var(--muted);font-size:13px}
+    .toast{position:fixed;right:24px;bottom:24px;background:var(--ink);color:#fff;border-radius:13px;padding:13px 17px;font-weight:700;font-size:13px;z-index:100;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+    .toast.show{opacity:1;transform:none}.toast.error{background:#b62e31}
+    .loading{position:fixed;inset:0;background:rgba(245,244,239,.88);display:flex;align-items:center;justify-content:center;z-index:90;font-weight:800;color:var(--ink)}
+    .quick-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .quick-action{background:linear-gradient(135deg,var(--blue),#3da3bd);color:#fff;border-radius:16px;padding:16px;text-align:center;cursor:pointer;transition:.2s}
+    .quick-action:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(20,88,212,.2)}
+    .quick-action-icon{font-size:24px;margin-bottom:8px}
+    .quick-action-label{font-weight:700;font-size:13px}
+    .map-container{height:300px;border-radius:16px;overflow:hidden}
+    #routeMap{height:100%}
+    .visit-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+    .proof-item{aspect-ratio:1;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative}
+    .proof-item:hover{border-color:var(--blue)}
+    .proof-item:active{background:#f8fafc;border-color:var(--blue)}
+    .proof-item img{width:100%;height:100%;object-fit:cover}
+    .purpose-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px}
+    .purpose-tag{border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;user-select:none}
+    .purpose-tag:hover{border-color:var(--blue);background:#eef3fb}
+    .purpose-tag.selected{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .purpose-tag:active{transform:scale(0.95)}
+    .touching{opacity:0.7}
+    /* Mobile-specific feedback */
+    .mobile-device .quick-action:active,
+    .mobile-device .record:active,
+    .mobile-device .btn:active,
+    .mobile-device .tab:active {transform:scale(0.97);opacity:0.8}
+    @media(max-width:900px){.layout{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
+    @media(max-width:620px){.shell{padding:14px}.top{padding:22px 19px}.grid2,.grid3{grid-template-columns:1fr}.quick-actions{grid-template-columns:1fr}}
+
+    /* Comprehensive mobile optimizations */
+    @media (max-width: 480px) {
+      .shell { padding: 8px; }
+      .top { padding: 18px 14px; border-radius: 14px; }
+      .top:after { width: 180px; height: 180px; border-width: 40px; right:-80px; top:-80px; }
+      h1 { font-size: 1.5rem; line-height: 1.1; margin-top: 4px; }
+      .metric { padding: 12px; min-height: 100px; }
+      .metric-value { font-size: 24px; margin-top: 12px; }
+      .metric-label { font-size: 10px; }
+      .map-container { height: 200px; border-radius: 14px; }
+      .quick-actions { grid-template-columns: 1fr; gap: 10px; }
+      .quick-action { padding: 18px; border-radius: 14px; }
+      .quick-action-icon { font-size: 28px; margin-bottom: 8px; }
+      .quick-action-label { font-size: 12px; }
+      .tabs { padding: 10px 2px 2px; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tab { padding: 10px 14px; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+      .panel-pad { padding: 14px; }
+      .panel { border-radius: 16px; }
+      .btn { padding: 12px 16px; font-size: 13px; border-radius: 9px; }
+      .field { margin-bottom: 11px; }
+      input, select, textarea { padding: 12px 14px; font-size: 16px; border-radius: 9px; }
+      .record { padding: 12px; border-radius: 12px; }
+      .visit-proof { gap: 6px; }
+      .proof-item { border-radius: 10px; }
+      .purpose-tag { padding: 5px 8px; font-size: 10px; border-radius: 6px; }
+      .section-head h2 { font-size: 18px; }
+      .section-head p { font-size: 12px; }
+      .toast { right: 12px; bottom: 12px; padding: 12px 14px; font-size: 12px; border-radius: 11px; }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+      .quick-action:hover { transform: none; }
+      .quick-action:active { transform: scale(0.96); }
+      .record:hover { transform: none; border-color: var(--line); }
+      .record:active { background: #f8fafc; transform: scale(0.99); }
+      .btn:hover { transform: none; }
+      .btn:active { transform: scale(0.97); }
+      .tab:hover { border-color: var(--line); }
+      .tab:active { background: #eef3f8; }
+      .card:hover { transform: none; border-color: var(--line); }
+      .card:active { background: rgba(255,255,255,0.07); }
+    }
+
+    /* Small phone optimization */
+    @media (max-width: 360px) {
+      .metric-value { font-size: 20px; }
+      .quick-action-icon { font-size: 24px; }
+      .tab { padding: 8px 12px; font-size: 10px; }
+      .btn { padding: 10px 14px; font-size: 12px; }
+      .quick-action { padding: 16px; }
+      .metric { padding: 10px; min-height: 90px; }
+      input, select, textarea { padding: 10px 12px; font-size: 16px; }
+    }
+
+    /* Tablet optimizations */
+    @media (min-width: 481px) and (max-width: 768px) {
+      .quick-actions { grid-template-columns: repeat(2, 1fr); }
+      .metric { min-height: 110px; }
+      .map-container { height: 240px; }
+    }
+
+    /* Mobile landscape */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .top { padding: 12px 16px; }
+      h1 { font-size: 1.25rem; margin-top: 2px; }
+      .metric { min-height: 80px; padding: 10px; }
+      .metric-value { font-size: 20px; margin-top: 8px; }
+      .map-container { height: 160px; }
+      .quick-action { padding: 12px; }
+      .quick-action-icon { font-size: 20px; margin-bottom: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">Loading hospital marketing data...</div>
+  <main class="shell">
+    <header class="top">
+      <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
+        <div>
+          <div class="eyebrow text-blue-200">Hospital Marketing Control Room</div>
+          <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mt-2 mb-2">Field Marketing Tracker</h1>
+          <p class="text-slate-300 text-sm max-w-2xl">Track hospital visits, doctor meetings, and referrals with GPS verification and photo proof.</p>
+        </div>
+        <div class="flex gap-2 relative z-10">
+          <span id="dataStatus" class="chip green">Live database</span>
+          <button class="btn btn-soft" onclick="HospitalMarketing.load(true)">Refresh data</button>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Hospital marketing modules">
+      <button class="tab active" data-view="dashboard">Dashboard</button>
+      <button class="tab" data-view="checkin">Check In</button>
+      <button class="tab" data-view="meetings">Doctor Meetings</button>
+      <button class="tab" data-view="referrals">Referrals</button>
+      <button class="tab" data-view="route">Route Plan</button>
+      <button class="tab" data-view="history">Visit History</button>
+      <button class="tab" onclick="window.location.href='hospital-marketing-targets.html'">🎯 My Targets</button>
+    </nav>
+
+    <!-- Dashboard View -->
+    <section id="view-dashboard" class="view active">
+      <div id="dashboardMetrics" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4"></div>
+
+      <div class="panel panel-pad mb-4">
+        <div class="section-head">
+          <div><h2>Today's Route Map</h2><p>Planned hospital visits for today with GPS tracking.</p></div>
+          <span class="chip">Live tracking</span>
+        </div>
+        <div class="map-container">
+          <div id="routeMap"></div>
+        </div>
+      </div>
+
+      <div class="quick-actions mb-4">
+        <div class="quick-action" onclick="HospitalMarketing.showView('checkin')">
+          <div class="quick-action-icon">📍</div>
+          <div class="quick-action-label">Check In at Hospital</div>
+        </div>
+        <div class="quick-action" onclick="HospitalMarketing.showView('meetings')">
+          <div class="quick-action-icon">👨‍⚕️</div>
+          <div class="quick-action-label">Log Doctor Meeting</div>
+        </div>
+        <div class="quick-action" onclick="HospitalMarketing.showView('referrals')">
+          <div class="quick-action-icon">📝</div>
+          <div class="quick-action-label">Submit Referral</div>
+        </div>
+        <div class="quick-action" onclick="HospitalMarketing.showView('route')">
+          <div class="quick-action-icon">🗺️</div>
+          <div class="quick-action-label">Plan Tomorrow's Route</div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Today's Target Hospitals</h2><p>Planned visits for today based on your route.</p></div></div>
+          <div id="todayTargets" class="list"></div>
+        </div>
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Pending Follow-ups</h2><p>Doctors who need follow-up based on previous meetings.</p></div><span id="followupCount" class="chip gold"></span></div>
+          <div id="pendingFollowups" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Check In View -->
+    <section id="view-checkin" class="view">
+      <div class="layout">
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Hospital Check-In</h2><p>Record your visit with GPS verification and photo proof.</p></div><span class="chip">GPS enabled</span></div>
+
+          <form id="checkinForm">
+            <div class="field">
+              <label>Select Hospital *</label>
+              <select name="hospital_id" required id="hospitalSelect">
+                <option value="">Choose hospital to visit...</option>
+              </select>
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label>GPS Latitude</label>
+                <input type="text" name="gps_latitude" id="gpsLatitude" readonly placeholder="Auto-captured" />
+              </div>
+              <div class="field">
+                <label>GPS Longitude</label>
+                <input type="text" name="gps_longitude" id="gpsLongitude" readonly placeholder="Auto-captured" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Purpose of Visit</label>
+              <div class="purpose-tags">
+                <div class="purpose-tag" data-value="New Visit">New Visit</div>
+                <div class="purpose-tag" data-value="Follow-up">Follow-up</div>
+                <div class="purpose-tag" data-value="Brochure Drop">Brochure Drop</div>
+                <div class="purpose-tag" data-value="Scheme Awareness">Scheme Awareness</div>
+                <div class="purpose-tag" data-value="Doctor Meeting">Doctor Meeting</div>
+              </div>
+              <input type="hidden" name="purpose" id="visitPurpose" />
+            </div>
+
+            <div class="field">
+              <label>Visit Notes</label>
+              <textarea name="notes" placeholder="Brief notes about this visit (reason, observations, next steps)"></textarea>
+            </div>
+
+            <div class="field">
+              <label>Visit Proof Photos</label>
+              <div class="visit-proof">
+                <div class="proof-item" onclick="document.getElementById('photo1').click()">
+                  <input type="file" id="photo1" accept="image/*" capture="environment" class="hidden" onchange="HospitalMarketing.handlePhotoUpload(this, 1)">
+                  <span id="photo1Preview">📷 Camera</span>
+                </div>
+                <div class="proof-item" onclick="document.getElementById('photo2').click()">
+                  <input type="file" id="photo2" accept="image/*" capture="environment" class="hidden" onchange="HospitalMarketing.handlePhotoUpload(this, 2)">
+                  <span id="photo2Preview">📷 Camera</span>
+                </div>
+                <div class="proof-item" onclick="document.getElementById('photo3').click()">
+                  <input type="file" id="photo3" accept="image/*" capture="environment" class="hidden" onchange="HospitalMarketing.handlePhotoUpload(this, 3)">
+                  <span id="photo3Preview">📷 Camera</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn btn-dark" onclick="HospitalMarketing.captureLocation()">📍 Capture GPS Location</button>
+              <button type="submit" class="btn btn-primary">Complete Check-In</button>
+              <button type="button" class="btn btn-soft" onclick="HospitalMarketing.resetForm('checkinForm')">Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Recent Check-Ins</h2><p>Your latest hospital visits with proof.</p></div></div>
+          <div id="recentCheckins" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Doctor Meetings View -->
+    <section id="view-meetings" class="view">
+      <div class="layout">
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Doctor Meeting Log</h2><p>Record detailed meeting information with doctors.</p></div></div>
+
+          <form id="meetingForm">
+            <div class="field">
+              <label>Select Hospital *</label>
+              <select name="hospital_id" required id="meetingHospitalSelect">
+                <option value="">Choose hospital...</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Select Doctor *</label>
+              <select name="doctor_id" required id="doctorSelect">
+                <option value="">Choose doctor...</option>
+              </select>
+              <button type="button" class="btn btn-soft small mt-2" onclick="HospitalMarketing.showAddDoctorForm()">+ Add New Doctor</button>
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label>Meeting Type</label>
+                <select name="meeting_type">
+                  <option value="In-person">In-person</option>
+                  <option value="Phone">Phone</option>
+                  <option value="WhatsApp">WhatsApp</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Duration (minutes)</label>
+                <input type="number" name="duration" min="1" max="180" value="15" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Meeting Purpose</label>
+              <div class="purpose-tags">
+                <div class="purpose-tag" data-value="Facility promotion">Facility promotion</div>
+                <div class="purpose-tag" data-value="Speciality awareness">Speciality awareness</div>
+                <div class="purpose-tag" data-value="Scheme explanation">Scheme explanation</div>
+                <div class="purpose-tag" data-value="Surgery referral">Surgery referral</div>
+                <div class="purpose-tag" data-value="Brochure distribution">Brochure distribution</div>
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label>Outcome</label>
+                <select name="outcome">
+                  <option value="Interested">Interested</option>
+                  <option value="Not Interested">Not Interested</option>
+                  <option value="Follow-up Needed">Follow-up Needed</option>
+                  <option value="Referral Given">Referral Given</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Interest Level</label>
+                <select name="interest_level">
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Next Follow-up Date</label>
+              <input type="date" name="follow_up_date" />
+            </div>
+
+            <div class="field">
+              <label>Discussion Summary</label>
+              <textarea name="discussion_summary" placeholder="Key points discussed, doctor's response, concerns raised"></textarea>
+            </div>
+
+            <div class="field">
+              <label>Doctor Visiting Card</label>
+              <input type="file" id="visitingCard" accept="image/*" capture="environment" />
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn btn-primary">Save Meeting Log</button>
+              <button type="button" class="btn btn-soft" onclick="HospitalMarketing.resetForm('meetingForm')">Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Recent Meetings</h2><p>Your latest doctor meetings logged today.</p></div></div>
+          <div id="recentMeetings" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Referrals View -->
+    <section id="view-referrals" class="view">
+      <div class="layout">
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Patient Referral</h2><p>Submit patient referrals from doctor meetings.</p></div></div>
+
+          <form id="referralForm">
+            <div class="field">
+              <label>Referring Doctor *</label>
+              <select name="doctor_id" required id="referralDoctorSelect">
+                <option value="">Select doctor...</option>
+              </select>
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label>Patient Name *</label>
+                <input type="text" name="patient_name" required placeholder="Full name" />
+              </div>
+              <div class="field">
+                <label>Patient Phone</label>
+                <input type="tel" name="patient_phone" placeholder="Mobile number" />
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label>Patient Age</label>
+                <input type="number" name="patient_age" min="0" max="120" />
+              </div>
+              <div class="field">
+                <label>Condition/Complaint</label>
+                <input type="text" name="condition" placeholder="Patient's condition" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Required Treatment/Surgery</label>
+              <input type="text" name="required_treatment" placeholder="Treatment needed" />
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label>Urgency</label>
+                <select name="urgency">
+                  <option value="High">High</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Insurance Status</label>
+                <select name="insurance_status">
+                  <option value="None">None</option>
+                  <option value="MJPJAY">MJPJAY</option>
+                  <option value="PMJAY">PMJAY</option>
+                  <option value="Private">Private Insurance</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label>Appointment Date</label>
+                <input type="date" name="appointment_date" />
+              </div>
+              <div class="field">
+                <label>Admission Date</label>
+                <input type="date" name="admission_date" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Additional Notes</label>
+              <textarea name="notes" placeholder="Any special considerations or instructions"></textarea>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn btn-primary">Submit Referral</button>
+              <button type="button" class="btn btn-soft" onclick="HospitalMarketing.resetForm('referralForm')">Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Recent Referrals</h2><p>Your latest patient referrals submitted.</p></div><span id="referralCount" class="chip green"></span></div>
+          <div id="recentReferrals" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Route Planning View -->
+    <section id="view-route" class="view">
+      <div class="layout">
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Route Planning</h2><p>Plan your hospital visits for optimal coverage.</p></div><span class="chip">Drag & drop</span></div>
+
+          <form id="routeForm">
+            <div class="field">
+              <label>Select Date *</label>
+              <input type="date" name="scheduled_date" required id="routeDate" />
+            </div>
+
+            <div class="field">
+              <label>Add Hospitals to Route</label>
+              <select name="hospital_id" id="routeHospitalSelect" multiple size="6">
+                <option value="">Available hospitals...</option>
+              </select>
+              <small class="muted">Hold Ctrl/Cmd to select multiple hospitals</small>
+            </div>
+
+            <div class="field">
+              <label>Priority</label>
+              <select name="priority">
+                <option value="High">High Priority</option>
+                <option value="Medium" selected>Medium Priority</option>
+                <option value="Low">Low Priority</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Notes for Route</label>
+              <textarea name="notes" placeholder="Special considerations for this route (timing, traffic, doctor availability)"></textarea>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn btn-primary">Save Route Plan</button>
+              <button type="button" class="btn btn-soft" onclick="HospitalMarketing.optimizeRoute()">🗺️ Optimize Route</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Planned Routes</h2><p>Your upcoming hospital visit schedules.</p></div></div>
+          <div id="plannedRoutes" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visit History View -->
+    <section id="view-history" class="view">
+      <div class="panel panel-pad">
+        <div class="section-head"><div><h2>Complete Visit History</h2><p>All your hospital visits, meetings, and activities.</p></div></div>
+
+        <div class="grid2 mb-4">
+          <div class="field">
+            <label>Filter by Date Range</label>
+            <div class="grid2">
+              <input type="date" id="historyStartDate" placeholder="From">
+              <input type="date" id="historyEndDate" placeholder="To">
+            </div>
+          </div>
+          <div class="field">
+            <label>Filter by Activity Type</label>
+            <select id="historyActivityType">
+              <option value="all">All Activities</option>
+              <option value="visits">Hospital Visits</option>
+              <option value="meetings">Doctor Meetings</option>
+              <option value="referrals">Referrals</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="visitHistory" class="list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="hospital-marketing.js"></script>
+</body>
+</html>

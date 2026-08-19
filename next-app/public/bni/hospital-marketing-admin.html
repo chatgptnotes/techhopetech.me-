@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospital Marketing Admin | HopeTech</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --ink:#10233f;
+      --muted:#64748b;
+      --paper:#f5f4ef;
+      --panel:#ffffff;
+      --line:#dfe4ea;
+      --blue:#1458d4;
+      --red:#e43b39;
+      --teal:#087f74;
+      --gold:#d3971d;
+      --green:#10b981;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--ink);
+      font-family:'DM Sans',sans-serif;
+      background:var(--paper);
+    }
+    h1,h2,h3,.display{font-family:'Manrope',sans-serif}
+    .shell{max-width:1600px;margin:auto;padding:26px}
+    .top{
+      background:linear-gradient(120deg,#10233f 0%,#14396f 64%,#a62e32 145%);
+      color:#fff;border-radius:26px;padding:26px 28px;position:relative;overflow:hidden;
+      box-shadow:0 22px 60px rgba(16,35,63,.2);
+    }
+    .eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:10px;font-weight:800}
+    .tabs{display:flex;gap:8px;overflow:auto;padding:18px 2px 4px}
+    .tab{
+      flex:0 0 auto;border:1px solid var(--line);background:rgba(255,255,255,.72);color:#52637a;
+      border-radius:999px;padding:10px 15px;font-size:13px;font-weight:700;cursor:pointer;
+      transition:.18s ease;
+    }
+    .tab:hover{border-color:#9db6da;color:var(--blue)}
+    .tab.active{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 8px 20px rgba(16,35,63,.18)}
+    .view{display:none;padding-top:18px;animation:rise .26s ease}
+    .view.active{display:block}
+    @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+    .panel{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 30px rgba(16,35,63,.055)}
+    .panel-pad{padding:22px}
+    .metric{padding:20px;min-height:132px;position:relative;overflow:hidden}
+    .metric-value{font-family:'Manrope',sans-serif;font-size:30px;line-height:1;font-weight:800;margin-top:18px;letter-spacing:-.04em}
+    .metric-label{color:var(--muted);font-size:12px;font-weight:700}
+    .layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr);gap:18px}
+    .list{display:grid;gap:10px}
+    .record{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff;transition:.16s;cursor:pointer}
+    .record:hover{border-color:#9bb7e4;transform:translateY(-1px);box-shadow:0 8px 18px rgba(16,35,63,.07)}
+    .record-title{font-weight:800;color:var(--ink)}
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    .chip{display:inline-flex;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:#eef3fb;color:#315f9d}
+    .chip.green{background:#e8f7f1;color:#08765e}.chip.red{background:#ffeded;color:#b62e31}.chip.gold{background:#fff5d8;color:#916710}
+    label{display:block;font-size:11px;font-weight:700;color:#53647b;margin:0 0 6px;text-transform:uppercase;letter-spacing:.055em}
+    input,select,textarea{
+      width:100%;border:1px solid #cfd8e4;background:#fff;border-radius:11px;padding:10px 11px;
+      color:var(--ink);font:inherit;font-size:13px;outline:none;transition:.15s;
+    }
+    input:focus,select:focus,textarea:focus{border-color:#4d83dd;box-shadow:0 0 0 3px rgba(20,88,212,.1)}
+    .field{margin-bottom:13px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+    .btn{border:0;border-radius:11px;padding:10px 14px;font-size:12px;font-weight:800;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--blue);color:#fff;box-shadow:0 8px 18px rgba(20,88,212,.2)}
+    .btn-dark{background:var(--ink);color:#fff}
+    .btn-soft{background:#eef3f8;color:#334a67;border:1px solid #dce4ed}
+    .btn-danger{background:#fff0f0;color:#b52c30}
+    .btn-success{background:var(--green);color:#fff}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
+    .section-head h2{font-size:21px;margin:0;letter-spacing:-.025em}
+    .section-head p{margin:5px 0 0;font-size:13px;color:var(--muted)}
+    .empty{border:1px dashed #bec9d6;border-radius:15px;padding:25px;text-align:center;color:var(--muted);font-size:13px}
+    .toast{position:fixed;right:24px;bottom:24px;background:var(--ink);color:#fff;border-radius:13px;padding:13px 17px;font-weight:700;font-size:13px;z-index:100;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+    .toast.show{opacity:1;transform:none}.toast.error{background:#b62e31}
+    .loading{position:fixed;inset:0;background:rgba(245,244,239,.88);display:flex;align-items:center;justify-content:center;z-index:90;font-weight:800;color:var(--ink)}
+    .chart-container{position:relative;height:300px}
+    .progress-bar{background:#eef3f8;border-radius:8px;height:8px;overflow:hidden}
+    .progress-fill{background:var(--blue);height:100%;transition:.3s;border-radius:8px}
+    .status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+    .status-dot.active{background:var(--green)}
+    .status-dot.inactive{background:var(--red)}
+    .status-dot.pending{background:var(--gold)}
+
+    @media(max-width:900px){.layout{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
+    @media(max-width:620px){.shell{padding:14px}.top{padding:22px 19px}.grid2,.grid3{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">Loading admin dashboard...</div>
+  <main class="shell">
+    <header class="top">
+      <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
+        <div>
+          <div class="eyebrow text-blue-200">Hospital Marketing Administration</div>
+          <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mt-2 mb-2">Management Dashboard</h1>
+          <p class="text-slate-300 text-sm max-w-2xl">Track team performance, manage hospitals and doctors, monitor referrals, and analyze territory coverage.</p>
+        </div>
+        <div class="flex gap-2 relative z-10">
+          <span id="adminStatus" class="chip green">Admin Access</span>
+          <button class="btn btn-soft" onclick="HospitalMarketingAdmin.load(true)">Refresh Data</button>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-view="overview">Overview</button>
+      <button class="tab" data-view="executives">Team Performance</button>
+      <button class="tab" data-view="hospitals">Hospitals</button>
+      <button class="tab" data-view="doctors">Doctors</button>
+      <button class="tab" data-view="referrals">Referrals</button>
+      <button class="tab" data-view="analytics">Advanced Analytics</button>
+      <button class="tab" onclick="window.location.href='hospital-marketing-performance.html'">📊 Performance Analytics</button>
+    </nav>
+
+    <!-- Overview View -->
+    <section id="view-overview" class="view active">
+      <div id="overviewMetrics" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4"></div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Weekly Performance Trend</h2><p>Team activity over the past 7 days.</p></div></div>
+          <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Referral Pipeline</h2><p>Patient referral stages and conversion rates.</p></div></div>
+          <div class="chart-container">
+            <canvas id="referralChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Recent Team Activity</h2><p>Latest check-ins, meetings, and referrals across all executives.</p></div></div>
+          <div id="recentActivity" class="list"></div>
+        </div>
+
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Top Performers</h2><p>Highest performing executives this week.</p></div></div>
+          <div id="topPerformers" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Team Performance View -->
+    <section id="view-executives" class="view">
+      <div class="panel panel-pad mb-4">
+        <div class="section-head"><div><h2>Executive Team Performance</h2><p>Detailed metrics for each marketing executive.</p></div></div>
+        <div class="grid2 mb-4">
+          <div class="field">
+            <label>Date Range</label>
+            <select id="executiveDateRange" onchange="HospitalMarketingAdmin.loadExecutivePerformance()">
+              <option value="7">Last 7 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Territory Filter</label>
+            <select id="executiveTerritory" onchange="HospitalMarketingAdmin.loadExecutivePerformance()">
+              <option value="all">All Territories</option>
+            </select>
+          </div>
+        </div>
+        <div id="executivePerformance" class="list"></div>
+      </div>
+    </section>
+
+    <!-- Hospitals View -->
+    <section id="view-hospitals" class="view">
+      <div class="panel panel-pad mb-4">
+        <div class="section-head">
+          <div><h2>Hospital Management</h2><p>Manage hospitals and track visit patterns.</p></div>
+          <button class="btn btn-primary" onclick="HospitalMarketingAdmin.showAddHospitalForm()">+ Add Hospital</button>
+        </div>
+        <div class="grid2 mb-4">
+          <div class="field">
+            <label>Search Hospitals</label>
+            <input type="text" id="hospitalSearch" placeholder="Search by name, area..." oninput="HospitalMarketingAdmin.filterHospitals()">
+          </div>
+          <div class="field">
+            <label>Filter by Type</label>
+            <select id="hospitalTypeFilter" onchange="HospitalMarketingAdmin.filterHospitals()">
+              <option value="all">All Types</option>
+              <option value="Hospital">Hospitals</option>
+              <option value="Clinic">Clinics</option>
+              <option value="Nursing Home">Nursing Homes</option>
+            </select>
+          </div>
+        </div>
+        <div id="hospitalList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- Doctors View -->
+    <section id="view-doctors" class="view">
+      <div class="panel panel-pad mb-4">
+        <div class="section-head"><div><h2>Doctor Network</h2><p>Track doctor relationships and referral performance.</p></div></div>
+        <div class="grid2 mb-4">
+          <div class="field">
+            <label>Search Doctors</label>
+            <input type="text" id="doctorSearch" placeholder="Search by name, specialization..." oninput="HospitalMarketingAdmin.filterDoctors()">
+          </div>
+          <div class="field">
+            <label>Filter by Potential</label>
+            <select id="doctorPotentialFilter" onchange="HospitalMarketingAdmin.filterDoctors()">
+              <option value="all">All Potential Levels</option>
+              <option value="High">High Potential</option>
+              <option value="Medium">Medium Potential</option>
+              <option value="Low">Low Potential</option>
+            </select>
+          </div>
+        </div>
+        <div id="doctorList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- Referrals View -->
+    <section id="view-referrals" class="view">
+      <div class="panel panel-pad mb-4">
+        <div class="section-head"><div><h2>Referral Management</h2><p>Track patient referrals and conversion pipeline.</p></div></div>
+        <div class="grid3 mb-4">
+          <div class="field">
+            <label>Date Range</label>
+            <select id="referralDateRange" onchange="HospitalMarketingAdmin.loadReferrals()">
+              <option value="7">Last 7 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 90 days</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Status Filter</label>
+            <select id="referralStatusFilter" onchange="HospitalMarketingAdmin.loadReferrals()">
+              <option value="all">All Statuses</option>
+              <option value="Lead">Leads</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Admitted">Admitted</option>
+              <option value="Lost">Lost</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Urgency Filter</label>
+            <select id="referralUrgencyFilter" onchange="HospitalMarketingAdmin.loadReferrals()">
+              <option value="all">All Urgency Levels</option>
+              <option value="Emergency">Emergency</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div id="referralList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- Advanced Analytics View -->
+    <section id="view-analytics" class="view">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Territory Coverage Analysis</h2><p>Geographic distribution of marketing activities.</p></div></div>
+          <div class="chart-container">
+            <canvas id="territoryChart"></canvas>
+          </div>
+        </div>
+
+        <div class="panel panel-pad">
+          <div class="section-head"><div><h2>Revenue Attribution</h2><p>Revenue generated by executive and referral source.</p></div></div>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-pad">
+        <div class="section-head"><div><h2>Performance Metrics Summary</h2><p>Key performance indicators across all dimensions.</p></div></div>
+        <div id="performanceMetrics" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="hospital-marketing-admin.js"></script>
+</body>
+</html>
