@@ -452,8 +452,7 @@ async function getManagementSummary(searchParams: URLSearchParams, user: any) {
     let totalAchievement = 0;
     let executivesOnTrack = 0;
     let executivesBehind = 0;
-    const topPerformers = [];
-    const needsAttention = [];
+    const needsAttention: string[] = [];
 
     (targets || []).forEach((target: any) => {
       const progress = target.hospital_marketing_target_progress?.[0] || {};
@@ -507,15 +506,15 @@ async function getManagementSummary(searchParams: URLSearchParams, user: any) {
 
     // Convert map to array and calculate averages
     const targetsArray = Array.from(targetsByExecutive.values()).filter(exec => exec.targets.length > 0);
-    const totalActiveTargets = targetsArray.reduce((sum, exec) => sum + exec.targets.length, 0);
+    const totalActiveTargets = targetsArray.reduce((sum: number, exec: any) => sum + exec.targets.length, 0);
     const overallAchievement = totalActiveTargets > 0 ? Math.round(totalAchievement / totalActiveTargets) : 0;
 
     // Identify top performers (executives with highest achievement)
     const execAchievements = targetsArray.map(exec => ({
       id: exec.executive_id,
       name: exec.executive_name,
-      avgAchievement: exec.targets.reduce((sum, t) => sum + t.achievement_percent, 0) / exec.targets.length
-    })).sort((a, b) => b.avgAchievement - a.avgAchievement);
+      avgAchievement: exec.targets.reduce((sum: number, t: any) => sum + t.achievement_percent, 0) / exec.targets.length
+    })).sort((a: any, b: any) => b.avgAchievement - a.avgAchievement);
 
     const topPerformers = execAchievements.slice(0, 3).map(e => e.id);
 

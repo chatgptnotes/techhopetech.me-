@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
         createdTargets.push(target);
       } catch (error) {
         console.error(`Failed to create target for executive ${executiveId}:`, error);
-        failedAssignments.push({ executive_id: executiveId, error: error.message });
+        failedAssignments.push({ executive_id: executiveId, error: error instanceof Error ? error.message : String(error) });
       }
     }
 
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
  * Get default target name for target type
  */
 function getDefaultTargetName(targetType: string): string {
-  const targetNames = {
+  const targetNames: Record<string, string> = {
     hospital_visits: 'Hospital Visits',
     doctor_visits: 'Doctor Visits',
     corporate_visits: 'Corporate Visits',
