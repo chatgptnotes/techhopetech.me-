@@ -497,6 +497,7 @@
     <script src="/bni/supabase-config.js"></script>
     <script>
         // Authentication check
+        /* Authentication temporarily disabled for direct access
         async function checkAuthentication() {
             try {
                 const session = await window.sb.auth.getSession();
@@ -556,6 +557,7 @@
             await window.sb.auth.signOut();
             location.replace('/bni/login.html');
         }
+        */
 
         // API base URL
         const apiBase = '/api/tablet-crm';
@@ -564,9 +566,9 @@
 
         // Initialize dashboard
         window.addEventListener('load', async () => {
-            // Check authentication first
-            const isAuthenticated = await checkAuthentication();
-            if (!isAuthenticated) return;
+            // Authentication disabled - allow direct access
+            // const isAuthenticated = await checkAuthentication();
+            // if (!isAuthenticated) return;
 
             await loadDashboardData();
             initializeCharts();
