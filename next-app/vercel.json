@@ -1,5 +1,12 @@
 {
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
   "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "NEXT_PUBLIC_TURBOPACK_ENABLED": "false"
+  },
   "crons": [
     {
       "path": "/api/cron/social-publish",
