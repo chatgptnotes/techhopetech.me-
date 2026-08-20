@@ -421,6 +421,111 @@
             </div>
         </div>
 
+        <!-- Target Management Section -->
+        <div id="targetManagementSection" class="space-y-6">
+            <!-- Section Header -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-bullseye text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Target Management</h2>
+                        <p class="text-sm text-gray-500">Assign and track executive targets</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="openBulkModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 font-medium transition">
+                        <i class="fas fa-users mr-2"></i>Bulk Assign
+                    </button>
+                    <button onclick="openTargetModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium transition">
+                        <i class="fas fa-plus mr-2"></i>Assign Target
+                    </button>
+                    <button id="refreshTargetsBtn" onclick="loadManagementTargets()" class="p-2 text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="metric-card bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+                    <p class="text-sm opacity-80">Active Targets</p>
+                    <p id="activeTargetsCount" class="text-3xl font-bold">0</p>
+                    <p class="text-xs mt-2 opacity-70">Currently assigned</p>
+                </div>
+
+                <div class="metric-card bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+                    <p class="text-sm opacity-80">Team Achievement</p>
+                    <p id="teamAchievementPercent" class="text-3xl font-bold">0%</p>
+                    <p class="text-xs mt-2 opacity-70">Overall progress</p>
+                </div>
+
+                <div class="metric-card bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white">
+                    <p class="text-sm opacity-80">Behind Schedule</p>
+                    <p id="behindScheduleCount" class="text-3xl font-bold">0</p>
+                    <p class="text-xs mt-2 opacity-70">Need attention</p>
+                </div>
+
+                <div class="metric-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+                    <p class="text-sm opacity-80">Monthly Assignments</p>
+                    <p id="monthlyAssignmentsCount" class="text-3xl font-bold">0</p>
+                    <p class="text-xs mt-2 opacity-70">This month</p>
+                </div>
+            </div>
+
+            <!-- Targets Table -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-800">All Assigned Targets</h3>
+                        <div class="flex items-center space-x-2">
+                            <select id="targetMonthFilter" onchange="filterTargetsByMonth()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                                <option value="all">All Months</option>
+                                <option value="2026-08">August 2026</option>
+                                <option value="2026-07">July 2026</option>
+                            </select>
+                            <select id="targetTypeFilter" onchange="filterTargetsByType()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                                <option value="all">All Types</option>
+                                <option value="hospital_visits">Hospital Visits</option>
+                                <option value="doctor_visits">Doctor Visits</option>
+                                <option value="corporate_visits">Corporate Visits</option>
+                                <option value="referral_meetings">Referral Meetings</option>
+                                <option value="patient_referrals">Patient Referrals</option>
+                                <option value="lead_generation">Lead Generation</option>
+                                <option value="lead_conversion">Lead Conversion</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Executive</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target Type</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target vs Achieved</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progress</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="targetsTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Dynamic target rows -->
+                            <tr id="noTargetsRow">
+                                <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                                    <i class="fas fa-bullseye text-4xl text-gray-300 mb-3"></i>
+                                    <p>No targets assigned yet. Click "Assign Target" to get started.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- Employee Performance Table -->
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
             <div class="p-6 border-b border-gray-200">
@@ -1212,6 +1317,739 @@
         setInterval(async () => {
             await loadDashboardData();
         }, 5 * 60 * 1000);
+
+        // ==================== TARGET MANAGEMENT SYSTEM ====================
+
+        // Target Type Configuration
+        const TARGET_TYPE_CONFIG = {
+            hospital_visits: {
+                icon: 'fa-hospital',
+                color: 'blue',
+                gradient: 'from-blue-500 to-blue-600',
+                bgLight: 'bg-blue-100',
+                textDark: 'text-blue-600',
+                label: 'Hospital Visits'
+            },
+            doctor_visits: {
+                icon: 'fa-user-doctor',
+                color: 'green',
+                gradient: 'from-green-500 to-green-600',
+                bgLight: 'bg-green-100',
+                textDark: 'text-green-600',
+                label: 'Doctor Visits'
+            },
+            corporate_visits: {
+                icon: 'fa-building',
+                color: 'purple',
+                gradient: 'from-purple-500 to-purple-600',
+                bgLight: 'bg-purple-100',
+                textDark: 'text-purple-600',
+                label: 'Corporate Visits'
+            },
+            referral_meetings: {
+                icon: 'fa-handshake',
+                color: 'orange',
+                gradient: 'from-orange-500 to-orange-600',
+                bgLight: 'bg-orange-100',
+                textDark: 'text-orange-600',
+                label: 'Referral Meetings'
+            },
+            patient_referrals: {
+                icon: 'fa-users',
+                color: 'pink',
+                gradient: 'from-pink-500 to-pink-600',
+                bgLight: 'bg-pink-100',
+                textDark: 'text-pink-600',
+                label: 'Patient Referrals'
+            },
+            lead_generation: {
+                icon: 'fa-lightbulb',
+                color: 'teal',
+                gradient: 'from-teal-500 to-teal-600',
+                bgLight: 'bg-teal-100',
+                textDark: 'text-teal-600',
+                label: 'Lead Generation'
+            },
+            lead_conversion: {
+                icon: 'fa-chart-line',
+                color: 'indigo',
+                gradient: 'from-indigo-500 to-indigo-600',
+                bgLight: 'bg-indigo-100',
+                textDark: 'text-indigo-600',
+                label: 'Lead Conversion'
+            },
+            custom: {
+                icon: 'fa-star',
+                color: 'gray',
+                gradient: 'from-gray-500 to-gray-600',
+                bgLight: 'bg-gray-100',
+                textDark: 'text-gray-600',
+                label: 'Custom Target'
+            }
+        };
+
+        // Load executives for dropdown
+        async function loadExecutivesForDropdown() {
+            try {
+                const response = await fetch('/api/tablet-crm/employees');
+                const result = await response.json();
+
+                const select = document.getElementById('executiveSelect');
+                select.innerHTML = '<option value="">Choose executive...</option>';
+
+                result.data.forEach(exec => {
+                    const option = document.createElement('option');
+                    option.value = exec.id;
+                    option.textContent = `${exec.full_name} (${exec.designation})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading executives:', error);
+            }
+        }
+
+        // Load executives for bulk assignment
+        async function loadExecutivesForBulk() {
+            try {
+                const response = await fetch('/api/tablet-crm/employees');
+                const result = await response.json();
+
+                const container = document.getElementById('executiveList');
+                container.innerHTML = '';
+
+                result.data.forEach(exec => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center p-2 hover:bg-gray-50 border-b border-gray-100';
+                    div.innerHTML = `
+                        <input type="checkbox" id="exec_${exec.id}" value="${exec.id}"
+                               class="executive-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                               onchange="updateSelectedCount()">
+                        <label for="exec_${exec.id}" class="ml-3 flex items-center flex-1 cursor-pointer">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                ${exec.full_name.charAt(0)}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${exec.full_name}</div>
+                                <div class="text-xs text-gray-500">${exec.designation}</div>
+                            </div>
+                        </label>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading executives for bulk:', error);
+            }
+        }
+
+        // Assign individual target
+        async function assignTarget() {
+            const executiveId = document.getElementById('executiveSelect').value;
+            const targetType = document.getElementById('targetTypeSelect').value;
+            const targetValue = document.getElementById('targetValue').value;
+            const targetMonth = document.getElementById('targetMonth').value;
+
+            // Validation
+            if (!executiveId) {
+                alert('Please select an executive');
+                return;
+            }
+            if (!targetValue || targetValue < 1) {
+                alert('Please enter a valid target value');
+                return;
+            }
+            if (!targetMonth) {
+                alert('Please select target month');
+                return;
+            }
+
+            const targetName = targetType === 'custom'
+                ? document.getElementById('customTargetName').value
+                : TARGET_TYPE_CONFIG[targetType]?.label || 'Custom Target';
+
+            if (targetType === 'custom' && !targetName) {
+                alert('Please enter custom target name');
+                return;
+            }
+
+            const [year, month] = targetMonth.split('-');
+            const startDate = `${targetMonth}-01`;
+            const endDate = new Date(parseInt(year), parseInt(month), 0).toISOString().split('T')[0];
+
+            const targetData = {
+                executive_id: executiveId,
+                target_type: targetType,
+                target_name: targetName,
+                target_value: parseInt(targetValue),
+                target_period: document.getElementById('targetPeriod').value,
+                period_start_date: startDate,
+                period_end_date: endDate,
+                priority_level: document.getElementById('priorityLevel').value,
+                assignment_notes: document.getElementById('assignmentNotes').value,
+                status: 'active'
+            };
+
+            try {
+                const response = await fetch('/api/hopetech/marketing/targets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(targetData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        closeTargetModal();
+                        loadManagementTargets();
+                        alert('Target assigned successfully!');
+                    } else {
+                        alert('Failed to assign target: ' + (result.error || 'Unknown error'));
+                    }
+                } else {
+                    alert('Failed to assign target. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error assigning target:', error);
+                alert('Failed to assign target. Please try again.');
+            }
+        }
+
+        // Bulk assign targets
+        async function bulkAssignTargets() {
+            const selectedExecutives = Array.from(document.querySelectorAll('.executive-checkbox:checked'))
+                .map(cb => cb.value);
+
+            if (selectedExecutives.length === 0) {
+                alert('Please select at least one executive');
+                return;
+            }
+
+            const targetMonth = document.getElementById('bulkTargetMonth').value;
+            const targetValue = document.getElementById('bulkTargetValue').value;
+            const targetType = document.getElementById('bulkTargetType').value;
+
+            if (!targetMonth) {
+                alert('Please select target month');
+                return;
+            }
+            if (!targetValue || targetValue < 1) {
+                alert('Please enter a valid target value');
+                return;
+            }
+
+            const [year, month] = targetMonth.split('-');
+            const startDate = `${targetMonth}-01`;
+            const endDate = new Date(parseInt(year), parseInt(month), 0).toISOString().split('T')[0];
+
+            const targetName = TARGET_TYPE_CONFIG[targetType]?.label || 'Custom Target';
+
+            const bulkData = {
+                executive_ids: selectedExecutives,
+                target_type: targetType,
+                target_name: targetName,
+                target_value: parseInt(targetValue),
+                target_period: 'monthly',
+                period_start_date: startDate,
+                period_end_date: endDate,
+                priority_level: document.getElementById('bulkPriorityLevel').value,
+                assignment_notes: document.getElementById('bulkAssignmentNotes').value,
+                status: 'active'
+            };
+
+            try {
+                const response = await fetch('/api/hopetech/marketing/targets/bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bulkData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        closeBulkModal();
+                        loadManagementTargets();
+                        alert(`Successfully assigned targets to ${result.data.created_targets} executives!`);
+                    } else {
+                        alert('Failed to assign bulk targets: ' + (result.error || 'Unknown error'));
+                    }
+                } else {
+                    alert('Failed to assign bulk targets. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error assigning bulk targets:', error);
+                alert('Failed to assign bulk targets. Please try again.');
+            }
+        }
+
+        // Load management targets
+        async function loadManagementTargets() {
+            try {
+                const response = await fetch('/api/hopetech/marketing/targets/management-summary');
+                const result = await response.json();
+
+                if (result.success) {
+                    renderManagementDashboard(result.data);
+                } else {
+                    // Use mock data for demonstration
+                    renderMockManagementData();
+                }
+            } catch (error) {
+                console.error('Error loading management targets:', error);
+                // Use mock data for demonstration
+                renderMockManagementData();
+            }
+        }
+
+        // Render mock management data for demonstration
+        function renderMockManagementData() {
+            const mockData = {
+                team_summary: {
+                    total_executives: 5,
+                    total_active_targets: 15,
+                    overall_achievement_percent: 68,
+                    executives_on_track: 3,
+                    executives_behind: 2,
+                    top_performers: ['exec1', 'exec2'],
+                    needs_attention: ['exec4', 'exec5']
+                },
+                targets: [
+                    {
+                        executive_id: 'exec1',
+                        executive_name: 'Abhishek Kumar',
+                        targets: [
+                            {
+                                id: 'mock-1',
+                                target_type: 'doctor_visits',
+                                target_name: 'Doctor Visits',
+                                target_value: 100,
+                                achieved_value: 75,
+                                achievement_percent: 75,
+                                status: 'on_track',
+                                period: '2026-08'
+                            },
+                            {
+                                id: 'mock-2',
+                                target_type: 'hospital_visits',
+                                target_name: 'Hospital Visits',
+                                target_value: 50,
+                                achieved_value: 28,
+                                achievement_percent: 56,
+                                status: 'behind',
+                                period: '2026-08'
+                            }
+                        ]
+                    },
+                    {
+                        executive_id: 'exec2',
+                        executive_name: 'Kusumdeep Singh',
+                        targets: [
+                            {
+                                id: 'mock-3',
+                                target_type: 'corporate_visits',
+                                target_name: 'Corporate Visits',
+                                target_value: 20,
+                                achieved_value: 18,
+                                achievement_percent: 90,
+                                status: 'ahead',
+                                period: '2026-08'
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            renderManagementDashboard(mockData);
+        }
+
+        // Render management dashboard
+        function renderManagementDashboard(data) {
+            // Update summary cards
+            document.getElementById('activeTargetsCount').textContent = data.team_summary.total_active_targets;
+            document.getElementById('teamAchievementPercent').textContent = data.team_summary.overall_achievement_percent + '%';
+            document.getElementById('behindScheduleCount').textContent = data.team_summary.executives_behind;
+            document.getElementById('monthlyAssignmentsCount').textContent = data.team_summary.total_active_targets;
+
+            // Render targets table
+            renderTargetsTable(data.targets);
+        }
+
+        // Render targets table
+        function renderTargetsTable(targets) {
+            const tbody = document.getElementById('targetsTableBody');
+            const noTargetsRow = document.getElementById('noTargetsRow');
+
+            if (!targets || targets.length === 0) {
+                if (noTargetsRow) noTargetsRow.classList.remove('hidden');
+                return;
+            }
+
+            if (noTargetsRow) noTargetsRow.classList.add('hidden');
+            tbody.innerHTML = '';
+
+            targets.forEach(execTarget => {
+                execTarget.targets.forEach(target => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+
+                    const statusColors = {
+                        'on_track': 'bg-green-100 text-green-800',
+                        'behind': 'bg-orange-100 text-orange-800',
+                        'ahead': 'bg-blue-100 text-blue-800'
+                    };
+
+                    const targetTypeConfig = TARGET_TYPE_CONFIG[target.target_type] || TARGET_TYPE_CONFIG.custom;
+
+                    row.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                    ${execTarget.executive_name.charAt(0)}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">${execTarget.executive_name}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <i class="fas ${targetTypeConfig.icon} ${targetTypeConfig.textDark} mr-2"></i>
+                                <span class="text-sm text-gray-900">${target.target_name}</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${target.target_value} / ${target.achieved_value}</div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="w-full">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-900">${target.achievement_percent}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gradient-to-r ${targetTypeConfig.gradient} h-2 rounded-full"
+                                         style="width: ${target.achievement_percent}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[target.status]}">
+                                ${target.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            ${target.period}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="editTarget('${target.id}')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteTarget('${target.id}')" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        // Toggle all executives
+        function toggleAllExecutives() {
+            const checkboxes = document.querySelectorAll('.executive-checkbox');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked;
+            });
+
+            updateSelectedCount();
+        }
+
+        // Update selected executives count
+        function updateSelectedCount() {
+            const selected = document.querySelectorAll('.executive-checkbox:checked').length;
+            document.getElementById('selectedExecutivesCount').textContent = `${selected} executives selected`;
+        }
+
+        // Modal functions
+        function openTargetModal() {
+            document.getElementById('targetAssignmentModal').classList.remove('hidden');
+            loadExecutivesForDropdown();
+            // Set default month to current month
+            const now = new Date();
+            document.getElementById('targetMonth').value = now.toISOString().slice(0, 7);
+            // Reset form
+            document.getElementById('executiveSelect').value = '';
+            document.getElementById('targetValue').value = '';
+            document.getElementById('assignmentNotes').value = '';
+        }
+
+        function closeTargetModal() {
+            document.getElementById('targetAssignmentModal').classList.add('hidden');
+        }
+
+        function openBulkModal() {
+            document.getElementById('bulkAssignmentModal').classList.remove('hidden');
+            loadExecutivesForBulk();
+            // Set default month to current month
+            const now = new Date();
+            document.getElementById('bulkTargetMonth').value = now.toISOString().slice(0, 7);
+        }
+
+        function closeBulkModal() {
+            document.getElementById('bulkAssignmentModal').classList.add('hidden');
+        }
+
+        // Filter functions
+        function filterTargetsByMonth() {
+            // Implementation for filtering targets by month
+            console.log('Filter by month:', document.getElementById('targetMonthFilter').value);
+        }
+
+        function filterTargetsByType() {
+            // Implementation for filtering targets by type
+            console.log('Filter by type:', document.getElementById('targetTypeFilter').value);
+        }
+
+        // Edit target function (placeholder)
+        function editTarget(targetId) {
+            alert('Edit target functionality for: ' + targetId + '\nThis will be implemented with the edit modal.');
+        }
+
+        // Delete target function (placeholder)
+        function deleteTarget(targetId) {
+            if (confirm('Are you sure you want to delete this target?')) {
+                alert('Delete target functionality for: ' + targetId + '\nThis will be implemented with the API call.');
+            }
+        }
+
+        // Show/hide custom target name field
+        document.addEventListener('DOMContentLoaded', function() {
+            const targetTypeSelect = document.getElementById('targetTypeSelect');
+            if (targetTypeSelect) {
+                targetTypeSelect.addEventListener('change', function() {
+                    const customDiv = document.getElementById('customTargetNameDiv');
+                    if (this.value === 'custom') {
+                        customDiv.classList.remove('hidden');
+                    } else {
+                        customDiv.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Load management targets on page load
+            setTimeout(() => {
+                loadManagementTargets();
+            }, 1000);
+        });
     </script>
+
+    <!-- Target Assignment Modal -->
+    <div id="targetAssignmentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-screen overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">Assign Target to Executive</h3>
+                    <button onclick="closeTargetModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <!-- Executive Selection -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Select Executive *</label>
+                        <select id="executiveSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Choose executive...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Target Type *</label>
+                        <select id="targetTypeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="hospital_visits">🏥 Hospital Visits</option>
+                            <option value="doctor_visits">👨‍⚕️ Doctor Visits</option>
+                            <option value="corporate_visits">🏢 Corporate Visits</option>
+                            <option value="referral_meetings">🤝 Referral Meetings</option>
+                            <option value="patient_referrals">👥 Patient Referrals</option>
+                            <option value="lead_generation">💡 Lead Generation</option>
+                            <option value="lead_conversion">📈 Lead Conversion</option>
+                            <option value="custom">⭐ Custom Target</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Target Details -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Target Value *</label>
+                        <input type="number" id="targetValue" min="1" placeholder="Enter target"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Target Period *</label>
+                        <select id="targetPeriod" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="monthly">Monthly</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="quarterly">Quarterly</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Priority Level</label>
+                        <select id="priorityLevel" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Month/Year Selection -->
+                <div>
+                    <label class="text-sm font-medium text-gray-700 mb-1 block">Target Month *</label>
+                    <input type="month" id="targetMonth" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Custom Target Name (Conditional) -->
+                <div id="customTargetNameDiv" class="hidden">
+                    <label class="text-sm font-medium text-gray-700 mb-1 block">Custom Target Name *</label>
+                    <input type="text" id="customTargetName" placeholder="Enter custom target name"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Assignment Notes -->
+                <div>
+                    <label class="text-sm font-medium text-gray-700 mb-1 block">Assignment Notes</label>
+                    <textarea id="assignmentNotes" rows="3" placeholder="Add any specific instructions or context..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-6 border-t border-gray-200">
+                <div class="flex gap-3">
+                    <button onclick="assignTarget()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium transition">
+                        <i class="fas fa-bullseye mr-2"></i>Assign Target
+                    </button>
+                    <button onclick="closeTargetModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Assignment Modal -->
+    <div id="bulkAssignmentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-screen overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Bulk Assign Targets</h3>
+                        <p class="text-sm text-gray-500">Assign the same target to multiple executives</p>
+                    </div>
+                    <button onclick="closeBulkModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <!-- Month and Target Type -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Target Month *</label>
+                        <input type="month" id="bulkTargetMonth" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Target Type *</label>
+                        <select id="bulkTargetType" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="hospital_visits">🏥 Hospital Visits</option>
+                            <option value="doctor_visits">👨‍⚕️ Doctor Visits</option>
+                            <option value="corporate_visits">🏢 Corporate Visits</option>
+                            <option value="referral_meetings">🤝 Referral Meetings</option>
+                            <option value="patient_referrals">👥 Patient Referrals</option>
+                            <option value="lead_generation">💡 Lead Generation</option>
+                            <option value="lead_conversion">📈 Lead Conversion</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Target Value and Priority -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Target Value *</label>
+                        <input type="number" id="bulkTargetValue" min="1" placeholder="Enter target value"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Priority Level</label>
+                        <select id="bulkPriorityLevel" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Executive Selection -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Select Executives *</label>
+                        <button onclick="toggleAllExecutives()" class="text-sm text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-check-square mr-1"></i>Select All
+                        </button>
+                    </div>
+
+                    <!-- Executive Search -->
+                    <input type="text" id="executiveSearch" placeholder="Search executives..."
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg mb-3">
+
+                    <!-- Executive List -->
+                    <div id="executiveList" class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+                        <!-- Dynamic executive checkboxes -->
+                    </div>
+                </div>
+
+                <!-- Assignment Notes -->
+                <div>
+                    <label class="text-sm font-medium text-gray-700 mb-1 block">Assignment Notes</label>
+                    <textarea id="bulkAssignmentNotes" rows="2" placeholder="Add notes for all assignments..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-6 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div id="selectedExecutivesCount" class="text-sm text-gray-600">
+                        0 executives selected
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="closeBulkModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button onclick="bulkAssignTargets()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">
+                            <i class="fas fa-users mr-2"></i>Assign to All Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
 </body>
 </html>

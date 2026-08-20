@@ -17,10 +17,16 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
     const dashboardSummary = searchParams.get('dashboard-summary') === 'true';
+    const managementSummary = searchParams.get('management-summary') === 'true';
 
     // Handle dashboard summary request
     if (dashboardSummary) {
       return await getDashboardSummary(searchParams, user);
+    }
+
+    // Handle management summary request
+    if (managementSummary) {
+      return await getManagementSummary(searchParams, user);
     }
 
     const filters = {
@@ -374,5 +380,170 @@ async function generateDailyProgress(executiveId: string, targetId: string, star
   } catch (error) {
     console.error('Error generating daily progress:', error);
     return [];
+  }
+}
+
+/**
+ * Get management summary for dashboard
+ */
+async function getManagementSummary(searchParams: URLSearchParams, user: any) {
+  try {
+    const period = searchParams.get('period') || new Date().toISOString().slice(0, 7); // Format: 2026-08
+
+    // Calculate period start and end dates
+    const [year, month] = period.split('-');
+    const startDate = `${period}-01`;
+    const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+    const endDate = `${period}-${lastDay.toString().padStart(2, '0')}`;
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Get all executives with their targets and progress
+    const { data: executives, error: execError } = await supabase
+      .from('hospital_marketing_executives')
+      .select('id, full_name, designation, status')
+      .eq('status', 'Active');
+
+    if (execError) throw execError;
+
+    // Get targets for all executives
+    const executiveIds = executives.map(e => e.id);
+    const { data: targets, error: targetError } = await supabase
+      .from('hospital_marketing_targets')
+      .select(`
+        id,
+        executive_id,
+        target_type,
+        target_name,
+        target_value,
+        target_period,
+        period_start_date,
+        period_end_date,
+        priority_level,
+        status,
+        hospital_marketing_target_progress (
+          completed_value,
+          achievement_percent,
+          last_updated
+        )
+      `)
+      .in('executive_id', executiveIds)
+      .eq('status', 'active')
+      .gte('period_start_date', startDate)
+      .lte('period_end_date', endDate);
+
+    if (targetError) throw targetError;
+
+    // Group targets by executive
+    const targetsByExecutive = new Map();
+    (executives || []).forEach(exec => {
+      targetsByExecutive.set(exec.id, {
+        executive_id: exec.id,
+        executive_name: exec.full_name,
+        targets: []
+      });
+    });
+
+    // Process targets and calculate summary
+    let totalAchievement = 0;
+    let executivesOnTrack = 0;
+    let executivesBehind = 0;
+    const topPerformers = [];
+    const needsAttention = [];
+
+    (targets || []).forEach((target: any) => {
+      const progress = target.hospital_marketing_target_progress?.[0] || {};
+      const completedValue = progress.completed_value || 0;
+      const achievementPercent = progress.achievement_percent || 0;
+
+      // Calculate days remaining
+      const today = new Date();
+      const endDateObj = new Date(target.period_end_date);
+      const daysRemaining = Math.max(0, Math.ceil((endDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+
+      // Calculate status
+      const daysElapsed = Math.min(
+        Math.ceil((today.getTime() - new Date(target.period_start_date).getTime()) / (1000 * 60 * 60 * 24)),
+        30
+      );
+      const expectedProgress = (daysElapsed / 30) * 100;
+      let status = 'on_track';
+      if (achievementPercent >= expectedProgress + 10) status = 'ahead';
+      else if (achievementPercent < expectedProgress - 10) status = 'behind';
+
+      const targetData = {
+        id: target.id,
+        target_type: target.target_type,
+        target_name: target.target_name,
+        target_value: target.target_value,
+        achieved_value: completedValue,
+        achievement_percent: Math.round(achievementPercent),
+        status: status,
+        period: period,
+        days_remaining: daysRemaining
+      };
+
+      // Add to executive's targets
+      const execTargets = targetsByExecutive.get(target.executive_id);
+      if (execTargets) {
+        execTargets.targets.push(targetData);
+        totalAchievement += achievementPercent;
+
+        // Track executive status
+        if (status === 'behind') {
+          executivesBehind++;
+          if (!needsAttention.includes(target.executive_id)) {
+            needsAttention.push(target.executive_id);
+          }
+        } else if (status === 'ahead' || status === 'on_track') {
+          executivesOnTrack++;
+        }
+      }
+    });
+
+    // Convert map to array and calculate averages
+    const targetsArray = Array.from(targetsByExecutive.values()).filter(exec => exec.targets.length > 0);
+    const totalActiveTargets = targetsArray.reduce((sum, exec) => sum + exec.targets.length, 0);
+    const overallAchievement = totalActiveTargets > 0 ? Math.round(totalAchievement / totalActiveTargets) : 0;
+
+    // Identify top performers (executives with highest achievement)
+    const execAchievements = targetsArray.map(exec => ({
+      id: exec.executive_id,
+      name: exec.executive_name,
+      avgAchievement: exec.targets.reduce((sum, t) => sum + t.achievement_percent, 0) / exec.targets.length
+    })).sort((a, b) => b.avgAchievement - a.avgAchievement);
+
+    const topPerformers = execAchievements.slice(0, 3).map(e => e.id);
+
+    const summary = {
+      executiveId: user.id,
+      period: period,
+      team_summary: {
+        total_executives: executives.length,
+        total_active_targets: totalActiveTargets,
+        overall_achievement_percent: overallAchievement,
+        executives_on_track: executivesOnTrack,
+        executives_behind: executivesBehind,
+        top_performers: topPerformers,
+        needs_attention: needsAttention
+      },
+      targets: targetsArray
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: summary
+    });
+
+  } catch (error: any) {
+    console.error('Error fetching management summary:', error);
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Failed to fetch management summary'
+    }, { status: 500 });
   }
 }
