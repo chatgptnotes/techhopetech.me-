@@ -501,7 +501,7 @@
             try {
                 const session = await window.sb.auth.getSession();
                 if (!session.data.session) {
-                    location.replace('/hopetech-login.html');
+                    location.replace('/bni/login.html');
                     return false;
                 }
 
@@ -518,22 +518,18 @@
                 const userData = await response.json();
 
                 // Check if user has access to this dashboard (managers and admins only)
-                if (userData.user.role !== 'manager' && userData.user.role !== 'admin') {
+                if (userData.role !== 'manager' && userData.role !== 'admin') {
                     alert('This dashboard is only accessible to Managers and Administrators');
-                    // Redirect to appropriate dashboard
-                    if (userData.user.role === 'marketing_executive') {
-                        location.replace('/hopetech-marketing-dashboard.html');
-                    } else {
-                        location.replace('/hopetech-login.html');
-                    }
+                    // Redirect to login page for unauthorized access
+                    location.replace('/bni/login.html');
                     return false;
                 }
 
                 // Update user info in header
                 const userInfoHTML = `
                     <div class="flex items-center space-x-2">
-                        <span class="text-sm text-gray-700">Welcome, ${userData.fullName || 'User'}</span>
-                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${userData.user.role === 'admin' ? 'Admin' : 'Manager'}</span>
+                        <span class="text-sm text-gray-700">Welcome, ${userData.user.email}</span>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${userData.role === 'admin' ? 'Admin' : 'Manager'}</span>
                     </div>
                 `;
 
@@ -551,14 +547,14 @@
                 return true;
             } catch (error) {
                 console.error('Authentication failed:', error);
-                location.replace('/hopetech-login.html');
+                location.replace('/bni/login.html');
                 return false;
             }
         }
 
         async function logout() {
             await window.sb.auth.signOut();
-            location.replace('/hopetech-login.html');
+            location.replace('/bni/login.html');
         }
 
         // API base URL
