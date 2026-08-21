@@ -22,7 +22,15 @@ export default function TemplateLibrary() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [filterCategory, setFilterCategory] = useState('');
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    template_name: string;
+    template_category: string;
+    message_content: string;
+    media_type: string;
+    media_url: string;
+    placeholder_variables: string[];
+    is_active: boolean;
+  }>({
     template_name: '',
     template_category: 'daily_greeting',
     message_content: '',

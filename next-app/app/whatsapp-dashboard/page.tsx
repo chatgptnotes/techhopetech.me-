@@ -9,12 +9,12 @@ export default function WhatsAppDashboard() {
     scheduledMessages: 0,
     deliveryRate: 0
   });
-  const [recentActivity, setRecentActivity] = useState([]);
+  const [recentActivity, setRecentActivity] = useState<Array<{ description: string; timestamp: string }>>([]);
   const [testMessage, setTestMessage] = useState({
     doctorName: '',
     phoneNumber: ''
   });
-  const [testResult, setTestResult] = useState(null);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
     // Fetch dashboard statistics
@@ -51,7 +51,7 @@ export default function WhatsAppDashboard() {
         alert(`✗ Failed to send test message: ${result.error}`);
       }
     } catch (error) {
-      alert(`Error: ${error.message}`);
+      alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

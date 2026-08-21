@@ -3,7 +3,23 @@
  * Separate authentication and authorization for WhatsApp Communication Module
  */
 
+import { createClient } from '@supabase/supabase-js';
 import { db } from '@/lib/supabase-admin';
+
+/**
+ * Non-admin client used to verify passwords.
+ * The admin API cannot sign users in, so a client with the publishable key is required.
+ */
+function getAuthClient() {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('SUPABASE_URL and SUPABASE_KEY must be configured for WhatsApp authentication');
+  }
+  return createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
 
 export interface WhatsAppAuthUser {
   id: string;
@@ -30,15 +46,8 @@ export interface LoginCredentials {
  */
 export async function authenticateWhatsAppUser(email: string, password: string): Promise<WhatsAppAuthToken | null> {
   try {
-    // First check if user exists in auth.users
-    const { data: authUser, error: authError } = await db.auth.admin.getUserByEmail(email);
-
-    if (authError || !authUser) {
-      throw new Error('Invalid credentials');
-    }
-
-    // Verify password using Supabase auth
-    const { data: signInData, error: signInError } = await db.auth.admin.signInWithPassword({
+    // Verify email + password using Supabase auth (non-admin client)
+    const { data: signInData, error: signInError } = await getAuthClient().auth.signInWithPassword({
       email: email,
       password: password,
     });
@@ -86,11 +95,11 @@ export async function authenticateWhatsAppUser(email: string, password: string):
 /**
  * Generate JWT token for WhatsApp module access
  */
-async function generateWhatsAppToken(payload: any): Promise<string> {
+async function generateWhatsAppToken(claims: any): Promise<string> {
   // Simple JWT generation (in production, use proper JWT library)
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payload = btoa(JSON.stringify({
-    ...payload,
+    ...claims,
     exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
     iat: Math.floor(Date.now() / 1000)
   }));

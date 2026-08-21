@@ -21,6 +21,7 @@ interface Template {
   media_type: string;
   media_url?: string;
   placeholder_variables: string[];
+  usage_count?: number;
 }
 
 interface VariableValue {
