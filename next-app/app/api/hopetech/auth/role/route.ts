@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy so importing this module during `next build` page-data collection does
+// not throw when env vars are absent in the build environment.
+let adminClient: SupabaseClient | undefined
+
+function getSupabaseAdmin(): SupabaseClient {
+  if (adminClient) return adminClient
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured')
+  }
+
+  adminClient = createClient(url, key)
+  return adminClient
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     // Validate session and get user role
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error } = await supabase.auth.getUser(token)
+    const { data: { user }, error } = await getSupabaseAdmin().auth.getUser(token)
 
     if (error || !user) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })

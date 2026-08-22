@@ -1,64 +1,51 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import DoctorManagement from '@/components/whatsapp-communication/DoctorManagement';
 import TemplateLibrary from '@/components/whatsapp-communication/TemplateLibrary';
 import MessageComposer from '@/components/whatsapp-communication/MessageComposer';
 import DeliveryStatus from '@/components/whatsapp-communication/DeliveryStatus';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export default function WhatsAppCommunicationDashboard() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('doctors');
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = getSupabaseBrowserClient();
+  const [activeTab, setActiveTab] = useState('doctors');
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
 
+  // RLS on referral_doctor_whatsapp_registry requires an authenticated user
+  // (auth.uid() IS NOT NULL), so guard the dashboard behind a Supabase session.
   useEffect(() => {
-    checkAuth();
-  }, []);
+    let isMounted = true;
 
-  const checkAuth = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push('/whatsapp-communication/login');
-        return;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return;
+      if (data.session) {
+        setSessionEmail(data.session.user.email ?? null);
+      } else {
+        router.replace('/whatsapp-communication/login');
       }
+    });
 
-      // Check user role
-      const userRole = session.user?.user_metadata?.role;
-      if (!['marketing_head', 'marketing_team', 'admin'].includes(userRole)) {
-        router.push('/whatsapp-communication/login');
-        return;
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        router.replace('/whatsapp-communication/login');
+      } else if (session) {
+        setSessionEmail(session.user.email ?? null);
       }
+    });
 
-      setUser(session.user);
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      router.push('/whatsapp-communication/login');
-    } finally {
-      setLoading(false);
-    }
-  };
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, [router, supabase]);
 
-  const handleLogout = async () => {
+  const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push('/whatsapp-communication/login');
+    router.replace('/whatsapp-communication/login');
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading Communication Portal...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,16 +65,13 @@ export default function WhatsAppCommunicationDashboard() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-800">{user?.user_metadata?.name || 'User'}</p>
-                <p className="text-xs text-gray-600 capitalize">{user?.user_metadata?.role?.replace('_', '')}</p>
-              </div>
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-800">{sessionEmail ?? 'Checking session…'}</p>
               <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+                onClick={handleSignOut}
+                className="text-xs text-red-600 hover:text-red-800 font-medium"
               >
-                Logout
+                Sign out
               </button>
             </div>
           </div>

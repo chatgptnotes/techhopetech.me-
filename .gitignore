@@ -50,3 +50,10 @@ uploads/
 *.ai-solutions-20260430
 *.bni-app-backup-20260430
 .deploy-bni121/
+
+# Local one-off diagnostic scripts (contain keys) + build artifacts
+diagnostic-query.js
+direct-sql-exec.js
+execute-sql-now.js
+simple-diagnostic.js
+next-app/tsconfig.tsbuildinfo

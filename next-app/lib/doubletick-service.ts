@@ -80,6 +80,68 @@ export async function sendWhatsAppTemplate(message: DoubletickMessage): Promise<
 }
 
 /**
+ * Send WhatsApp plain-text message via Doubletick.
+ * NOTE: WhatsApp only allows free-form text within 24 hours of the
+ * recipient's last inbound message (the "session window"). Outside that
+ * window, an approved template message must be used instead.
+ * Docs: POST https://public.doubletick.io/whatsapp/message/text
+ */
+export async function sendTextMessage(to: string, text: string): Promise<DoubletickResponse & { httpStatus?: number }> {
+  try {
+    if (!DOUBLETICK_API_KEY) {
+      throw new Error('DOUBLETICK_API_KEY not configured in environment variables');
+    }
+
+    const formattedTo = to.replace(/[\s+-]/g, '') ? `+${to.replace(/[^0-9]/g, '')}` : to;
+
+    const response = await fetch('https://public.doubletick.io/whatsapp/message/text', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'Authorization': DOUBLETICK_API_KEY,
+      },
+      body: JSON.stringify({
+        to: formattedTo,
+        from: FROM_NUMBER,
+        content: { text },
+      }),
+    });
+
+    const rawBody = await response.text();
+    let data: Record<string, unknown> = {};
+    try {
+      data = rawBody ? JSON.parse(rawBody) : {};
+    } catch {
+      data = { message: rawBody };
+    }
+
+    if (response.ok) {
+      return {
+        success: true,
+        messageId: (data.messageId as string) || (data.id as string),
+        status: 'sent',
+        httpStatus: response.status,
+      };
+    }
+
+    let error = (data.message as string) || (data.error as string) || `Doubletick returned HTTP ${response.status}`;
+    if (response.status === 403) {
+      error += ' (403: the Doubletick API key is rejected — regenerate it in Doubletick settings and confirm your plan/WABA channel is active)';
+    } else if (response.status === 401) {
+      error += ' (401: invalid Doubletick API key)';
+    }
+
+    return { success: false, error, httpStatus: response.status };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+
+/**
  * Send Good Morning message to a doctor
  */
 export async function sendGoodMorningMessage(doctorName: string, phoneNumber: string): Promise<DoubletickResponse> {

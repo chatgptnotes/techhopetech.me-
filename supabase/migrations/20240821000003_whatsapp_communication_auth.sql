@@ -16,13 +16,14 @@ CREATE OR REPLACE FUNCTION check_whatsapp_communication_access(user_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
     -- Check if user has whatsapp_communication role or is admin
-    EXISTS(
+    RETURN EXISTS(
         SELECT 1 FROM auth.users
         WHERE id = user_id
         AND (
             raw_user_meta_data->>'role' = 'marketing_head'
             OR raw_user_meta_data->>'role' = 'marketing_team'
             OR raw_user_meta_data->>'role' = 'admin'
+            OR raw_user_meta_data->>'whatsapp_access' = 'true'
         )
     );
 END;
@@ -33,11 +34,16 @@ ALTER TABLE referral_doctor_whatsapp_registry ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Marketing team can view all doctors"
     ON referral_doctor_whatsapp_registry FOR SELECT
-    USING (check_whatsapp_communication_control(auth.uid()));
+    USING (check_whatsapp_communication_access(auth.uid()));
 
 CREATE POLICY "Marketing team can add doctors"
     ON referral_doctor_whatsapp_registry FOR INSERT
     WITH CHECK (check_whatsapp_communication_access(auth.uid()));
+
+-- Allow authenticated users to insert doctors (more permissive policy)
+CREATE POLICY "Authenticated users can add doctors"
+    ON referral_doctor_whatsapp_registry FOR INSERT
+    WITH CHECK (auth.uid() IS NOT NULL);
 
 CREATE POLICY "Marketing team can update doctors"
     ON referral_doctor_whatsapp_registry FOR UPDATE
@@ -63,4 +69,19 @@ CREATE POLICY "Marketing team can update templates"
 
 CREATE POLICY "Marketing team can delete templates"
     ON whatsapp_templates_library FOR DELETE
+    USING (check_whatsapp_communication_access(auth.uid()));
+
+-- Communication history table policies
+ALTER TABLE whatsapp_communication_history ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Marketing team can view communication history"
+    ON whatsapp_communication_history FOR SELECT
+    USING (check_whatsapp_communication_access(auth.uid()));
+
+CREATE POLICY "Marketing team can add communication history"
+    ON whatsapp_communication_history FOR INSERT
+    WITH CHECK (check_whatsapp_communication_access(auth.uid()));
+
+CREATE POLICY "Marketing team can update communication history"
+    ON whatsapp_communication_history FOR UPDATE
     USING (check_whatsapp_communication_access(auth.uid()));

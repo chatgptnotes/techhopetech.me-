@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 interface Doctor {
   id: string;
   doctor_name: string;
   whatsapp_number: string;
+  email?: string;
+  phone?: string;
   specialty?: string;
+  qualification?: string;
+  department?: string;
   hospital_name?: string;
   city?: string;
   remarks?: string;
@@ -31,14 +35,17 @@ export default function DoctorManagement() {
   const [formData, setFormData] = useState({
     doctor_name: '',
     whatsapp_number: '',
+    phone: '',
     specialty: '',
+    qualification: '',
+    department: '',
     hospital_name: '',
     city: '',
     remarks: '',
     whatsapp_enabled: true,
   });
 
-  const supabase = createClient();
+  const supabase = getSupabaseBrowserClient();
 
   useEffect(() => {
     fetchDoctors();
@@ -65,36 +72,75 @@ export default function DoctorManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Prepare data with required database fields
       const doctorData = {
-        ...formData,
-        communication_preferences: {
-          daily_greetings: true,
-          festivals: true,
-          promotions: true,
-          custom: true,
-        },
+        doctor_name: formData.doctor_name,
+        whatsapp_number: formData.whatsapp_number,
+        phone: formData.phone || null,
+        specialty: formData.specialty || null,
+        qualification: formData.qualification || null,
+        department: formData.department || null,
+        hospital_name: formData.hospital_name || null,
+        city: formData.city || null,
+        remarks: formData.remarks || null,
+        whatsapp_enabled: formData.whatsapp_enabled,
+        // Required database fields with defaults
+        total_messages_sent: 0,
+        total_messages_delivered: 0,
+        communication_score: 0,
+        last_communication_date: null,
+        // Communication preferences - only include for new records
+        ...(editingDoctor ? {} : {
+          communication_preferences: {
+            daily_greetings: true,
+            festivals: true,
+            promotions: true,
+            custom: true,
+          }
+        })
       };
 
+      console.log('Submitting doctor data:', doctorData);
+
       if (editingDoctor) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('referral_doctor_whatsapp_registry')
           .update(doctorData)
-          .eq('id', editingDoctor.id);
+          .eq('id', editingDoctor.id)
+          .select();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
+        console.log('Doctor updated successfully:', data);
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('referral_doctor_whatsapp_registry')
-          .insert(doctorData);
+          .insert(doctorData)
+          .select();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', JSON.stringify(error, null, 2));
+          console.error('Error details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+          throw error;
+        }
+        console.log('Doctor created successfully:', data);
       }
 
       // Reset form and refresh list
       setFormData({
         doctor_name: '',
         whatsapp_number: '',
+        phone: '',
         specialty: '',
+        qualification: '',
+        department: '',
         hospital_name: '',
         city: '',
         remarks: '',
@@ -103,9 +149,19 @@ export default function DoctorManagement() {
       setShowAddForm(false);
       setEditingDoctor(null);
       fetchDoctors();
-    } catch (error) {
-      console.error('Error saving doctor:', error);
-      alert('Failed to save doctor. Please try again.');
+    } catch (err) {
+      console.error('Error saving doctor:', JSON.stringify(err, null, 2));
+
+      const message =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+
+      alert(
+        message
+          ? `Failed to save doctor: ${message}`
+          : 'Failed to save doctor. Please check your connection and try again.'
+      );
     }
   };
 
@@ -114,7 +170,10 @@ export default function DoctorManagement() {
     setFormData({
       doctor_name: doctor.doctor_name,
       whatsapp_number: doctor.whatsapp_number,
+      phone: doctor.phone || '',
       specialty: doctor.specialty || '',
+      qualification: doctor.qualification || '',
+      department: doctor.department || '',
       hospital_name: doctor.hospital_name || '',
       city: doctor.city || '',
       remarks: doctor.remarks || '',
@@ -170,7 +229,10 @@ export default function DoctorManagement() {
             setFormData({
               doctor_name: '',
               whatsapp_number: '',
+              phone: '',
               specialty: '',
+              qualification: '',
+              department: '',
               hospital_name: '',
               city: '',
               remarks: '',
@@ -259,11 +321,45 @@ export default function DoctorManagement() {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                <input
+                  type="text"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="+91XXXXXXXXXX"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Specialty</label>
                 <input
                   type="text"
                   value={formData.specialty}
                   onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                  placeholder="Cardiology, Orthopedics, etc."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Qualification</label>
+                <input
+                  type="text"
+                  value={formData.qualification}
+                  onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
+                  placeholder="MBBS, MD, etc."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                <input
+                  type="text"
+                  value={formData.department}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  placeholder="Cardiology, Orthopedics, etc."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>

@@ -15,7 +15,11 @@ CREATE TABLE IF NOT EXISTS referral_doctor_whatsapp_registry (
   doctor_id UUID REFERENCES doctor_visits(id) ON DELETE CASCADE,
   doctor_name VARCHAR(255) NOT NULL,
   whatsapp_number VARCHAR(20) UNIQUE NOT NULL,
+  email VARCHAR(255),
+  phone VARCHAR(20),
   specialty VARCHAR(255),
+  qualification VARCHAR(255),
+  department VARCHAR(255),
   hospital_name VARCHAR(255),
   city VARCHAR(255),
   remarks TEXT,
@@ -116,8 +120,12 @@ INSERT INTO whatsapp_templates_library (template_name, template_category, messag
 
 -- Indexes for enhanced doctor registry
 CREATE INDEX IF NOT EXISTS idx_whatsapp_registry_doctor ON referral_doctor_whatsapp_registry(doctor_id);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_registry_email ON referral_doctor_whatsapp_registry(email);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_registry_phone ON referral_doctor_whatsapp_registry(phone);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_registry_enabled ON referral_doctor_whatsapp_registry(whatsapp_enabled);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_registry_specialty ON referral_doctor_whatsapp_registry(specialty);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_registry_qualification ON referral_doctor_whatsapp_registry(qualification);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_registry_department ON referral_doctor_whatsapp_registry(department);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_registry_city ON referral_doctor_whatsapp_registry(city);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_registry_hospital ON referral_doctor_whatsapp_registry(hospital_name);
 
@@ -130,7 +138,7 @@ CREATE INDEX IF NOT EXISTS idx_comm_history_sent_by ON whatsapp_communication_hi
 
 -- Indexes for templates library
 CREATE INDEX IF NOT EXISTS idx_templates_category ON whatsapp_templates_library(template_category);
-CREATE NOT EXISTS idx_templates_active ON whatsapp_templates_library(is_active);
+CREATE INDEX IF NOT EXISTS idx_templates_active ON whatsapp_templates_library(is_active);
 CREATE INDEX IF NOT EXISTS idx_templates_name ON whatsapp_templates_library(template_name);
 
 -- ============================================================================

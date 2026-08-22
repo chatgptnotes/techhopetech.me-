@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 interface Doctor {
   id: string;
@@ -40,7 +40,7 @@ export default function MessageComposer() {
   const [previewMode, setPreviewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const supabase = createClient();
+  const supabase = getSupabaseBrowserClient();
 
   useEffect(() => {
     fetchDoctors();
@@ -137,6 +137,25 @@ export default function MessageComposer() {
     return message;
   };
 
+  /**
+   * Open WhatsApp click-to-chat (wa.me) with the personalized message
+   * pre-filled. Works without any API — uses the user's own WhatsApp
+   * (app on mobile, WhatsApp Web on desktop). Fallback when the
+   * Doubletick API send fails or is unavailable.
+   */
+  const openInWhatsApp = (doctor: Doctor) => {
+    const digits = doctor.whatsapp_number.replace(/[^0-9]/g, '');
+    if (!digits) {
+      alert(`No WhatsApp number saved for ${doctor.doctor_name}`);
+      return;
+    }
+    const message = selectedTemplate ? getPreviewMessage(doctor) : '';
+    const url = message
+      ? `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/${digits}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
   const handleSendMessage = async () => {
     if (selectedDoctors.size === 0 || !selectedTemplate) {
       alert('Please select doctors and a template');
@@ -154,11 +173,17 @@ export default function MessageComposer() {
 
     try {
       const selectedDoctorsList = doctors.filter(d => selectedDoctors.has(d.id));
+      const results: Array<{ doctor: string; ok: boolean; error?: string }> = [];
+
+      // Get the session access token for the server route (real WhatsApp send).
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
 
       for (const doctor of selectedDoctorsList) {
         const personalizedMessage = getPreviewMessage(doctor);
 
-        const { error } = await supabase
+        // 1. Log the outgoing message as pending
+        const { data: inserted, error } = await supabase
           .from('whatsapp_communication_history')
           .insert({
             doctor_id: doctor.id,
@@ -168,12 +193,52 @@ export default function MessageComposer() {
             message_type: selectedTemplate.template_category,
             recipient_count: 1,
             delivery_status: 'pending',
-          });
+          })
+          .select('id')
+          .single();
 
         if (error) throw error;
 
-        // In real implementation, call Doubletick API here
-        // await sendWhatsAppMessage(doctor.whatsapp_number, personalizedMessage);
+        // 2. Actually send via Doubletick (server-side, keeps the API key secret)
+        let sendOk = false;
+        let sendError: string | undefined;
+        let doubletickId: string | undefined;
+
+        if (accessToken) {
+          try {
+            const res = await fetch('/api/whatsapp/send', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({ to: doctor.whatsapp_number, message: personalizedMessage }),
+            });
+            const json = await res.json();
+            if (json.success) {
+              sendOk = true;
+              doubletickId = json.messageId;
+            } else {
+              sendError = json.error || `Send failed (HTTP ${res.status})`;
+            }
+          } catch (e) {
+            sendError = e instanceof Error ? e.message : 'Network error calling send API';
+          }
+        } else {
+          sendError = 'No active session — cannot send';
+        }
+
+        // 3. Record the real outcome on the history row
+        await supabase
+          .from('whatsapp_communication_history')
+          .update({
+            delivery_status: sendOk ? 'sent' : 'failed',
+            doubletick_message_id: doubletickId || null,
+            error_message: sendError || null,
+          })
+          .eq('id', inserted.id);
+
+        results.push({ doctor: doctor.doctor_name, ok: sendOk, error: sendError });
       }
 
       // Update template usage count
@@ -182,7 +247,20 @@ export default function MessageComposer() {
         .update({ usage_count: (selectedTemplate.usage_count || 0) + selectedDoctors.size })
         .eq('id', selectedTemplate.id);
 
-      alert(`Messages sent to ${selectedDoctors.size} doctors successfully!`);
+      const sent = results.filter(r => r.ok).length;
+      const failed = results.length - sent;
+      const summary =
+        failed === 0
+          ? `Messages sent to ${sent} doctor(s) successfully!`
+          : `Automatic send failed for ${failed} of ${results.length} doctor(s) (Doubletick issue).\n\n` +
+            `➡ You can still send now: click the green WhatsApp button next to each doctor ` +
+            `in the Recipients list — WhatsApp opens with the message pre-filled.\n\n` +
+            results
+              .filter(r => !r.ok)
+              .map(r => `• ${r.doctor}: ${r.error}`)
+              .join('\n');
+
+      alert(summary);
       setSelectedDoctors(new Set());
       setSelectedTemplate(null);
       setVariableValues([]);
@@ -293,7 +371,21 @@ export default function MessageComposer() {
                       <div className="text-sm font-medium text-gray-800">{doctor.doctor_name}</div>
                       <div className="text-xs text-gray-500">{doctor.specialty || 'General'}</div>
                     </div>
-                    <div className="text-xs text-gray-600">{doctor.whatsapp_number}</div>
+                    <div className="text-xs text-gray-600 mr-3">{doctor.whatsapp_number}</div>
+                    <button
+                      type="button"
+                      title={`Open WhatsApp chat with ${doctor.doctor_name} (message pre-filled)`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openInWhatsApp(doctor);
+                      }}
+                      className="flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white hover:bg-green-700 transition-colors flex-shrink-0"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                      </svg>
+                    </button>
                   </label>
                 ))
               )}
